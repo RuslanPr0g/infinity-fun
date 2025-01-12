@@ -1,2 +1,7 @@
 <app-home-link></app-home-link>
-<router-outlet></router-outlet>
+<div
+  [@routeTransition]="route.snapshot.data"
+  style="display: contents; overflow: hidden"
+>
+  <router-outlet></router-outlet>
+</div>

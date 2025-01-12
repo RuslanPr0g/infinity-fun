@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { ActivatedRoute, RouterOutlet } from '@angular/router';
 import { HomeLinkComponent } from './shared/components/home-link/home-link.component';
 import { CommonModule } from '@angular/common';
+import { routeTransition } from './route-transition';
 
 @Component({
   selector: 'app-root',
@@ -9,7 +10,10 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule, RouterOutlet, HomeLinkComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
+  animations: [routeTransition],
 })
 export class AppComponent {
   title: string = 'infinityfun';
+
+  constructor(protected route: ActivatedRoute) {}
 }
