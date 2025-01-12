@@ -1,0 +1,21 @@
+.game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.color-box {
+    width: 100px;
+    height: 100px;
+    margin: 10px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.score,
+.timer,
+.current-color {
+    font-size: 1.5rem;
+    margin-top: 10px;
+}

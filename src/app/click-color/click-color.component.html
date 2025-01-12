@@ -1,0 +1,14 @@
+<div class="game-container">
+  <h1>Click the Color Game</h1>
+  <div class="score">Score: {{ score }}</div>
+  <div class="timer">Time Left: {{ timer }}s</div>
+
+  <div
+    *ngFor="let color of colors"
+    class="color-box"
+    [style.background-color]="color"
+    (click)="onColorClick(color)"
+  ></div>
+
+  <div class="current-color">Click on: {{ currentColor }}</div>
+</div>

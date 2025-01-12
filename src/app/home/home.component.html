@@ -1,0 +1,11 @@
+<div class="home-container">
+  <h1>Welcome to Infinity Fun!</h1>
+  <p>Choose a game to play:</p>
+  <ul class="game-list">
+    <li *ngFor="let game of games">
+      <button (click)="navigateToGame(game.route)">
+        {{ game.name }}
+      </button>
+    </li>
+  </ul>
+</div>
