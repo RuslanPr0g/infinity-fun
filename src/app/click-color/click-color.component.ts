@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-click-color',
@@ -8,7 +8,7 @@ import { Component } from '@angular/core';
   templateUrl: './click-color.component.html',
   styleUrls: ['./click-color.component.scss'],
 })
-export class ClickColorGameComponent {
+export class ClickColorGameComponent implements OnInit {
   colors = [
     'red',
     'blue',
@@ -37,8 +37,23 @@ export class ClickColorGameComponent {
   colorVisible: { [key: string]: boolean } = {};
   gameOver: boolean = false;
 
-  constructor() {
+  ngOnInit() {
+    this.checkDevice();
     this.startGame();
+  }
+
+  checkDevice() {
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) {
+      this.removeRandomColors(this.colors.length / 2 - 2);
+    }
+  }
+
+  removeRandomColors(count: number) {
+    for (let i = 0; i < count; i++) {
+      const randomIndex = Math.floor(Math.random() * this.colors.length);
+      this.colors.splice(randomIndex, 1);
+    }
   }
 
   startGame() {
