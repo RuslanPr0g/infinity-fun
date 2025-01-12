@@ -9,7 +9,28 @@ import { Component } from '@angular/core';
   styleUrls: ['./click-color.component.scss'],
 })
 export class ClickColorGameComponent {
-  colors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
+  colors = [
+    'red',
+    'blue',
+    'green',
+    'yellow',
+    'purple',
+    'orange',
+    'pink',
+    'cyan',
+    'magenta',
+    'brown',
+    'lime',
+    'indigo',
+    'violet',
+    'gray',
+    'black',
+    'white',
+    'beige',
+    'teal',
+    'turquoise',
+    'salmon',
+  ];
   currentColor: string = '';
   score: number = 0;
   timer: number = 60;
@@ -17,6 +38,13 @@ export class ClickColorGameComponent {
   gameOver: boolean = false;
 
   constructor() {
+    this.startGame();
+  }
+
+  startGame() {
+    this.score = 0;
+    this.timer = 60;
+    this.gameOver = false;
     this.generateColor();
     this.startTimer();
   }
@@ -25,20 +53,18 @@ export class ClickColorGameComponent {
     const randomIndex = Math.floor(Math.random() * this.colors.length);
     this.currentColor = this.colors[randomIndex];
     this.colorVisible[this.currentColor] = true;
-    setTimeout(() => {
-      this.colorVisible[this.currentColor] = false;
-      this.showNextColor();
-    }, 1000);
   }
 
   showNextColor() {
-    const randomIndex = Math.floor(Math.random() * this.colors.length);
-    const nextColor = this.colors[randomIndex];
-    this.colorVisible[nextColor] = true;
-    setTimeout(() => {
-      this.colorVisible[nextColor] = false;
-      this.generateColor();
-    }, 1000 - this.score * 50); // Decrease time based on score
+    this.shuffleColors();
+    this.generateColor();
+  }
+
+  shuffleColors() {
+    for (let i = this.colors.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [this.colors[i], this.colors[j]] = [this.colors[j], this.colors[i]];
+    }
   }
 
   startTimer() {
@@ -53,6 +79,7 @@ export class ClickColorGameComponent {
         this.gameOver = true;
         clearInterval(interval);
         alert(`Game over! Your score: ${this.score}`);
+        this.restartGame();
       }
     }, 1000);
   }
@@ -60,6 +87,14 @@ export class ClickColorGameComponent {
   onColorClick(clickedColor: string) {
     if (clickedColor === this.currentColor) {
       this.score++;
+      this.colorVisible[this.currentColor] = false;
+      this.showNextColor();
     }
+  }
+
+  restartGame() {
+    setTimeout(() => {
+      this.startGame();
+    }, 2000);
   }
 }
