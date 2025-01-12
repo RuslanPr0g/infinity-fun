@@ -1,9 +1,17 @@
 <div class="home-container">
-  <h1>Welcome to Infinity Fun!</h1>
-  <p>Choose a game to play:</p>
+  <div>
+    <h1
+      appTypewriter
+      [text]="'Welcome to Infinity Fun!'"
+      [speed]="150"
+      class="title"
+    ></h1>
+  </div>
+  <p class="description">Choose a game to start playing:</p>
+
   <ul class="game-list">
-    <li *ngFor="let game of games">
-      <button (click)="navigateToGame(game.route)">
+    <li *ngFor="let game of games" class="game-item">
+      <button (click)="navigateToGame(game.route)" class="game-button">
         {{ game.name }}
       </button>
     </li>
