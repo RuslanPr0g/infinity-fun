@@ -6,7 +6,7 @@ import { GameRoute } from '../../../core/models/game-route.model';
 })
 export class GameRouteService {
   private games: GameRoute[] = [
-    { name: 'Color Reaction', route: '/color-click' },
+    { name: 'Color Reaction', route: '/color-click', color: '#ff6347' },
   ];
 
   getGames(): GameRoute[] {

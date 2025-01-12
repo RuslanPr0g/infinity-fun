@@ -38,13 +38,14 @@
 .game-item {
     display: flex;
     justify-content: center;
+    align-items: center;
+    border-radius: 8px;
 }
 
 .game-button {
     width: 100%;
     padding: 15px;
     background-color: $button-bg-color;
-    color: $button-text-color;
     border: none;
     border-radius: 8px;
     font-size: 1.2rem;
@@ -52,8 +53,14 @@
     transition: all 0.3s ease;
 
     &:hover {
-        background-color: $button-hover-color;
+        filter: brightness(50%);
     }
+}
+
+.game-image {
+    width: 30px;
+    height: 30px;
+    margin-right: 10px;
 }
 
 @media (max-width: 900px) {

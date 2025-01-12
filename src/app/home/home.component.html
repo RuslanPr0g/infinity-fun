@@ -11,7 +11,17 @@
 
   <ul class="game-list">
     <li *ngFor="let game of games" class="game-item">
-      <button (click)="navigateToGame(game.route)" class="game-button">
+      <button
+        (click)="navigateToGame(game.route)"
+        class="game-button"
+        [style.background-color]="game.color"
+      >
+        <img
+          *ngIf="game.imageUrl"
+          [src]="game.imageUrl"
+          alt="{{ game.name }}"
+          class="game-image"
+        />
         {{ game.name }}
       </button>
     </li>
