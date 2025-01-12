@@ -1,11 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { HomeLinkComponent } from '../shared/components/home-link/home-link.component';
 
 @Component({
   selector: 'app-click-color',
   standalone: true,
-  imports: [CommonModule, HomeLinkComponent],
+  imports: [CommonModule],
   templateUrl: './click-color.component.html',
   styleUrls: ['./click-color.component.scss'],
 })
