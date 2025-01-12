@@ -1,8 +1,10 @@
+import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-click-color',
   standalone: true,
+  imports: [CommonModule],
   templateUrl: './click-color.component.html',
   styleUrls: ['./click-color.component.scss'],
 })
@@ -10,7 +12,7 @@ export class ClickColorGameComponent {
   colors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
   currentColor: string = '';
   score: number = 0;
-  timer: number = 10; // Countdown timer
+  timer: number = 10;
 
   constructor() {
     this.generateColor();

@@ -1,18 +1,16 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ClickColorGameComponent } from './click-color.component';
 
-import { ClickColorComponent } from './click-color.component';
-
-describe('ClickColorComponent', () => {
-  let component: ClickColorComponent;
-  let fixture: ComponentFixture<ClickColorComponent>;
+describe('ClickColorGameComponent', () => {
+  let component: ClickColorGameComponent;
+  let fixture: ComponentFixture<ClickColorGameComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ClickColorComponent]
-    })
-    .compileComponents();
+      imports: [ClickColorGameComponent],
+    }).compileComponents();
 
-    fixture = TestBed.createComponent(ClickColorComponent);
+    fixture = TestBed.createComponent(ClickColorGameComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

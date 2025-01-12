@@ -3,11 +3,18 @@
     <h1
       appTypewriter
       [text]="'Welcome to Infinity Fun!'"
-      [speed]="150"
+      [speed]="50"
       class="title"
     ></h1>
   </div>
-  <p class="description">Choose a game to start playing:</p>
+  <div>
+    <p
+      appTypewriter
+      [text]="'Choose a game to start playing'"
+      [speed]="100"
+      class="description"
+    ></p>
+  </div>
 
   <ul class="game-list">
     <li *ngFor="let game of games" class="game-item">
