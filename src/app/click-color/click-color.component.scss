@@ -11,6 +11,9 @@
     min-height: 100vh;
     padding: 20px;
     user-select: none;
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
 }
 
 .header {
@@ -42,21 +45,24 @@
     margin-top: 10px;
     border-radius: 8px;
     display: inline-block;
+    border: 1px solid $primary-text-color;
 }
 
 .color-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 15px;
-    width: 100%;
+    width: max-content;
 }
 
 .color {
     height: 100px;
+    width: 100px;
     border-radius: 8px;
     cursor: pointer;
     opacity: 1;
     transition: opacity 0.5s ease;
+    border: 1px solid $primary-text-color;
 
     &:hover {
         opacity: 0.8;
