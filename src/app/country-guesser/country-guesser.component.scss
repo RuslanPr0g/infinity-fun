@@ -174,13 +174,7 @@ label:hover input[type="checkbox"] {
     margin: 4px 2px;
 
     &:hover {
-        background: linear-gradient(135deg, #3B6790, #98D8EF);
-        transform: translateY(-2px);
-    }
-
-    &:active {
-        background: linear-gradient(135deg, #98D8EF, #3B6790);
-        transform: translateY(1px);
+        background: linear-gradient(100deg, #98D8EF, #3B6790);
     }
 
     &:disabled {
