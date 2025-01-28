@@ -15,7 +15,7 @@ export class CountryGuesserGameComponent implements OnInit {
   countries: Country[] = worldCountries;
   currentCountry?: Country;
   userGuess: string = '';
-  resultMessage: string = '';
+  guessStatus: 'success' | 'fail' | 'no guess' | null = null;
 
   ngOnInit(): void {
     this.loadRandomCountry();
@@ -26,17 +26,21 @@ export class CountryGuesserGameComponent implements OnInit {
   }
 
   checkAnswer(): void {
-    if (!this.userGuess.trim()) {
-      this.resultMessage = 'Please enter a country name. 🙄';
+    if (!this.userGuess.trim() || !!this.guessStatus) {
       return;
     }
 
     const isCorrect = this.isGuessCorrect();
-    this.resultMessage = isCorrect ? 'Correct! 🎉' : 'Oops, try again! 😅';
+    this.guessStatus = isCorrect ? 'success' : 'fail';
 
     if (isCorrect) {
       this.resetGame();
+      return;
     }
+
+    setTimeout(() => {
+      this.resetStatus();
+    }, 1500);
   }
 
   isGuessCorrect(): boolean {
@@ -55,7 +59,11 @@ export class CountryGuesserGameComponent implements OnInit {
     setTimeout(() => {
       this.loadRandomCountry();
       this.userGuess = '';
-      this.resultMessage = '';
+      this.resetStatus();
     }, 1500);
+  }
+
+  private resetStatus(): void {
+    this.guessStatus = null;
   }
 }

@@ -1,7 +1,12 @@
-<div class="game-container">
+<div
+  class="game-container"
+  [ngClass]="{
+  'green-background': guessStatus === 'success',
+  'red-background': guessStatus === 'fail',
+}"
+>
   <div class="container">
     <h1>Guess the Flag!</h1>
-    {{ currentCountry?.name }}
     <div class="img">
       <img
         [src]="'https://flagcdn.com/' + currentCountry?.code + '.svg'"
@@ -13,12 +18,10 @@
     <input
       [(ngModel)]="userGuess"
       (keyup.enter)="onEnterKey()"
-      placeholder="Name of the country"
+      placeholder="Country name"
       class="guess-input"
     />
 
     <button (click)="checkAnswer()" class="check-button">Check Answer</button>
-
-    <p *ngIf="resultMessage">{{ resultMessage }}</p>
   </div>
 </div>

@@ -9,6 +9,7 @@
     padding-top: 60px;
     color: $primary-text-color;
     width: 100%;
+    transition: background-color 1s ease;
 }
 
 .container {
@@ -24,11 +25,20 @@
     position: relative;
 }
 
+.green-background {
+    background: linear-gradient(to bottom, #5B913B, #121212);
+}
+
+.red-background {
+    background: linear-gradient(to bottom, #B82132, #121212);
+}
+
 .flag-image {
     max-width: 480px;
     height: auto;
     margin: 20px 0;
     justify-self: center;
+    border: 2px solid $primary-text-color;
 }
 
 .guess-input {
@@ -51,4 +61,18 @@
 
 .check-button:hover {
     background-color: #45a049;
+}
+
+@media (max-width: 550px) {
+    .flag-image {
+        max-width: 200px;
+    }
+
+    h1 {
+        display: none;
+    }
+
+    .guess-input {
+        width: 237px;
+    }
 }
