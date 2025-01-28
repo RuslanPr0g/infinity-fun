@@ -14,7 +14,9 @@ import { CountryCode } from './models/country-code.model';
   styleUrls: ['./country-guesser.component.scss'],
 })
 export class CountryGuesserGameComponent implements OnInit {
-  countries: Country[] = worldCountries;
+  countries: Country[] = [
+    ...new Map(worldCountries.map((item) => [item.code, item])).values(),
+  ];
   currentCountry?: Country;
   userGuess: string = '';
   guessStatus: 'success' | 'fail' | 'no guess' | null = null;
@@ -79,13 +81,16 @@ export class CountryGuesserGameComponent implements OnInit {
       ];
     }
 
-    while (this.countryOptions.length < 5) {
-      const randomIndex = Math.floor(Math.random() * shuffledCountries.length);
-      const country = shuffledCountries[randomIndex];
+    const availableCountries = shuffledCountries.filter(
+      (country) => !this.countryOptions.includes(country)
+    );
 
-      if (!this.countryOptions.includes(country)) {
-        this.countryOptions.push(country);
-      }
+    while (this.countryOptions.length < 5 && availableCountries.length > 0) {
+      const randomIndex = Math.floor(Math.random() * availableCountries.length);
+      const country = availableCountries[randomIndex];
+
+      this.countryOptions.push(country);
+      availableCountries.splice(randomIndex, 1);
     }
 
     this.countryOptions = this.shuffleArray(this.countryOptions);

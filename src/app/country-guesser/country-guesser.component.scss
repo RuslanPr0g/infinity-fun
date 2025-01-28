@@ -161,6 +161,38 @@ label:hover input[type="checkbox"] {
     border-color: #888;
 }
 
+.guess-button {
+    background: linear-gradient(135deg, #98D8EF, #3B6790);
+    color: white;
+    font-size: 16px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.3s ease;
+    width: 480px;
+    margin: 4px 2px;
+
+    &:hover {
+        background: linear-gradient(135deg, #3B6790, #98D8EF);
+        transform: translateY(-2px);
+    }
+
+    &:active {
+        background: linear-gradient(135deg, #98D8EF, #3B6790);
+        transform: translateY(1px);
+    }
+
+    &:disabled {
+        background: #B0BEC5;
+        cursor: not-allowed;
+    }
+
+    &:focus {
+        outline: none;
+        box-shadow: 0 0 5px rgba(159, 193, 8, 0.5);
+    }
+}
 
 @media (max-width: 550px) {
     .flag-image {
