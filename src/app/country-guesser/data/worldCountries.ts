@@ -175,7 +175,6 @@ export const worldCountries: Country[] = [
   { code: 'mm', name: 'Myanmar' },
   { code: 'na', name: 'Namibia' },
   { code: 'np', name: 'Nepal' },
-  { code: 'nl', name: 'Netherlands' },
   { code: 'nc', name: 'New Caledonia' },
   { code: 'nz', name: 'New Zealand' },
   { code: 'ni', name: 'Nicaragua' },

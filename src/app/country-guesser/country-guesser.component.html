@@ -1,27 +1,74 @@
 <div
   class="game-container"
   [ngClass]="{
-  'green-background': guessStatus === 'success',
-  'red-background': guessStatus === 'fail',
-}"
+    'green-background': guessStatus === 'success',
+    'red-background': guessStatus === 'fail'
+  }"
 >
   <div class="container">
     <h1>Guess the Flag!</h1>
+    {{ currentCountry?.name }}
+
     <div class="img">
       <img
+        [ngClass]="{
+          'bandw': isInsaneMode,
+        }"
         [src]="'https://flagcdn.com/' + currentCountry?.code + '.svg'"
         alt="Flag"
         class="flag-image"
       />
     </div>
 
-    <input
-      [(ngModel)]="userGuess"
-      (keyup.enter)="onEnterKey()"
-      placeholder="Country name"
-      class="guess-input"
-    />
+    <div *ngIf="!isMultipleChoiceMode">
+      <input
+        [(ngModel)]="userGuess"
+        (keyup.enter)="onEnterKey()"
+        placeholder="Country name"
+        class="guess-input"
+      />
+    </div>
+
+    <div *ngIf="isMultipleChoiceMode">
+      <div *ngFor="let country of countryOptions">
+        <button
+          class="guess-button"
+          (click)="checkMultipleChoiceAnswer(country)"
+        >
+          {{ country.name }}
+        </button>
+      </div>
+    </div>
 
     <button (click)="checkAnswer()" class="check-button">Check Answer</button>
+  </div>
+  <div class="mode-selector">
+    <label>
+      <input
+        type="checkbox"
+        name="insaneMode"
+        [(ngModel)]="isInsaneMode"
+        [value]="false"
+      />
+      Insane difficulty
+    </label>
+    <label>
+      <input
+        type="radio"
+        name="mode"
+        [(ngModel)]="isMultipleChoiceMode"
+        [value]="false"
+      />
+      Medium difficulty
+    </label>
+    <label>
+      <input
+        type="radio"
+        name="mode"
+        [(ngModel)]="isMultipleChoiceMode"
+        [value]="true"
+      />
+      Easy difficulty
+    </label>
   </div>
 </div>

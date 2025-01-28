@@ -2,7 +2,9 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { worldCountries } from './data/worldCountries';
+import { similarCountryFlags } from './data/similarCountryFlags';
 import { Country } from './models/country.model';
+import { CountryCode } from './models/country-code.model';
 
 @Component({
   selector: 'app-country-guesser',
@@ -16,6 +18,9 @@ export class CountryGuesserGameComponent implements OnInit {
   currentCountry?: Country;
   userGuess: string = '';
   guessStatus: 'success' | 'fail' | 'no guess' | null = null;
+  isMultipleChoiceMode: boolean = true;
+  isInsaneMode: boolean = false;
+  countryOptions: Country[] = [];
 
   ngOnInit(): void {
     this.loadRandomCountry();
@@ -53,6 +58,68 @@ export class CountryGuesserGameComponent implements OnInit {
   loadRandomCountry(): void {
     const randomIndex = Math.floor(Math.random() * this.countries.length);
     this.currentCountry = this.countries[randomIndex];
+
+    if (this.isMultipleChoiceMode) {
+      this.loadMultipleChoiceOptions();
+    }
+  }
+
+  loadMultipleChoiceOptions(): void {
+    const shuffledCountries = [...this.countries];
+    this.countryOptions = [this.currentCountry!];
+
+    const similarCountries = this.getSimilarCountries(
+      this.currentCountry!.code
+    );
+
+    if (similarCountries) {
+      this.countryOptions = [
+        ...this.countryOptions,
+        ...this.countries.filter((x) => similarCountries.includes(x.code)),
+      ];
+    }
+
+    while (this.countryOptions.length < 5) {
+      const randomIndex = Math.floor(Math.random() * shuffledCountries.length);
+      const country = shuffledCountries[randomIndex];
+
+      if (!this.countryOptions.includes(country)) {
+        this.countryOptions.push(country);
+      }
+    }
+
+    this.countryOptions = this.shuffleArray(this.countryOptions);
+  }
+
+  getSimilarCountries(countryCode: CountryCode): CountryCode[] {
+    const similarCountries = similarCountryFlags.find((group) =>
+      group.includes(countryCode)
+    );
+    return similarCountries
+      ? similarCountries.filter((code) => code !== countryCode)
+      : [];
+  }
+
+  shuffleArray(arr: Country[]): Country[] {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  checkMultipleChoiceAnswer(country: Country): void {
+    const isCorrect = country.name === this.currentCountry?.name;
+    this.guessStatus = isCorrect ? 'success' : 'fail';
+
+    if (isCorrect) {
+      this.resetGame();
+      return;
+    }
+
+    setTimeout(() => {
+      this.resetStatus();
+    }, 1500);
   }
 
   private resetGame(): void {
