@@ -1,0 +1,22 @@
+<div class="game-container">
+  <div class="container">
+    <h1>Guess the Flag!</h1>
+    <div class="img">
+      <img
+        [src]="'https://flagcdn.com/' + currentFlag + '.svg'"
+        alt="Flag"
+        class="flag-image"
+      />
+    </div>
+
+    <input
+      [(ngModel)]="userGuess"
+      placeholder="Name of the country"
+      class="guess-input"
+    />
+
+    <button (click)="checkAnswer()" class="check-button">Check Answer</button>
+
+    <p *ngIf="resultMessage">{{ resultMessage }}</p>
+  </div>
+</div>

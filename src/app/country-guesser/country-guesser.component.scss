@@ -1,0 +1,53 @@
+@import '../../colors';
+
+.game-container {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    padding-top: 60px;
+    color: $primary-text-color;
+    width: 100%;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.img {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.flag-image {
+    width: 300px;
+    height: auto;
+    margin: 20px 0;
+    justify-self: center;
+}
+
+.guess-input {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.check-button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    margin: 15px 2px;
+}
+
+.check-button:hover {
+    background-color: #45a049;
+}
