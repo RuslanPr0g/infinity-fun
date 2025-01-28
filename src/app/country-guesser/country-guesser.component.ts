@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { worldCountries } from './data/worldCountries';
 import { similarCountryFlags } from './data/similarCountryFlags';
@@ -25,6 +25,10 @@ export class CountryGuesserGameComponent implements OnInit {
   countryOptions: Country[] = [];
 
   ngOnInit(): void {
+    this.loadRandomCountry();
+  }
+
+  onModeChange(): void {
     this.loadRandomCountry();
   }
 

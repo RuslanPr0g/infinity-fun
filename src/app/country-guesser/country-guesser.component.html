@@ -6,9 +6,6 @@
   }"
 >
   <div class="container">
-    <h1>Guess the Flag!</h1>
-    {{ currentCountry?.name }}
-
     <div class="img">
       <img
         [ngClass]="{
@@ -40,7 +37,13 @@
       </div>
     </div>
 
-    <button (click)="checkAnswer()" class="check-button">Check Answer</button>
+    <button
+      *ngIf="!isMultipleChoiceMode"
+      (click)="checkAnswer()"
+      class="check-button"
+    >
+      Check Answer
+    </button>
   </div>
   <div class="mode-selector">
     <label>
@@ -49,6 +52,7 @@
         name="insaneMode"
         [(ngModel)]="isInsaneMode"
         [value]="false"
+        (ngModelChange)="onModeChange()"
       />
       Insane difficulty
     </label>
@@ -58,6 +62,7 @@
         name="mode"
         [(ngModel)]="isMultipleChoiceMode"
         [value]="false"
+        (ngModelChange)="onModeChange()"
       />
       Medium difficulty
     </label>
@@ -67,6 +72,7 @@
         name="mode"
         [(ngModel)]="isMultipleChoiceMode"
         [value]="true"
+        (ngModelChange)="onModeChange()"
       />
       Easy difficulty
     </label>

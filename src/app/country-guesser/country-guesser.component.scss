@@ -204,9 +204,12 @@ label:hover input[type="checkbox"] {
     }
 
     .guess-input,
-    .check-button {
+    .check-button,
+    .guess-button {
         width: 237px;
         min-width: 100px;
+        font-size: 10px;
+        line-height: 15px;
     }
 
     .mode-selector label {
