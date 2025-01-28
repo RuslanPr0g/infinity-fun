@@ -81,6 +81,21 @@ export class CountryGuesserGameComponent implements OnInit {
       ];
     }
 
+    if (
+      this.currentCountry?.name.includes(' ') ||
+      this.currentCountry?.name.includes('-')
+    ) {
+      const countriesWithSpaceOrDash = this.countries.filter(
+        (country) => country.name.includes(' ') || country.name.includes('-')
+      );
+      this.countryOptions = [
+        ...this.countryOptions,
+        ...countriesWithSpaceOrDash
+          .filter((country) => country.name !== this.currentCountry?.name)
+          .slice(0, 2),
+      ];
+    }
+
     const availableCountries = shuffledCountries.filter(
       (country) => !this.countryOptions.includes(country)
     );
@@ -93,7 +108,7 @@ export class CountryGuesserGameComponent implements OnInit {
       availableCountries.splice(randomIndex, 1);
     }
 
-    this.countryOptions = this.shuffleArray(this.countryOptions);
+    this.countryOptions = this.shuffleArray(this.countryOptions.slice(0, 5));
   }
 
   getSimilarCountries(countryCode: CountryCode): CountryCode[] {
