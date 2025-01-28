@@ -133,6 +133,10 @@ export class CountryGuesserGameComponent implements OnInit {
   }
 
   checkMultipleChoiceAnswer(country: Country): void {
+    if (!!this.guessStatus) {
+      return;
+    }
+
     const isCorrect = country.name === this.currentCountry?.name;
     this.guessStatus = isCorrect ? 'success' : 'fail';
 
