@@ -21,7 +21,12 @@ export class HomeComponent implements OnInit {
     this.games = this.gameService.getGames();
   }
 
-  navigateToGame(route: string) {
-    this.router.navigate([route]);
+  navigateToGame(game: GameRoute) {
+    if (game.isExternal) {
+      window.open(game.route, '_blank');
+      return;
+    }
+
+    this.router.navigate([game.route]);
   }
 }

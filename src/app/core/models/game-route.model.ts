@@ -3,4 +3,5 @@ export interface GameRoute {
   route: string;
   color?: string;
   imageUrl?: string;
+  isExternal?: boolean;
 }

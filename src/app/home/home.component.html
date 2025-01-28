@@ -19,7 +19,7 @@
   <ul class="game-list">
     <li *ngFor="let game of games" class="game-item">
       <button
-        (click)="navigateToGame(game.route)"
+        (click)="navigateToGame(game)"
         class="game-button"
         [style.background-color]="game.color"
       >
