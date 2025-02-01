@@ -25,6 +25,8 @@ export class CountryGuesserGameComponent implements OnInit {
   isInsaneMode: boolean = false;
   countryOptions: Country[] = [];
 
+  streak: number = 0;
+
   constructor(private soundService: SoundService) {}
 
   ngOnInit(): void {
@@ -52,10 +54,7 @@ export class CountryGuesserGameComponent implements OnInit {
       return;
     }
 
-    this.soundService.playWrong();
-    setTimeout(() => {
-      this.resetStatus();
-    }, 1000);
+    this.fail();
   }
 
   isGuessCorrect(): boolean {
@@ -149,14 +148,12 @@ export class CountryGuesserGameComponent implements OnInit {
       return;
     }
 
-    this.soundService.playWrong();
-    setTimeout(() => {
-      this.resetStatus();
-    }, 1000);
+    this.fail();
   }
 
   private resetCountryToGuess(): void {
     this.soundService.playCorrect();
+    this.streak++;
     setTimeout(() => {
       this.loadRandomCountry();
       this.userGuess = '';
@@ -166,5 +163,13 @@ export class CountryGuesserGameComponent implements OnInit {
 
   private resetStatus(): void {
     this.guessStatus = null;
+  }
+
+  private fail(): void {
+    this.soundService.playWrong();
+    this.streak = 0;
+    setTimeout(() => {
+      this.resetStatus();
+    }, 1000);
   }
 }

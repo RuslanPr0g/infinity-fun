@@ -18,6 +18,8 @@
       />
     </div>
 
+    <div class="score">Score: {{ streak }}</div>
+
     <div *ngIf="!isMultipleChoiceMode">
       <input
         [(ngModel)]="userGuess"
