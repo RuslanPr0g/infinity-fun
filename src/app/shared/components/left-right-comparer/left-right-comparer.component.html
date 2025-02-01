@@ -4,7 +4,8 @@
     (click)="leftClick()"
     [ngClass]="{
       success: showLeftStatus === 'success',
-      fail: showLeftStatus === 'fail'
+      fail: showLeftStatus === 'fail',
+      'left-part-hover': !isMobile
     }"
   >
     <p class="part__text" *ngIf="leftText">
@@ -21,7 +22,8 @@
     (click)="rightClick()"
     [ngClass]="{
       success: showRightStatus === 'success',
-      fail: showRightStatus === 'fail'
+      fail: showRightStatus === 'fail',
+      'right-part-hover': !isMobile
     }"
   >
     <p class="part__text" *ngIf="rightText">

@@ -26,6 +26,12 @@ export class LeftRightComparerComponent {
   showLeftStatus: Status = 'no status';
   showRightStatus: Status = 'no status';
 
+  isMobile: boolean = false;
+
+  constructor() {
+    this.isMobile = window.innerWidth <= 800;
+  }
+
   leftClick(): void {
     this.leftClicked.emit();
 

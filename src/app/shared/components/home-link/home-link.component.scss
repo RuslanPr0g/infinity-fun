@@ -3,10 +3,12 @@
 :host {
     display: flex;
     align-items: center;
+    max-height: 72px;
+    min-height: 72px;
 }
 
 .home-link {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     color: $link-color;
     text-decoration: none;
 }

@@ -1,9 +1,10 @@
 @import '../../../../colors';
 
 .game-container {
+    position: relative;
     display: flex;
     justify-content: center;
-    min-height: calc(100vh - 72px);
+    min-height: calc(100vh - 88px);
 }
 
 .part {
@@ -11,7 +12,7 @@
     align-items: center;
     justify-content: center;
     width: 100%;
-    min-height: calc(100vh - 72px);
+    min-height: 100%;
     transition: all 0.3s ease;
     cursor: pointer;
 
@@ -28,15 +29,12 @@
     }
 }
 
-.left-part {
-    &:hover {
-        background-color: rgba($color: #FFF6B3, $alpha: 0.5);
-    }
-}
-
+.left-part,
 .right-part {
-    &:hover {
-        background-color: rgba($color: #FFF6B3, $alpha: 0.5);
+    &-hover {
+        &:hover {
+            background-color: rgba($color: #FFF6B3, $alpha: 0.5);
+        }
     }
 }
 
@@ -62,7 +60,7 @@
     justify-content: center;
     flex-direction: column;
     position: absolute;
-    top: calc(50%);
+    top: calc(50% - 45px);
     left: calc(50% - 100px);
     color: $primary-text-color;
     width: 200px;
@@ -86,5 +84,23 @@
 
     & .score {
         margin-top: 8px;
+    }
+}
+
+@media (max-width: 800px) {
+    .game-container {
+        flex-direction: column;
+        align-items: flex-start;
+        min-height: calc(100vh - 88px);
+    }
+
+    .part {
+        min-height: 50%;
+        height: 50%;
+        flex: 1;
+    }
+
+    .left-part {
+        height: calc(50% - 88px);
     }
 }
