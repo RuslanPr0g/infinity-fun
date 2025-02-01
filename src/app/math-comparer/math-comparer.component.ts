@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { LeftRightComparerComponent } from '../shared/components/left-right-comparer/left-right-comparer.component';
+import { SoundService } from '../shared/services/sound/sound.service';
 
 @Component({
   selector: 'app-math-comparer',
@@ -19,7 +20,7 @@ export class MathComparerComponent {
   timesLeftSideWasCorrectInRow: number = 0;
   timesRightSideWasCorrectInRow: number = 0;
 
-  constructor() {
+  constructor(private soundService: SoundService) {
     this.generateExpressions();
   }
 
@@ -133,10 +134,12 @@ export class MathComparerComponent {
   }
 
   private increaseStreak(): void {
+    this.soundService.playCorrect();
     this.streak++;
   }
 
   private resetStreak(): void {
+    this.soundService.playWrong();
     this.streak = 0;
   }
 }

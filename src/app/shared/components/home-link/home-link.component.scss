@@ -1,7 +1,18 @@
 @import '../../../../colors';
 
+:host {
+    display: flex;
+    align-items: center;
+}
+
 .home-link {
     font-size: 1.5rem;
     color: $link-color;
     text-decoration: none;
+}
+
+.version {
+    color: $primary-text-color;
+    font-size: 8px;
+    text-align: center;
 }
