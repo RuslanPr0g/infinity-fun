@@ -5,6 +5,7 @@ import { worldCountries } from './data/worldCountries';
 import { similarCountryFlags } from './data/similarCountryFlags';
 import { Country } from './models/country.model';
 import { CountryCode } from './models/country-code.model';
+import { SoundService } from '../shared/services/sound/sound.service';
 
 @Component({
   selector: 'app-country-guesser',
@@ -23,6 +24,8 @@ export class CountryGuesserGameComponent implements OnInit {
   isMultipleChoiceMode: boolean = true;
   isInsaneMode: boolean = false;
   countryOptions: Country[] = [];
+
+  constructor(private soundService: SoundService) {}
 
   ngOnInit(): void {
     this.loadRandomCountry();
@@ -45,13 +48,14 @@ export class CountryGuesserGameComponent implements OnInit {
     this.guessStatus = isCorrect ? 'success' : 'fail';
 
     if (isCorrect) {
-      this.resetGame();
+      this.resetCountryToGuess();
       return;
     }
 
+    this.soundService.playWrong();
     setTimeout(() => {
       this.resetStatus();
-    }, 1500);
+    }, 1000);
   }
 
   isGuessCorrect(): boolean {
@@ -141,21 +145,23 @@ export class CountryGuesserGameComponent implements OnInit {
     this.guessStatus = isCorrect ? 'success' : 'fail';
 
     if (isCorrect) {
-      this.resetGame();
+      this.resetCountryToGuess();
       return;
     }
 
+    this.soundService.playWrong();
     setTimeout(() => {
       this.resetStatus();
-    }, 1500);
+    }, 1000);
   }
 
-  private resetGame(): void {
+  private resetCountryToGuess(): void {
+    this.soundService.playCorrect();
     setTimeout(() => {
       this.loadRandomCountry();
       this.userGuess = '';
       this.resetStatus();
-    }, 1500);
+    }, 1000);
   }
 
   private resetStatus(): void {
