@@ -97,6 +97,13 @@ export class MathComparerComponent {
       this.rightExpression = this.nextToShow;
     }
 
+    while (
+      this.evaluateExpression(this.leftExpression) ===
+      this.evaluateExpression(this.rightExpression)
+    ) {
+      this.rightExpression = this.generateExpression();
+    }
+
     this.correctSide =
       this.evaluateExpression(this.leftExpression) >
       this.evaluateExpression(this.rightExpression)
