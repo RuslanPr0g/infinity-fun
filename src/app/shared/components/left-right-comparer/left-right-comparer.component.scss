@@ -1,0 +1,90 @@
+@import '../../../../colors';
+
+.game-container {
+    display: flex;
+    justify-content: center;
+    min-height: calc(100vh - 72px);
+}
+
+.part {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: calc(100vh - 72px);
+    transition: all 0.3s ease;
+    cursor: pointer;
+
+    &__text {
+        color: $primary-text-color;
+        background-color: rgba($color: #333, $alpha: 0.5);
+        padding: 12px;
+        user-select: none;
+
+        font-size: clamp(14px, 5vw, 16px);
+        text-align: center;
+        word-wrap: break-word;
+        white-space: normal;
+    }
+}
+
+.left-part {
+    &:hover {
+        background-color: rgba($color: #FFF6B3, $alpha: 0.5);
+    }
+}
+
+.right-part {
+    &:hover {
+        background-color: rgba($color: #FFF6B3, $alpha: 0.5);
+    }
+}
+
+.success {
+    background-color: rgba($color: #5D8736, $alpha: 0.5);
+
+    &:hover {
+        background-color: rgba($color: #5D8736, $alpha: 0.8);
+    }
+}
+
+.fail {
+    background-color: rgba($color: #A31D1D, $alpha: 0.5);
+
+    &:hover {
+        background-color: rgba($color: #A31D1D, $alpha: 0.8);
+    }
+}
+
+.or {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    position: absolute;
+    top: calc(50%);
+    left: calc(50% - 100px);
+    color: $primary-text-color;
+    width: 200px;
+    height: 90px;
+    font-size: 12px;
+    user-select: none;
+    pointer-events: none;
+
+    & p {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba($color: #333, $alpha: 0.8);
+        border-radius: 50%;
+        font-size: 16px;
+        color: $primary-text-color;
+        width: 50px;
+        height: 50px;
+        margin-top: 8px;
+    }
+
+    & .score {
+        margin-top: 8px;
+    }
+}

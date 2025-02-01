@@ -1,0 +1,32 @@
+<div class="part__text"></div>
+<div class="game-container">
+  <div
+    class="part left-part"
+    (click)="leftClick()"
+    [ngClass]="{
+      success: showLeftStatus === 'success',
+      fail: showLeftStatus === 'fail'
+    }"
+  >
+    <p class="part__text" *ngIf="leftText">
+      {{ leftText }}
+    </p>
+  </div>
+  <div class="or">
+    {{ tip }}
+    <p>OR</p>
+    <span class="score" *ngIf="score >= 0"> Score: {{ score }} </span>
+  </div>
+  <div
+    class="part right-part"
+    (click)="rightClick()"
+    [ngClass]="{
+      success: showRightStatus === 'success',
+      fail: showRightStatus === 'fail'
+    }"
+  >
+    <p class="part__text" *ngIf="rightText">
+      {{ rightText }}
+    </p>
+  </div>
+</div>
