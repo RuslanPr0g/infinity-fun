@@ -6,15 +6,14 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: start;
     text-align: center;
-    min-height: 100vh;
+    min-height: calc(100vh - 72px);
     padding: 20px;
     user-select: none;
     max-width: 1200px;
     width: 100%;
     margin: 0 auto;
-    padding-top: 50px;
 }
 
 .header {
@@ -72,13 +71,17 @@
 
 @media (max-width: 600px) {
     .game-container {
-        padding-top: 4em;
         justify-content: start;
+        padding-top: 0;
     }
 
     .header {
         flex-direction: column;
         align-items: center;
+
+        * {
+            font-size: 14px;
+        }
     }
 
     .color-grid {
@@ -86,7 +89,7 @@
     }
 
     .color {
-        height: 80px;
+        height: 70px;
     }
 
     .color-display {
