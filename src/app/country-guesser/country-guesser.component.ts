@@ -28,7 +28,9 @@ export class CountryGuesserGameComponent implements OnInit {
   countryOptions: Country[] = [];
 
   streak: number = 0;
+  maxStreak: number = 0;
   private readonly streakKey = LocalStorageConst.CountryGuesserStreak;
+  private readonly maxStreakKey = LocalStorageConst.CountryGuesserMaxStreak;
   private readonly countryKey = LocalStorageConst.CountryGuesserCountry;
 
   constructor(
@@ -41,6 +43,11 @@ export class CountryGuesserGameComponent implements OnInit {
       this.streakKey
     );
     this.streak = storedStreak !== null ? storedStreak : 0;
+
+    const storedMaxStreak = this.localStorageService.getItem<number>(
+      this.maxStreakKey
+    );
+    this.maxStreak = storedMaxStreak !== null ? storedMaxStreak : this.streak;
 
     const storedCountry = this.localStorageService.getItem<string>(
       this.countryKey
@@ -197,6 +204,11 @@ export class CountryGuesserGameComponent implements OnInit {
   }
 
   private updateStreak(newValue: number): void {
+    if (newValue > this.maxStreak) {
+      this.maxStreak = newValue;
+      this.localStorageService.setItem(this.maxStreakKey, this.maxStreak);
+    }
+
     this.streak = newValue;
     this.localStorageService.setItem(this.streakKey, this.streak);
   }
