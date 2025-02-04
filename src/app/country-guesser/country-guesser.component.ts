@@ -6,6 +6,8 @@ import { similarCountryFlags } from './data/similarCountryFlags';
 import { Country } from './models/country.model';
 import { CountryCode } from './models/country-code.model';
 import { SoundService } from '../shared/services/sound/sound.service';
+import { LocalStorageService } from '../shared/services/local-storage/local-storage.service';
+import { LocalStorageConst } from '../core/constants/local-storage.const';
 
 @Component({
   selector: 'app-country-guesser',
@@ -26,15 +28,28 @@ export class CountryGuesserGameComponent implements OnInit {
   countryOptions: Country[] = [];
 
   streak: number = 0;
+  private readonly streakKey = LocalStorageConst.CountryGuesserStreak;
+  private readonly countryKey = LocalStorageConst.CountryGuesserCountry;
 
-  constructor(private soundService: SoundService) {}
+  constructor(
+    private soundService: SoundService,
+    private localStorageService: LocalStorageService
+  ) {}
 
   ngOnInit(): void {
-    this.loadRandomCountry();
+    const storedStreak = this.localStorageService.getItem<number>(
+      this.streakKey
+    );
+    this.streak = storedStreak !== null ? storedStreak : 0;
+
+    const storedCountry = this.localStorageService.getItem<string>(
+      this.countryKey
+    );
+    this.loadCountry(storedCountry);
   }
 
   onModeChange(): void {
-    this.loadRandomCountry();
+    this.loadCountry();
   }
 
   onEnterKey(): void {
@@ -64,13 +79,21 @@ export class CountryGuesserGameComponent implements OnInit {
     );
   }
 
-  loadRandomCountry(): void {
-    const randomIndex = Math.floor(Math.random() * this.countries.length);
-    this.currentCountry = this.countries[randomIndex];
+  loadCountry(countryCode?: string | null): void {
+    const defaultCountry = this.countries.find((c) => c.code === countryCode);
+
+    if (defaultCountry) {
+      this.currentCountry = defaultCountry;
+    } else {
+      const randomIndex = Math.floor(Math.random() * this.countries.length);
+      this.currentCountry = this.countries[randomIndex];
+    }
 
     if (this.isMultipleChoiceMode) {
       this.loadMultipleChoiceOptions();
     }
+
+    this.localStorageService.setItem(this.countryKey, this.currentCountry.code);
   }
 
   loadMultipleChoiceOptions(): void {
@@ -153,9 +176,9 @@ export class CountryGuesserGameComponent implements OnInit {
 
   private resetCountryToGuess(): void {
     this.soundService.playCorrect();
-    this.streak++;
+    this.updateStreak(this.streak + 1);
     setTimeout(() => {
-      this.loadRandomCountry();
+      this.loadCountry();
       this.userGuess = '';
       this.resetStatus();
     }, 1000);
@@ -167,9 +190,14 @@ export class CountryGuesserGameComponent implements OnInit {
 
   private fail(): void {
     this.soundService.playWrong();
-    this.streak = 0;
+    this.updateStreak(0);
     setTimeout(() => {
       this.resetStatus();
     }, 1000);
+  }
+
+  private updateStreak(newValue: number): void {
+    this.streak = newValue;
+    this.localStorageService.setItem(this.streakKey, this.streak);
   }
 }
