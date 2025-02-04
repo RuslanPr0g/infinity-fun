@@ -1,21 +1,32 @@
+<div class="overlay" [ngClass]="{ 'overlay-hidden': !gameOver }">
+  <div class="score" *ngIf="score > 0">Score: {{ score }}</div>
+  <div class="score" *ngIf="maxScore > 0">Max score: {{ maxScore }}</div>
+
+  <button *ngIf="gameOver" (click)="startGame()" class="start-button">
+    Start Game
+  </button>
+</div>
+
 <div class="game-container">
-  <div class="header">
-    <div class="score">Score: {{ score }}</div>
-    <div class="timer">Time Left: {{ timer }}s</div>
-  </div>
+  <ng-container>
+    <div class="header">
+      <div class="score">Score: {{ score }}</div>
+      <div class="timer">Time Left: {{ timer }}s</div>
+    </div>
 
-  <div class="current-color">
-    <p>Click on:</p>
-    <div class="color-display" [style.background-color]="currentColor"></div>
-  </div>
+    <div class="current-color">
+      <p>Click on:</p>
+      <div class="color-display" [style.background-color]="currentColor"></div>
+    </div>
 
-  <div class="color-grid">
-    <ng-container *ngFor="let color of colors">
-      <div
-        class="color"
-        [style.background-color]="color"
-        (click)="onColorClick(color)"
-      ></div>
-    </ng-container>
-  </div>
+    <div class="color-grid">
+      <ng-container *ngFor="let color of colors">
+        <div
+          class="color"
+          [style.background-color]="color"
+          (click)="onColorClick(color)"
+        ></div>
+      </ng-container>
+    </div>
+  </ng-container>
 </div>

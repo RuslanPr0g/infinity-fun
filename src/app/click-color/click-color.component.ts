@@ -1,5 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
+import { LocalStorageService } from '../shared/services/local-storage/local-storage.service';
+import { LocalStorageConst } from '../core/constants/local-storage.const';
 
 @Component({
   selector: 'app-click-color',
@@ -33,13 +35,19 @@ export class ClickColorGameComponent implements OnInit {
   ];
   currentColor: string = '';
   score: number = 0;
-  timer: number = 60;
-  colorVisible: { [key: string]: boolean } = {};
-  gameOver: boolean = false;
+  maxScore: number = 0;
+  timer: number = 0;
+  gameOver: boolean = true;
+
+  private readonly maxScoreKey = LocalStorageConst.ColorGuessMaxScore;
+
+  constructor(private localStorageService: LocalStorageService) {}
 
   ngOnInit() {
     this.checkDevice();
-    this.startGame();
+
+    const maxScore = this.localStorageService.getItem<number>(this.maxScoreKey);
+    this.maxScore = maxScore ? maxScore : 0;
   }
 
   checkDevice() {
@@ -57,7 +65,7 @@ export class ClickColorGameComponent implements OnInit {
   }
 
   startGame() {
-    this.score = 0;
+    this.updateScore(0);
     this.timer = 60;
     this.gameOver = false;
     this.generateColor();
@@ -67,19 +75,6 @@ export class ClickColorGameComponent implements OnInit {
   generateColor() {
     const randomIndex = Math.floor(Math.random() * this.colors.length);
     this.currentColor = this.colors[randomIndex];
-    this.colorVisible[this.currentColor] = true;
-  }
-
-  showNextColor() {
-    this.shuffleColors();
-    this.generateColor();
-  }
-
-  shuffleColors() {
-    for (let i = this.colors.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [this.colors[i], this.colors[j]] = [this.colors[j], this.colors[i]];
-    }
   }
 
   startTimer() {
@@ -88,28 +83,27 @@ export class ClickColorGameComponent implements OnInit {
         clearInterval(interval);
         return;
       }
-
       this.timer--;
       if (this.timer <= 0) {
         this.gameOver = true;
         clearInterval(interval);
-        alert(`Game over! Your score: ${this.score}`);
-        this.restartGame();
       }
     }, 1000);
   }
 
   onColorClick(clickedColor: string) {
-    if (clickedColor === this.currentColor) {
-      this.score++;
-      this.colorVisible[this.currentColor] = false;
-      this.showNextColor();
+    if (!this.gameOver && clickedColor === this.currentColor) {
+      this.updateScore(this.score + 1);
+      this.generateColor();
     }
   }
 
-  restartGame() {
-    setTimeout(() => {
-      this.startGame();
-    }, 2000);
+  private updateScore(newValue: number) {
+    if (newValue > this.maxScore) {
+      this.maxScore = newValue;
+      this.localStorageService.setItem(this.maxScoreKey, this.maxScore);
+    }
+
+    this.score = newValue;
   }
 }
