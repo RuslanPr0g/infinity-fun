@@ -10,3 +10,15 @@
 body {
     background-color: $primary-bg-color;
 }
+
+.game-container {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    flex-direction: column;
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    color: $primary-text-color;
+    width: 100%;
+    transition: background-color 1s ease;
+}

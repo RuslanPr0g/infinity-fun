@@ -9,6 +9,7 @@ export class GameRouteService {
     { name: 'Country Guesser', route: '/country-guesser', color: '#809D3C' },
     { name: 'Math Comparer', route: '/math-comparer', color: '#B2A5FF' },
     { name: 'Color Reaction', route: '/color-click', color: '#ff6347' },
+    { name: 'Months Left', route: '/left-to-live', color: '#AE445A' },
     {
       name: 'Algorithms Graph',
       route: 'https://ruslanpr0g.github.io/algo-graph/',

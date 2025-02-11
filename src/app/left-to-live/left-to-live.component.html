@@ -1,0 +1,88 @@
+<div class="game-container">
+  <div class="header">
+    <h3 class="title">How many months are left, and how will they be spent?</h3>
+    <div class="controls">
+      <div class="control">
+        <label for="age">Current Age:</label>
+        <input
+          type="number"
+          id="age"
+          [formControl]="form.controls.age"
+          min="0"
+          max="70"
+        />
+      </div>
+      <div class="control">
+        <label for="liveto">Live until (y.o):</label>
+        <input
+          type="number"
+          id="liveto"
+          [formControl]="form.controls.liveto"
+          min="70"
+          max="100"
+        />
+      </div>
+    </div>
+    <div class="legend months">
+      <div class="legend-item"><span class="circle sleep"></span> Sleep</div>
+      <div class="legend-item"><span class="circle work"></span> Work</div>
+      <div class="legend-item"><span class="circle chores"></span> Chores</div>
+      <div class="legend-item"><span class="circle eating"></span> Eating</div>
+      <div class="legend-item"><span class="circle free"></span> Free</div>
+    </div>
+  </div>
+  <ng-container *ngIf="isDead; else alive">
+    <div class="months-summary">
+      <h3 class="summary-title">Vast emptiness...</h3>
+    </div>
+  </ng-container>
+  <ng-template #alive>
+    <div class="months">
+      <span
+        *ngFor="let type of monthsLeft"
+        [class]="type"
+        class="circle"
+      ></span>
+    </div>
+    <div class="months-summary">
+      <h3 class="summary-title">Your Remaining Time</h3>
+      <p class="summary-text">
+        ✨ <strong>Total months left to live:</strong>&nbsp;<span>{{
+          monthsLeftSummary.totalMonths
+        }}</span>
+        months. That's a significant amount of time—how will you use it wisely?
+      </p>
+
+      <div class="summary-item">
+        💤 <strong>Sleep:</strong> You will spend approximately
+        <strong>{{ monthsLeftSummary.sleepMonths }}</strong> months sleeping. Be
+        sure to get enough rest to recharge!
+      </div>
+
+      <div class="summary-item">
+        💼 <strong>Work:</strong> A major part of life will be spent working.
+        Expect to devote around
+        <strong>{{ monthsLeftSummary.workMonths }}</strong> months to your
+        career. Stay productive and focused!
+      </div>
+
+      <div class="summary-item">
+        🧹 <strong>Chores:</strong> You'll spend about
+        <strong>{{ monthsLeftSummary.choresMonths }}</strong> months doing
+        housework. Time to stay organized and efficient!
+      </div>
+
+      <div class="summary-item">
+        🍽️ <strong>Eating:</strong> Meals and snacks will take up
+        <strong>{{ monthsLeftSummary.eatingMonths }}</strong> months. Enjoy your
+        meals and savor the moments!
+      </div>
+
+      <div class="summary-item">
+        🎉 <strong>Free Time:</strong> Fortunately, you'll have
+        <strong>{{ monthsLeftSummary.freeTimeMonths }}</strong> months of free
+        time to relax, explore, and enjoy life!
+      </div>
+    </div>
+  </ng-template>
+</div>

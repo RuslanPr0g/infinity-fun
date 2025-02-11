@@ -1,17 +1,5 @@
 @import '../../colors';
 
-.game-container {
-    display: flex;
-    justify-content: center;
-    text-align: center;
-    flex-direction: column;
-    font-family: Arial, sans-serif;
-    padding: 20px;
-    color: $primary-text-color;
-    width: 100%;
-    transition: background-color 1s ease;
-}
-
 .container {
     display: flex;
     flex-direction: column;
@@ -21,8 +9,20 @@
 .img {
     display: flex;
     justify-content: center;
-    max-width: 100%;
+    margin: 0 auto;
     position: relative;
+}
+
+.flag-image {
+    max-width: 480px;
+    height: auto;
+    margin: 20px 0;
+    justify-self: center;
+    border: 2px solid $primary-text-color;
+    max-width: 360px;
+    min-width: 360px;
+    width: 480px;
+    max-height: 240px;
 }
 
 .green-background {
@@ -35,14 +35,6 @@
 
 .bandw {
     filter: grayscale(100%);
-}
-
-.flag-image {
-    max-width: 480px;
-    height: auto;
-    margin: 20px 0;
-    justify-self: center;
-    border: 2px solid $primary-text-color;
 }
 
 .guess-input {
