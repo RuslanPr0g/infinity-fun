@@ -12,11 +12,17 @@
     </div>
 
     <div class="modal" *ngIf="showPreferences">
-        <h2>🍪 Customize Your Cookie Preferences</h2>
+        <h2>🍪 Customize Your Cookie Preferences 🍪</h2>
         <form>
-            <label *ngFor="let option of absurdOptions" class="checkbox-option">
-                <input type="checkbox" [checked]="selectedOptions.has(option)" (change)="toggleOption(option)" />
-                {{ option }}
+            <label *ngFor="let option of absurdOptions; let i" class="checkbox-option">
+                <div class="checkbox-wrapper-s">
+                    <div class="check">
+                        <input id="i" type="checkbox" [checked]="selectedOptions.has(option)"
+                            (change)="toggleOption(option)">
+                        <label for="i"></label>
+                    </div>
+                </div>
+                <p>{{ option }}</p>
             </label>
         </form>
         <div class="actions">
