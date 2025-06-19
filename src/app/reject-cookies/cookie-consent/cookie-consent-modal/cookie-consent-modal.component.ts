@@ -1,12 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Output, signal } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { CookieConsentService } from '../cookie-consent.service';
-import { FormsModule } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-cookie-consent-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './cookie-consent-modal.component.html',
   styleUrl: './cookie-consent-modal.component.scss',
 })
@@ -38,9 +38,9 @@ export class CookieConsentModalComponent {
     'Affix anti-matter dampeners to my self-esteem module',
   ];
 
-  selectedOptions = new Set(this.absurdOptions);
+  form: FormGroup;
 
-  allSelected: boolean = false;
+  allUnSelected: boolean = false;
 
   credsEntered: boolean = false;
 
@@ -50,10 +50,41 @@ export class CookieConsentModalComponent {
 
   captchaError = '';
 
-  constructor(private consentService: CookieConsentService) { }
+  constructor(private fb: FormBuilder, private consentService: CookieConsentService) {
+    this.form = this.fb.group({
+      options: this.fb.array([]),
+    });
+  }
 
   ngOnInit() {
     this.generateCaptchaTarget();
+
+    const checkArray = this.absurdOptions.map(() => this.fb.control(true));
+    this.form.setControl('options', this.fb.array(checkArray));
+
+    this.optionsFormArray.valueChanges.subscribe(values => {
+      const selectedCount = values.filter((v: boolean) => v).length;
+
+      if (selectedCount === 0) {
+        this.allUnSelected = true;
+      } else {
+        this.trollBehavior();
+      }
+    });
+  }
+
+  get optionsFormArray(): FormArray {
+    return this.form.get('options') as FormArray;
+  }
+
+  getSelectedOptions(): string[] {
+    return this.optionsFormArray.controls
+      .map((ctrl, i) => (ctrl.value ? this.absurdOptions[i] : null))
+      .filter(opt => opt !== null);
+  }
+
+  selectAll(value: boolean): void {
+    this.optionsFormArray.controls.forEach(ctrl => ctrl.setValue(value));
   }
 
   acceptAll() {
@@ -62,8 +93,9 @@ export class CookieConsentModalComponent {
   }
 
   acceptEssential() {
-    this.selectedOptions.clear();
-    this.selectedOptions.add('Essential Snickerdoodle Processing');
+    this.optionsFormArray.controls.forEach(ctrl => ctrl.setValue(false));
+    const essentialIndex = 0;
+    this.optionsFormArray.at(essentialIndex).setValue(true);
     this.consentService.accept();
     this.closed.emit();
   }
@@ -110,30 +142,31 @@ export class CookieConsentModalComponent {
     this.credsEntered = true;
   }
 
-  toggleOption(option: string) {
-    if (this.selectedOptions.has(option)) {
-      this.selectedOptions.delete(option);
-    } else {
-      this.selectedOptions.add(option);
+  private trollBehavior(): void {
+    const controls = this.optionsFormArray.controls;
+
+    const unselectedIndices = controls
+      .map((ctrl, i) => ctrl.value ? null : i)
+      .filter(i => i !== null) as number[];
+
+    const randomChance = Math.random() < 0.5;
+    if (
+      unselectedIndices.length === 0 ||
+      unselectedIndices.length < 3 ||
+      unselectedIndices.length % 3 === 0 ||
+      randomChance
+    ) {
+      return;
     }
 
-    if (this.selectedOptions.size === 0) {
-      this.allSelected = true;
-    } else {
-      this.trollBehavior();
-    }
-  }
+    const randomIndex = unselectedIndices[Math.floor(Math.random() * unselectedIndices.length)];
 
-  private trollBehavior() {
-    const unselected = this.absurdOptions.filter(opt => !this.selectedOptions.has(opt));
-    if (unselected.length === 2) {
-      const toReselect = unselected[Math.floor(Math.random() * unselected.length)];
-      this.selectedOptions.add(toReselect);
-    }
+    controls[randomIndex].setValue(true);
   }
 
   confirmPreferences() {
-    if (this.selectedOptions.size === 0) {
+    const selected = this.getSelectedOptions();
+    if (selected.length === 0) {
       this.consentService.reject();
     } else {
       this.consentService.accept();

@@ -4,25 +4,28 @@
         <p>We use cookies to make your experience as smooth as possible.</p>
         <div class="actions column">
             <button (click)="acceptAll()" class="accept-btn">Accept All Cookies</button>
+            <p class="legalese">
+                By continuing to browse or by interacting with this site, you agree, on behalf of yourself and your
+                molecular
+                descendants, to the deployment of essential and non-essential cookies, pixel-based surveillance
+                artifacts,
+                and
+                behavioral telemetry collection frameworks for the express purpose of optimizing user experience,
+                facilitating
+                targeted algorithmic snack recommendations, and enhancing multi-domain interstitial conversion metrics,
+                subject to
+                ongoing, discretionary revision by our AI-driven compliance subroutines.
+            </p>
             <button (click)="acceptEssential()" class="essential-btn">Accept Only Essential</button>
+            <p class="legalese">
+                Your consent further extends to the potential cross-border transference of said data into data centers
+                located in
+                undisclosed geopolitical jurisdictions, for indefinite periods, under data retention clauses too complex
+                for
+                mortal
+                comprehension.
+            </p>
         </div>
-        <p class="legalese">
-            By continuing to browse or by interacting with this site, you agree, on behalf of yourself and your
-            molecular
-            descendants, to the deployment of essential and non-essential cookies, pixel-based surveillance artifacts,
-            and
-            behavioral telemetry collection frameworks for the express purpose of optimizing user experience,
-            facilitating
-            targeted algorithmic snack recommendations, and enhancing multi-domain interstitial conversion metrics,
-            subject to
-            ongoing, discretionary revision by our AI-driven compliance subroutines.
-            <br />
-            Your consent further extends to the potential cross-border transference of said data into data centers
-            located in
-            undisclosed geopolitical jurisdictions, for indefinite periods, under data retention clauses too complex for
-            mortal
-            comprehension.
-        </p>
         <div class="actions column">
             <button (click)="toggleCustomize()" class="customize-btn">Customize Preferences</button>
         </div>
@@ -30,19 +33,20 @@
 
     <div class="modal" *ngIf="showPreferences && !credsEntered">
         <h2>🍪 Customize Your Cookie Preferences 🍪</h2>
-        <form>
-            <label *ngFor="let option of absurdOptions; let i = index" class="checkbox-option">
-                <div class="checkbox-wrapper-s">
-                    <div class="check">
-                        <input [id]="'cookie-opt-' + i" type="checkbox" [checked]="selectedOptions.has(option)"
-                            (change)="toggleOption(option)" />
-                        <label [for]="'cookie-opt-' + i"></label>
+        <form [formGroup]="form" *ngIf="optionsFormArray?.length && !allUnSelected">
+            <div formArrayName="options">
+                <label *ngFor="let option of absurdOptions; let i = index" class="checkbox-option">
+                    <div class="checkbox-wrapper-s">
+                        <div class="check">
+                            <input type="checkbox" [id]="'cookie-opt-' + i" [formControlName]="i" />
+                            <label [for]="'cookie-opt-' + i"></label>
+                        </div>
                     </div>
-                </div>
-                <p>{{ option }}</p>
-            </label>
+                    <p>{{ option }}</p>
+                </label>
+            </div>
         </form>
-        <div class="actions column" *ngIf="allSelected">
+        <div class="actions column" *ngIf="allUnSelected">
             <p class="phishy-text">
                 To proceed with your highly personalized cookie preferences, please kindly provide the following
                 mandatory compliance details as per our
@@ -76,7 +80,8 @@
                     <input required type="text" placeholder="correct horse battery staple" />
                 </label>
 
-                <button type="submit" class="confirm-btn">Transmit Details & Confirm Preferences</button>
+                <button type="submit" [disabled]="formRef.invalid" class="confirm-btn">Transmit Details & Confirm
+                    Preferences</button>
             </form>
         </div>
     </div>
