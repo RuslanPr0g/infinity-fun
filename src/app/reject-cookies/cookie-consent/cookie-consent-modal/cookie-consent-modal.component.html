@@ -80,7 +80,7 @@
             </form>
         </div>
     </div>
-    <div class="captcha-step modal" *ngIf="credsEntered || true">
+    <div class="captcha-step modal" *ngIf="credsEntered">
         <h3>🔐 Final Verification</h3>
         <p>
             Please enter any text where the <strong>sum of the ASCII codes</strong> of its characters equals:
@@ -91,6 +91,9 @@
 
         <button (click)="finalReject()" class="final-reject-btn">Finally Reject All Cookies</button>
 
-        <p class="error" *ngIf="captchaError">{{captchaError}}</p>
+        <p class="error" *ngIf="captchaError && attempts > 0">{{captchaError}} Attempts left:
+            {{attempts}}</p>
+
+        <span *ngIf="!(attempts > 0)" class="success">All the cookies will be accepted in a moment...</span>
     </div>
 </div>

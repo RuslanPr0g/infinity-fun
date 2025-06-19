@@ -18,24 +18,24 @@ export class CookieConsentModalComponent {
   absurdOptions = [
     'Yes, inject uranium directly into my bloodstream',
     'Absolutely, wire my thoughts to a nuclear reactor',
-    // 'Sure, replace my bones with vibrating tungsten rods',
-    // 'Yes, beam encrypted lava pulses into my spine',
-    // 'Go ahead, calibrate my emotions using plutonium dust',
-    // 'Definitely, sync my heartbeat to the Hadron Collider',
-    // 'Yes, initiate the titanium mandible replacement protocol',
-    // 'Proceed with algorithmic volcano core integration',
-    // 'Affirmative, install a graphite-cooled brain enhancer',
-    // 'Enable full-body cryogenic self-destruction response',
-    // 'Authorize transdimensional fax transmission of my soul',
-    // 'Yes, ignite my memory center with industrial-grade jet fuel',
-    // 'Begin neural interface with sentient microwave ovens',
-    // 'Consent granted for perpetual entropy realignment',
-    // 'Yes, replace all teeth with miniature fusion reactors',
-    // 'Upload my conscience into the municipal sewage grid',
-    // 'Initiate orbital laser mood stabilization sequence',
-    // 'Substitute my blood with caffeinated hydraulic fluid',
-    // 'Install quantum banana peels in my motor cortex',
-    // 'Affix anti-matter dampeners to my self-esteem module',
+    'Sure, replace my bones with vibrating tungsten rods',
+    'Yes, beam encrypted lava pulses into my spine',
+    'Go ahead, calibrate my emotions using plutonium dust',
+    'Definitely, sync my heartbeat to the Hadron Collider',
+    'Yes, initiate the titanium mandible replacement protocol',
+    'Proceed with algorithmic volcano core integration',
+    'Affirmative, install a graphite-cooled brain enhancer',
+    'Enable full-body cryogenic self-destruction response',
+    'Authorize transdimensional fax transmission of my soul',
+    'Yes, ignite my memory center with industrial-grade jet fuel',
+    'Begin neural interface with sentient microwave ovens',
+    'Consent granted for perpetual entropy realignment',
+    'Yes, replace all teeth with miniature fusion reactors',
+    'Upload my conscience into the municipal sewage grid',
+    'Initiate orbital laser mood stabilization sequence',
+    'Substitute my blood with caffeinated hydraulic fluid',
+    'Install quantum banana peels in my motor cortex',
+    'Affix anti-matter dampeners to my self-esteem module',
   ];
 
   selectedOptions = new Set(this.absurdOptions);
@@ -46,6 +46,7 @@ export class CookieConsentModalComponent {
 
   captchaValue = '';
   targetAsciiSum = 0;
+  attempts = 5;
 
   captchaError = '';
 
@@ -80,9 +81,20 @@ export class CookieConsentModalComponent {
     const sum = this.captchaValue.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
 
     if (sum !== this.targetAsciiSum) {
-      this.captchaError = `CAPTCHA verification failed.`
+      this.captchaError = `CAPTCHA failed.`
+      this.attempts--;
 
-      setTimeout(() => { this.captchaError = '' }, 3000);
+      if (this.attempts === 0) {
+        this.captchaError = `No attempts left. Accepting cookies...`
+
+        setTimeout(() => {
+          this.acceptAll();
+          this.captchaError = '';
+        }, 2500);
+      } else {
+        setTimeout(() => { this.captchaError = '' }, 3000);
+      }
+
       return;
     }
 
