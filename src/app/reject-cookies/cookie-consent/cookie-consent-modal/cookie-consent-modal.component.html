@@ -36,7 +36,8 @@
     </div>
 
     <div class="modal" *ngIf="showPreferences && !credsEntered">
-        <h2>🍪 Customize Your Cookie Preferences 🍪</h2>
+        <h5>🍪</h5>
+        <h2>Customize Your Cookie Preferences</h2>
         <form [formGroup]="form" *ngIf="optionsFormArray?.length && !allUnSelected">
             <div formArrayName="options">
                 <label *ngFor="let option of absurdOptions; let i = index" class="checkbox-option">

@@ -9,7 +9,7 @@
 }
 
 h2 {
-    font-size: clamp(0.5rem, 6vw, 2rem);
+    font-size: clamp(1rem, 3vw, 1rem);
     margin-bottom: 16px;
 }
 
@@ -95,7 +95,7 @@ button {
 
     p {
         text-align: start;
-        font-size: 10px;
+        font-size: 0.5em;
     }
 }
 
@@ -133,7 +133,7 @@ button {
         display: flex;
         flex-direction: column;
         color: rgba(255, 255, 255, 0.6);
-        font-size: 0.8rem;
+        font-size: 0.5rem;
 
         span {
             margin-bottom: 0.25rem;
@@ -175,11 +175,12 @@ button {
         padding: 0.6rem 1.2rem;
         border-radius: 6px;
         font-weight: bold;
+        font-size: 0.5rem;
     }
 }
 
 .phishy-text {
-    font-size: 0.8rem;
+    font-size: 0.5rem;
     color: rgba(255, 255, 255, 0.4);
     line-height: 1.4;
     text-align: justify;
@@ -208,7 +209,15 @@ button {
 
     h3 {
         color: #fff;
-        font-size: 1.2rem;
+        font-size: 1rem;
+    }
+
+    p {
+        font-size: 0.5rem;
+    }
+
+    button {
+        font-size: 0.5rem;
     }
 
     input {
@@ -244,7 +253,7 @@ input.ng-valid.ng-touched {
 
 .error-message {
     color: #e63946;
-    font-size: 0.75rem;
+    font-size: 0.5rem;
     margin-top: 0.25rem;
     text-align: left;
 }
