@@ -84,6 +84,8 @@ button {
     border: none;
     transition: left 0.08s, top 0.08s;
     z-index: 9999;
+    word-wrap: none;
+    white-space: nowrap;
 }
 
 .checkbox-option {
