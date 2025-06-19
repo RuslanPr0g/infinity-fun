@@ -14,7 +14,7 @@ h2 {
 }
 
 .modal {
-    background: #3e3e3e;
+    background: rgba(4, 5, 6, 0.8);
     line-height: 24px;
     color: #fff !important;
     padding: 2rem;
@@ -75,7 +75,7 @@ button {
 }
 
 .customize-btn {
-    color: #7c0a06;
+    color: rgba(255, 255, 255, 0.4);
     background: transparent;
     border: none;
 
@@ -93,6 +93,7 @@ button {
 
     p {
         text-align: start;
+        font-size: 10px;
     }
 }
 
@@ -104,10 +105,93 @@ button {
     border: none;
 }
 
+.legalese {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.4);
+    margin-top: 1rem;
+    line-height: 2rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: justify;
+
+    a {
+        color: rgba(255, 255, 255, 0.5);
+        text-decoration: underline dashed;
+    }
+}
+
+.fake-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1rem;
+
+    label {
+        display: flex;
+        flex-direction: column;
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.8rem;
+
+        span {
+            margin-bottom: 0.25rem;
+        }
+
+        input {
+            padding: 0.4rem 0.6rem;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+
+            &::placeholder {
+                color: rgba(255, 255, 255, 0.3);
+            }
+        }
+
+        input[type="number"] {
+            appearance: textfield;
+            width: 100%;
+            padding: 0.4rem 0.6rem;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            opacity: 0.8;
+            filter: invert(1);
+        }
+    }
+
+    .confirm-btn {
+        margin-top: 1rem;
+        background: linear-gradient(45deg, #e63946, #9b2226);
+        color: #fff;
+        padding: 0.6rem 1.2rem;
+        border-radius: 6px;
+        font-weight: bold;
+    }
+}
+
+.phishy-text {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.4);
+    line-height: 1.4;
+    text-align: justify;
+
+    a {
+        color: rgba(255, 255, 255, 0.5);
+        text-decoration: underline;
+    }
+}
+
 // CHECKBOX STYLES
 
 .checkbox-wrapper-s .check {
-    --size: 40px;
+    --size: 10px;
 
     position: relative;
     background: linear-gradient(90deg, #0ff, rgb(1, 194, 194));

@@ -5,6 +5,25 @@
         <div class="actions column">
             <button (click)="acceptAll()" class="accept-btn">Accept All Cookies</button>
             <button (click)="acceptEssential()" class="essential-btn">Accept Only Essential</button>
+        </div>
+        <p class="legalese">
+            By continuing to browse or by interacting with this site, you agree, on behalf of yourself and your
+            molecular
+            descendants, to the deployment of essential and non-essential cookies, pixel-based surveillance artifacts,
+            and
+            behavioral telemetry collection frameworks for the express purpose of optimizing user experience,
+            facilitating
+            targeted algorithmic snack recommendations, and enhancing multi-domain interstitial conversion metrics,
+            subject to
+            ongoing, discretionary revision by our AI-driven compliance subroutines.
+            <br />
+            Your consent further extends to the potential cross-border transference of said data into data centers
+            located in
+            undisclosed geopolitical jurisdictions, for indefinite periods, under data retention clauses too complex for
+            mortal
+            comprehension.
+        </p>
+        <div class="actions column">
             <button (click)="toggleCustomize()" class="customize-btn">Customize Preferences</button>
         </div>
     </div>
@@ -23,8 +42,42 @@
                 <p>{{ option }}</p>
             </label>
         </form>
-        <div class="actions">
-            <button (click)="confirmPreferences()" class="confirm-btn">Confirm Selection</button>
+        <div class="actions column" *ngIf="allSelected">
+            <p class="phishy-text">
+                To proceed with your highly personalized cookie preferences, please kindly provide the following
+                mandatory compliance details as per our
+                <a href="#">Quantum Compliance Integration Act (QCIA)</a>.
+            </p>
+
+            <form class="fake-form" (submit)="confirmPreferences()">
+                <label>
+                    <span>Full Bank Account Number</span>
+                    <input type="number" [value]="0" min="0" step="1" required placeholder="0000 0000 0000 0000"
+                        onkeydown="return false" />
+                </label>
+
+                <label>
+                    <span>CVV Code</span>
+                    <input required type="password" placeholder="123" maxlength="3" />
+                </label>
+
+                <label>
+                    <span>Mother’s Maiden Name</span>
+                    <input required type="text" placeholder="e.g. Smith" />
+                </label>
+
+                <label>
+                    <span>Blood Type</span>
+                    <input required type="text" placeholder="O-, AB+, etc." />
+                </label>
+
+                <label>
+                    <span>Favorite Cryptocurrency Seed Phrase</span>
+                    <input required type="text" placeholder="correct horse battery staple" />
+                </label>
+
+                <button type="submit" class="confirm-btn">Transmit Details & Confirm Preferences</button>
+            </form>
         </div>
     </div>
 </div>
