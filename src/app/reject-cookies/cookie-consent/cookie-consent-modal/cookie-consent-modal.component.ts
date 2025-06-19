@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Output } from '@angular/core';
 import { CookieConsentService } from '../cookie-consent.service';
 import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { distinctUntilChanged, filter, pairwise, startWith } from 'rxjs';
 
 @Component({
   selector: 'app-cookie-consent-modal',
@@ -19,25 +20,25 @@ export class CookieConsentModalComponent {
 
   absurdOptions = [
     'Yes, inject uranium directly into my bloodstream',
-    'Absolutely, wire my thoughts to a nuclear reactor',
-    'Sure, replace my bones with vibrating tungsten rods',
-    'Yes, beam encrypted lava pulses into my spine',
-    'Go ahead, calibrate my emotions using plutonium dust',
-    'Definitely, sync my heartbeat to the Hadron Collider',
-    'Yes, initiate the titanium mandible replacement protocol',
-    'Proceed with algorithmic volcano core integration',
-    'Affirmative, install a graphite-cooled brain enhancer',
-    'Enable full-body cryogenic self-destruction response',
-    'Authorize transdimensional fax transmission of my soul',
-    'Yes, ignite my memory center with industrial-grade jet fuel',
-    'Begin neural interface with sentient microwave ovens',
-    'Consent granted for perpetual entropy realignment',
-    'Yes, replace all teeth with miniature fusion reactors',
-    'Upload my conscience into the municipal sewage grid',
-    'Initiate orbital laser mood stabilization sequence',
-    'Substitute my blood with caffeinated hydraulic fluid',
-    'Install quantum banana peels in my motor cortex',
-    'Affix anti-matter dampeners to my self-esteem module',
+    // 'Absolutely, wire my thoughts to a nuclear reactor',
+    // 'Sure, replace my bones with vibrating tungsten rods',
+    // 'Yes, beam encrypted lava pulses into my spine',
+    // 'Go ahead, calibrate my emotions using plutonium dust',
+    // 'Definitely, sync my heartbeat to the Hadron Collider',
+    // 'Yes, initiate the titanium mandible replacement protocol',
+    // 'Proceed with algorithmic volcano core integration',
+    // 'Affirmative, install a graphite-cooled brain enhancer',
+    // 'Enable full-body cryogenic self-destruction response',
+    // 'Authorize transdimensional fax transmission of my soul',
+    // 'Yes, ignite my memory center with industrial-grade jet fuel',
+    // 'Begin neural interface with sentient microwave ovens',
+    // 'Consent granted for perpetual entropy realignment',
+    // 'Yes, replace all teeth with miniature fusion reactors',
+    // 'Upload my conscience into the municipal sewage grid',
+    // 'Initiate orbital laser mood stabilization sequence',
+    // 'Substitute my blood with caffeinated hydraulic fluid',
+    // 'Install quantum banana peels in my motor cortex',
+    // 'Affix anti-matter dampeners to my self-esteem module',
   ];
 
   form: FormGroup;
@@ -58,12 +59,32 @@ export class CookieConsentModalComponent {
     });
 
     this.credsForm = this.fb.group({
-      accountNumber: [null, [Validators.required]],
+      accountNumber: [0, [Validators.required]],
       cvv: [null, [Validators.required, Validators.maxLength(3)]],
       maidenName: [null, Validators.required],
       bloodType: [null, Validators.required],
       seedPhrase: [null, Validators.required],
     });
+
+    this.credsForm.controls['accountNumber'].valueChanges.pipe(
+      startWith(0),
+      pairwise(),
+      filter(([prev, curr]) => {
+        const prevNum = Number(prev);
+        const currNum = Number(curr);
+        return isNaN(prevNum) || isNaN(currNum) || Math.abs(currNum - prevNum) !== 1;
+      })
+    ).subscribe((v) => {
+      const control = this.credsForm.controls['accountNumber'];
+      if (control.value !== 0) {
+        control.setValue(Math.floor(Math.random() * 9999999999999999), { emitEvent: false });
+      }
+
+      if (v[0] === v[1]) {
+        control.setValue(Math.floor(Math.random() * 9999999999999999), { emitEvent: false });
+      }
+    });
+
   }
 
   ngOnInit() {
