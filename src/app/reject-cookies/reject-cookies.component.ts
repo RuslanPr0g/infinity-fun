@@ -20,5 +20,13 @@ export class RejectCookiesGameComponent {
     if (!this.consentService.hasConsented) {
       this.showConsentModal = true;
     }
+
+    this.consentService.changedPreference$.subscribe((consent) => {
+      if (consent) {
+        alert('you lost');
+      } else {
+        alert('you won');
+      }
+    });
   }
 }
