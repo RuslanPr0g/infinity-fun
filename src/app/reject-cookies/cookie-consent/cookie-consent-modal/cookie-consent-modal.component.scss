@@ -9,7 +9,7 @@
 }
 
 h2 {
-    font-size: 18px;
+    font-size: clamp(0.5rem, 6vw, 2rem);
     margin-bottom: 16px;
 }
 
@@ -247,6 +247,16 @@ input.ng-valid.ng-touched {
     font-size: 0.75rem;
     margin-top: 0.25rem;
     text-align: left;
+}
+
+.notescaping {
+    position: relative !important;
+    top: 0 !important;
+    left: 0 !important;
+}
+
+.escaping {
+    color: #e63946 !important;
 }
 
 // CHECKBOX STYLES

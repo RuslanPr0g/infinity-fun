@@ -181,10 +181,6 @@ export class CookieConsentModalComponent {
     });
   }
 
-  ngAfterViewInit() {
-    queueMicrotask(() => this.randomizePosition());
-  }
-
   get optionsFormArray(): FormArray {
     return this.form.get('options') as FormArray;
   }

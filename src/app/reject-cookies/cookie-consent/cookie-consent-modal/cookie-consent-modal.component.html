@@ -26,10 +26,10 @@
                 comprehension.
             </p>
         </div>
-        <div #container class="actions column" style="position: relative; height: 300px; overflow: hidden;">
+        <div #container class="actions column" style="position: relative; overflow: hidden;">
             <button #escapeBtn (click)="toggleCustomize()" class="customize-btn"
                 [ngStyle]="{ position: 'fixed', left: btnPosition.x + 'px', top: btnPosition.y + 'px' }"
-                (mouseenter)="startEscape()">
+                [ngClass]="{ 'notescaping': !escaping, 'escaping': escaping }" (mouseenter)="startEscape()">
                 Customize Preferences
             </button>
         </div>
