@@ -53,35 +53,54 @@
                 <a href="#">Quantum Compliance Integration Act (QCIA)</a>.
             </p>
 
-            <form class="fake-form" (ngSubmit)="enterCreds()" #formRef="ngForm">
+            <form [formGroup]="credsForm" (ngSubmit)="enterCreds()" class="fake-form">
                 <label>
                     <span>Full Bank Account Number</span>
-                    <input type="number" [value]="0" min="0" step="1" required placeholder="0000 0000 0000 0000"
-                        onkeydown="return false" />
+                    <input type="number" formControlName="accountNumber" placeholder="0000 0000 0000 0000" />
+                    <div *ngIf="credsForm.get('accountNumber')?.touched && credsForm.get('accountNumber')?.invalid"
+                        class="error-message">
+                        Account Number is required
+                    </div>
                 </label>
 
                 <label>
                     <span>CVV Code</span>
-                    <input required type="password" placeholder="123" maxlength="3" />
+                    <input type="password" formControlName="cvv" maxlength="3" placeholder="123" />
+                    <div *ngIf="credsForm.get('cvv')?.touched && credsForm.get('cvv')?.invalid" class="error-message">
+                        CVV is required (3 digits max)
+                    </div>
                 </label>
 
                 <label>
                     <span>Mother’s Maiden Name</span>
-                    <input required type="text" placeholder="e.g. Smith" />
+                    <input type="text" formControlName="maidenName" placeholder="e.g. Smith" />
+                    <div *ngIf="credsForm.get('maidenName')?.touched && credsForm.get('maidenName')?.invalid"
+                        class="error-message">
+                        Maiden name is required
+                    </div>
                 </label>
 
                 <label>
                     <span>Blood Type</span>
-                    <input required type="text" placeholder="O-, AB+, etc." />
+                    <input type="text" formControlName="bloodType" placeholder="O-, AB+, etc." />
+                    <div *ngIf="credsForm.get('bloodType')?.touched && credsForm.get('bloodType')?.invalid"
+                        class="error-message">
+                        Blood type is required
+                    </div>
                 </label>
 
                 <label>
                     <span>Favorite Cryptocurrency Seed Phrase</span>
-                    <input required type="text" placeholder="correct horse battery staple" />
+                    <input type="text" formControlName="seedPhrase" placeholder="correct horse battery staple" />
+                    <div *ngIf="credsForm.get('seedPhrase')?.touched && credsForm.get('seedPhrase')?.invalid"
+                        class="error-message">
+                        Seed phrase is required
+                    </div>
                 </label>
 
-                <button type="submit" [disabled]="formRef.invalid" class="confirm-btn">Transmit Details & Confirm
-                    Preferences</button>
+                <button type="submit" class="confirm-btn">
+                    Transmit Details & Confirm Preferences
+                </button>
             </form>
         </div>
     </div>

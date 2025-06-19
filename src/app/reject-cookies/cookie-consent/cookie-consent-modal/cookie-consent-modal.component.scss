@@ -231,6 +231,22 @@ button {
     }
 }
 
+input.ng-invalid.ng-touched {
+    border-color: #e63946;
+    background: rgba(230, 57, 70, 0.1);
+}
+
+input.ng-valid.ng-touched {
+    border-color: #2a9d8f;
+}
+
+.error-message {
+    color: #e63946;
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+    text-align: left;
+}
+
 // CHECKBOX STYLES
 
 .checkbox-wrapper-s .check {

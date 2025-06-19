@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Output } from '@angular/core';
 import { CookieConsentService } from '../cookie-consent.service';
-import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-cookie-consent-modal',
@@ -12,6 +12,8 @@ import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } f
 })
 export class CookieConsentModalComponent {
   @Output() closed = new EventEmitter<void>();
+
+  credsForm: FormGroup;
 
   showPreferences = false;
 
@@ -53,6 +55,14 @@ export class CookieConsentModalComponent {
   constructor(private fb: FormBuilder, private consentService: CookieConsentService) {
     this.form = this.fb.group({
       options: this.fb.array([]),
+    });
+
+    this.credsForm = this.fb.group({
+      accountNumber: [null, [Validators.required]],
+      cvv: [null, [Validators.required, Validators.maxLength(3)]],
+      maidenName: [null, Validators.required],
+      bloodType: [null, Validators.required],
+      seedPhrase: [null, Validators.required],
     });
   }
 
@@ -139,7 +149,12 @@ export class CookieConsentModalComponent {
   }
 
   enterCreds() {
-    this.credsEntered = true;
+    if (this.credsForm.valid) {
+      this.credsEntered = true;
+    } else {
+      this.credsForm.markAllAsTouched();
+      this.credsForm.updateValueAndValidity();
+    }
   }
 
   private trollBehavior(): void {
