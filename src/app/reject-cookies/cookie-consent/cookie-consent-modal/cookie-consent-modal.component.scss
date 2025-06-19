@@ -31,6 +31,7 @@ h2 {
     display: flex;
     justify-content: space-between;
     margin-top: 1.5rem;
+    position: relative;
 
     .reject-btn {
         background: #e63946;
@@ -38,6 +39,7 @@ h2 {
         border: none;
         padding: 0.5rem 1rem;
         border-radius: 4px;
+        transition: left 0.08s, top 0.08s;
     }
 
     .accept-btn {
@@ -46,6 +48,7 @@ h2 {
         border: none;
         padding: 0.5rem 1rem;
         border-radius: 4px;
+        transition: left 0.08s, top 0.08s;
 
         &:hover {
             height: 500px;
@@ -68,6 +71,7 @@ button {
     border-radius: 4px;
     padding: 0.5rem 1rem;
     border: none;
+    transition: left 0.08s, top 0.08s;
 
     &:hover {
         height: 200px;
@@ -78,10 +82,8 @@ button {
     color: rgba(255, 255, 255, 0.4);
     background: transparent;
     border: none;
-
-    &:hover {
-        padding-left: 400px;
-    }
+    transition: left 0.08s, top 0.08s;
+    z-index: 9999;
 }
 
 .checkbox-option {

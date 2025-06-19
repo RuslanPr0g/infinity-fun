@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Output, ViewChild } from '@angular/core';
 import { CookieConsentService } from '../cookie-consent.service';
 import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { distinctUntilChanged, filter, pairwise, startWith } from 'rxjs';
+import { filter, pairwise, startWith } from 'rxjs';
 
 @Component({
   selector: 'app-cookie-consent-modal',
@@ -12,6 +12,83 @@ import { distinctUntilChanged, filter, pairwise, startWith } from 'rxjs';
   styleUrl: './cookie-consent-modal.component.scss',
 })
 export class CookieConsentModalComponent {
+  @ViewChild('escapeBtn', { static: false }) button!: ElementRef<HTMLButtonElement>;
+  @ViewChild('container', { static: false }) container!: ElementRef<HTMLDivElement> | undefined;
+
+  btnPosition = { x: 100, y: 100 };
+  escaping = false;
+  escapeEndTime = 0;
+
+  startEscape() {
+    if (!this.button || this.escaping) return;
+
+    this.escaping = true;
+    this.escapeEndTime = Date.now() + 60 * 1000;
+
+    window.addEventListener('mousemove', this.handleMouseMove);
+
+    setTimeout(() => {
+      this.escaping = false;
+      window.removeEventListener('mousemove', this.handleMouseMove);
+    }, 60 * 1000);
+  }
+
+  handleMouseMove = (event: MouseEvent) => {
+    if (!this.button) return;
+
+    const mouseX = event.clientX;
+    const mouseY = event.clientY;
+
+    const btnWidth = this.button.nativeElement.offsetWidth;
+    const btnHeight = this.button.nativeElement.offsetHeight;
+
+    const btnCenterX = this.btnPosition.x + btnWidth / 2;
+    const btnCenterY = this.btnPosition.y + btnHeight / 2;
+
+    let dx = btnCenterX - mouseX;
+    let dy = btnCenterY - mouseY;
+    const distance = Math.sqrt(dx * dx + dy * dy) || 1;
+
+    const moveAmount = 150;
+    let nextX = this.btnPosition.x + (dx / distance) * moveAmount + (Math.random() - 0.5) * 40;
+    let nextY = this.btnPosition.y + (dy / distance) * moveAmount + (Math.random() - 0.5) * 40;
+
+    if (nextX < 0 || nextX > window.innerWidth - btnWidth) {
+      nextX = this.btnPosition.x + (Math.random() - 0.5) * 100;
+    }
+    if (nextY < 0 || nextY > window.innerHeight - btnHeight) {
+      nextY = this.btnPosition.y + (Math.random() - 0.5) * 100;
+    }
+
+    this.btnPosition.x = Math.max(0, Math.min(nextX, window.innerWidth - btnWidth));
+    this.btnPosition.y = Math.max(0, Math.min(nextY, window.innerHeight - btnHeight));
+  };
+
+  runEscapeLoop() {
+    if (Date.now() >= this.escapeEndTime) {
+      this.escaping = false;
+      return;
+    }
+
+    this.randomizePosition();
+
+    setTimeout(() => {
+      this.runEscapeLoop();
+    }, 300);
+  }
+
+  randomizePosition() {
+    if (!this.button) return;
+
+    const btnWidth = this.button.nativeElement.offsetWidth;
+    const btnHeight = this.button.nativeElement.offsetHeight;
+
+    this.btnPosition.x = Math.random() * (window.innerWidth - btnWidth);
+    this.btnPosition.y = Math.random() * (window.innerHeight - btnHeight);
+  }
+
+  // OTHER LOGIC
+
   @Output() closed = new EventEmitter<void>();
 
   credsForm: FormGroup;
@@ -20,25 +97,25 @@ export class CookieConsentModalComponent {
 
   absurdOptions = [
     'Yes, inject uranium directly into my bloodstream',
-    // 'Absolutely, wire my thoughts to a nuclear reactor',
-    // 'Sure, replace my bones with vibrating tungsten rods',
-    // 'Yes, beam encrypted lava pulses into my spine',
-    // 'Go ahead, calibrate my emotions using plutonium dust',
-    // 'Definitely, sync my heartbeat to the Hadron Collider',
-    // 'Yes, initiate the titanium mandible replacement protocol',
-    // 'Proceed with algorithmic volcano core integration',
-    // 'Affirmative, install a graphite-cooled brain enhancer',
-    // 'Enable full-body cryogenic self-destruction response',
-    // 'Authorize transdimensional fax transmission of my soul',
-    // 'Yes, ignite my memory center with industrial-grade jet fuel',
-    // 'Begin neural interface with sentient microwave ovens',
-    // 'Consent granted for perpetual entropy realignment',
-    // 'Yes, replace all teeth with miniature fusion reactors',
-    // 'Upload my conscience into the municipal sewage grid',
-    // 'Initiate orbital laser mood stabilization sequence',
-    // 'Substitute my blood with caffeinated hydraulic fluid',
-    // 'Install quantum banana peels in my motor cortex',
-    // 'Affix anti-matter dampeners to my self-esteem module',
+    'Absolutely, wire my thoughts to a nuclear reactor',
+    'Sure, replace my bones with vibrating tungsten rods',
+    'Yes, beam encrypted lava pulses into my spine',
+    'Go ahead, calibrate my emotions using plutonium dust',
+    'Definitely, sync my heartbeat to the Hadron Collider',
+    'Yes, initiate the titanium mandible replacement protocol',
+    'Proceed with algorithmic volcano core integration',
+    'Affirmative, install a graphite-cooled brain enhancer',
+    'Enable full-body cryogenic self-destruction response',
+    'Authorize transdimensional fax transmission of my soul',
+    'Yes, ignite my memory center with industrial-grade jet fuel',
+    'Begin neural interface with sentient microwave ovens',
+    'Consent granted for perpetual entropy realignment',
+    'Yes, replace all teeth with miniature fusion reactors',
+    'Upload my conscience into the municipal sewage grid',
+    'Initiate orbital laser mood stabilization sequence',
+    'Substitute my blood with caffeinated hydraulic fluid',
+    'Install quantum banana peels in my motor cortex',
+    'Affix anti-matter dampeners to my self-esteem module',
   ];
 
   form: FormGroup;
@@ -102,6 +179,10 @@ export class CookieConsentModalComponent {
         this.trollBehavior();
       }
     });
+  }
+
+  ngAfterViewInit() {
+    queueMicrotask(() => this.randomizePosition());
   }
 
   get optionsFormArray(): FormArray {
