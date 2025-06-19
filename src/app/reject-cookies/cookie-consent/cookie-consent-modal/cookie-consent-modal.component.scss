@@ -1,0 +1,50 @@
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+h2 {
+    margin-bottom: 16px;
+}
+
+.modal {
+    background: #3e3e3e;
+    line-height: 24px;
+    color: #fff !important;
+    padding: 2rem;
+    border-radius: 0.5rem;
+    width: 100%;
+    max-width: 800px;
+    text-align: center;
+}
+
+.actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1.5rem;
+
+    .reject-btn {
+        background: #e63946;
+        color: #fff;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+    }
+
+    .accept-btn {
+        background: #2a9d8f;
+        color: #fff;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+    }
+}
+
+button {
+    cursor: pointer;
+}

@@ -22,7 +22,6 @@
         font-size: clamp(1rem, 2.5vw, 1.5rem);
         color: #ccc;
         margin: 0 auto;
-        max-width: 600px;
     }
 }
 
@@ -44,11 +43,11 @@
 
         h2 {
             margin-bottom: 16px;
-            font-size: 16px;
+            font-size: 14px;
         }
 
         p {
-            font-size: 13px;
+            font-size: 12px;
         }
 
         &:hover {
