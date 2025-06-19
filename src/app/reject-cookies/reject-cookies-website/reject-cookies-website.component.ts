@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
+import { CookieConsentService } from '../cookie-consent/cookie-consent.service';
 
 @Component({
   selector: 'app-reject-cookies-website',
@@ -53,4 +54,18 @@ export class RejectCookiesWebSiteComponent {
       description: 'Looks deep—until you try to withdraw.'
     }
   ];
+
+  gameResult: 'win' | 'lose' | null = null;
+
+  constructor(private consentService: CookieConsentService) { }
+
+  ngOnInit(): void {
+    this.consentService.changedPreference$.subscribe((consent) => {
+      this.gameResult = consent ? 'lose' : 'win';
+    });
+  }
+
+  again(): void {
+    window.location.reload();
+  }
 }

@@ -13,6 +13,7 @@ import { CookieConsentModalComponent } from './cookie-consent/cookie-consent-mod
 })
 export class RejectCookiesGameComponent {
   showConsentModal = false;
+  gameResult: 'win' | 'lose' | null = null;
 
   constructor(private consentService: CookieConsentService) { }
 
@@ -22,11 +23,8 @@ export class RejectCookiesGameComponent {
     }
 
     this.consentService.changedPreference$.subscribe((consent) => {
-      if (consent) {
-        alert('you lost');
-      } else {
-        alert('you won');
-      }
+      this.gameResult = consent ? 'lose' : 'win';
+      setTimeout(() => this.gameResult = null, 4000);
     });
   }
 }

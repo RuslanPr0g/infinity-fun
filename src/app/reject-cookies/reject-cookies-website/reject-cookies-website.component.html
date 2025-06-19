@@ -1,4 +1,4 @@
-<div class="website">
+<div class="website" *ngIf="!gameResult">
   <div class="hero">
     <h1>Crypto Exchange</h1>
     <p>The only place where your coins are unstable!</p>
@@ -14,4 +14,11 @@
   <footer>
     <p>© {{ year }} CryptoZoo - Not Financial Advice 🧢</p>
   </footer>
+</div>
+
+<div class="game-result" *ngIf="gameResult">
+  <div [ngClass]="gameResult === 'win' ? 'win' : 'lose'">
+    {{ gameResult === 'win' ? '🎉' : '☠️' }}
+    <button (click)="again()">TRY AGAIN</button>
+  </div>
 </div>

@@ -1,1 +1,47 @@
-@import '../../colors';
+.game-result {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    pointer-events: none;
+
+    div {
+        font-size: 3rem;
+        padding: 1rem 2rem;
+        border-radius: 1rem;
+        color: #fff;
+        animation: pop 0.6s ease, fadeOut 3s 1s forwards;
+    }
+
+    .win {
+        background: linear-gradient(45deg, #2a9d8f, #8ac926);
+    }
+
+    .lose {
+        background: linear-gradient(45deg, #e63946, #6a040f);
+    }
+}
+
+@keyframes pop {
+    0% {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    0% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}

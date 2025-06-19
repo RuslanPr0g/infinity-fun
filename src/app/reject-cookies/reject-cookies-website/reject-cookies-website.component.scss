@@ -62,3 +62,35 @@ footer {
     text-align: center;
     padding: 1rem;
 }
+
+.game-result {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 80%;
+    user-select: none;
+
+    button {
+        background: transparent;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        font-size: 24px;
+    }
+
+    div {
+        font-size: 3rem;
+        padding: 1rem 2rem;
+        border-radius: 1rem;
+        color: #fff;
+        animation: pop 0.6s ease, fadeOut 3s 1s forwards;
+    }
+
+    .win {
+        background: linear-gradient(45deg, #2a9d8f, #8ac926);
+    }
+
+    .lose {
+        background: linear-gradient(45deg, #e63946, #6a040f);
+    }
+}

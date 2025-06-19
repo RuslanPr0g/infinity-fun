@@ -65,6 +65,10 @@ button {
     border-radius: 4px;
     padding: 0.5rem 1rem;
     border: none;
+
+    &:hover {
+        height: 200px;
+    }
 }
 
 .customize-btn {
@@ -73,7 +77,7 @@ button {
     border: none;
 
     &:hover {
-        padding-left: 300px;
+        padding-left: 400px;
     }
 }
 
