@@ -69,7 +69,6 @@ export class CookieConsentModalComponent {
   private trollBehavior() {
     const unselected = this.absurdOptions.filter(opt => !this.selectedOptions.has(opt));
     if (unselected.length === 2) {
-      // Randomly select one of the unselected again
       const toReselect = unselected[Math.floor(Math.random() * unselected.length)];
       this.selectedOptions.add(toReselect);
     }

@@ -1,9 +1,7 @@
 <div class="modal-backdrop">
     <div class="modal" *ngIf="!showPreferences">
         <h2>🍪🍪🍪🍪🍪🍪🍪🍪🍪🍪🍪🍪🍪🍪</h2>
-        <p>
-            We use cookies to make your experience as smooth as possible.
-        </p>
+        <p>We use cookies to make your experience as smooth as possible.</p>
         <div class="actions column">
             <button (click)="acceptAll()" class="accept-btn">Accept All Cookies</button>
             <button (click)="acceptEssential()" class="essential-btn">Accept Only Essential</button>
@@ -14,12 +12,12 @@
     <div class="modal" *ngIf="showPreferences">
         <h2>🍪 Customize Your Cookie Preferences 🍪</h2>
         <form>
-            <label *ngFor="let option of absurdOptions; let i" class="checkbox-option">
+            <label *ngFor="let option of absurdOptions; let i = index" class="checkbox-option">
                 <div class="checkbox-wrapper-s">
                     <div class="check">
-                        <input id="i" type="checkbox" [checked]="selectedOptions.has(option)"
-                            (change)="toggleOption(option)">
-                        <label for="i"></label>
+                        <input [id]="'cookie-opt-' + i" type="checkbox" [checked]="selectedOptions.has(option)"
+                            (change)="toggleOption(option)" />
+                        <label [for]="'cookie-opt-' + i"></label>
                     </div>
                 </div>
                 <p>{{ option }}</p>
