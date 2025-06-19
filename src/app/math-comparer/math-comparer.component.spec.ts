@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { MathComparerComponent } from './math-comparer.component';
+import { MathComparerGameComponent } from './math-comparer.component';
 
-describe('MathComparerComponent', () => {
-  let component: MathComparerComponent;
-  let fixture: ComponentFixture<MathComparerComponent>;
+describe('MathComparerGameComponent', () => {
+  let component: MathComparerGameComponent;
+  let fixture: ComponentFixture<MathComparerGameComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MathComparerComponent]
+      imports: [MathComparerGameComponent]
     })
-    .compileComponents();
+      .compileComponents();
 
-    fixture = TestBed.createComponent(MathComparerComponent);
+    fixture = TestBed.createComponent(MathComparerGameComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

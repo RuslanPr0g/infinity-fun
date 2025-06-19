@@ -15,7 +15,7 @@ import { Subscription } from 'rxjs';
   templateUrl: './left-to-live.component.html',
   styleUrl: './left-to-live.component.scss',
 })
-export class LeftToLiveComponent {
+export class LeftToLiveGameComponent {
   form = new FormGroup({
     age: new FormControl(18),
     liveto: new FormControl(70),
@@ -29,19 +29,19 @@ export class LeftToLiveComponent {
     eatingMonths: number;
     freeTimeMonths: number;
   } = {
-    totalMonths: 0,
-    sleepMonths: 0,
-    workMonths: 0,
-    choresMonths: 0,
-    eatingMonths: 0,
-    freeTimeMonths: 0,
-  };
+      totalMonths: 0,
+      sleepMonths: 0,
+      workMonths: 0,
+      choresMonths: 0,
+      eatingMonths: 0,
+      freeTimeMonths: 0,
+    };
 
   monthsLeft: any[] = [];
 
   private subscription?: Subscription;
 
-  constructor() {}
+  constructor() { }
 
   ngOnInit(): void {
     this.subscription = this.form.valueChanges.subscribe(() => {

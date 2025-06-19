@@ -1,0 +1,17 @@
+<div class="website">
+  <div class="hero">
+    <h1>Crypto Exchange</h1>
+    <p>The only place where your coins are unstable!</p>
+  </div>
+
+  <section class="features">
+    <div class="feature-card" *ngFor="let feature of features">
+      <h2>{{ feature.title }}</h2>
+      <p>{{ feature.description }}</p>
+    </div>
+  </section>
+
+  <footer>
+    <p>© {{ year }} CryptoZoo - Not Financial Advice 🧢</p>
+  </footer>
+</div>

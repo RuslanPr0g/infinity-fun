@@ -7,8 +7,14 @@
     box-sizing: border-box;
 }
 
+html {
+    min-height: 100%;
+    position: relative;
+}
+
 body {
     background-color: $primary-bg-color;
+    height: 100vh;
 }
 
 .game-container {
