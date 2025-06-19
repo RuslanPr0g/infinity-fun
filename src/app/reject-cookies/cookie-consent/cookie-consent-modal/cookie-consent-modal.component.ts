@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Output, signal } from '@angular/core';
 import { CookieConsentService } from '../cookie-consent.service';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-cookie-consent-modal',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './cookie-consent-modal.component.html',
   styleUrl: './cookie-consent-modal.component.scss',
 })
@@ -41,7 +42,18 @@ export class CookieConsentModalComponent {
 
   allSelected: boolean = false;
 
+  credsEntered: boolean = false;
+
+  captchaValue = '';
+  targetAsciiSum = 0;
+
+  captchaError = '';
+
   constructor(private consentService: CookieConsentService) { }
+
+  ngOnInit() {
+    this.generateCaptchaTarget();
+  }
 
   acceptAll() {
     this.consentService.accept();
@@ -55,8 +67,35 @@ export class CookieConsentModalComponent {
     this.closed.emit();
   }
 
+  confirmCredentials() {
+    this.credsEntered = true;
+    this.generateCaptchaTarget();
+  }
+
+  generateCaptchaTarget() {
+    this.targetAsciiSum = Math.floor(400 + Math.random() * 400);
+  }
+
+  finalReject() {
+    const sum = this.captchaValue.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+
+    if (sum !== this.targetAsciiSum) {
+      this.captchaError = `CAPTCHA verification failed.`
+
+      setTimeout(() => { this.captchaError = '' }, 3000);
+      return;
+    }
+
+    this.consentService.reject();
+    this.closed.emit();
+  }
+
   toggleCustomize() {
     this.showPreferences = true;
+  }
+
+  enterCreds() {
+    this.credsEntered = true;
   }
 
   toggleOption(option: string) {

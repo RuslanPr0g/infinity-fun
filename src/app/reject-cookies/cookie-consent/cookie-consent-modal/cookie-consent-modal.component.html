@@ -28,7 +28,7 @@
         </div>
     </div>
 
-    <div class="modal" *ngIf="showPreferences">
+    <div class="modal" *ngIf="showPreferences && !credsEntered">
         <h2>🍪 Customize Your Cookie Preferences 🍪</h2>
         <form>
             <label *ngFor="let option of absurdOptions; let i = index" class="checkbox-option">
@@ -49,7 +49,7 @@
                 <a href="#">Quantum Compliance Integration Act (QCIA)</a>.
             </p>
 
-            <form class="fake-form" (submit)="confirmPreferences()">
+            <form class="fake-form" (ngSubmit)="enterCreds()" #formRef="ngForm">
                 <label>
                     <span>Full Bank Account Number</span>
                     <input type="number" [value]="0" min="0" step="1" required placeholder="0000 0000 0000 0000"
@@ -79,5 +79,18 @@
                 <button type="submit" class="confirm-btn">Transmit Details & Confirm Preferences</button>
             </form>
         </div>
+    </div>
+    <div class="captcha-step modal" *ngIf="credsEntered || true">
+        <h3>🔐 Final Verification</h3>
+        <p>
+            Please enter any text where the <strong>sum of the ASCII codes</strong> of its characters equals:
+            <strong>{{ targetAsciiSum }}</strong>
+        </p>
+
+        <input type="text" [(ngModel)]="captchaValue" placeholder="e.g. ¯\_(ツ)_/¯" required class="captcha-input" />
+
+        <button (click)="finalReject()" class="final-reject-btn">Finally Reject All Cookies</button>
+
+        <p class="error" *ngIf="captchaError">{{captchaError}}</p>
     </div>
 </div>
