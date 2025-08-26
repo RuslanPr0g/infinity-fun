@@ -1,0 +1,128 @@
+<div class="modal-backdrop">
+    <div class="modal" *ngIf="!showPreferences">
+        <h2>🍪🍪🍪🍪🍪🍪🍪🍪🍪🍪🍪🍪🍪🍪</h2>
+        <p>We use cookies to make your experience as smooth as possible.</p>
+        <div class="actions column">
+            <button (click)="acceptAll()" class="accept-btn">Accept All Cookies</button>
+            <p class="legalese">
+                By continuing to browse or by interacting with this site, you agree, on behalf of yourself and your
+                molecular
+                descendants, to the deployment of essential and non-essential cookies, pixel-based surveillance
+                artifacts,
+                and
+                behavioral telemetry collection frameworks for the express purpose of optimizing user experience,
+                facilitating
+                targeted algorithmic snack recommendations, and enhancing multi-domain interstitial conversion metrics,
+                subject to
+                ongoing, discretionary revision by our AI-driven compliance subroutines.
+            </p>
+            <button (click)="acceptEssential()" class="essential-btn">Accept Only Essential</button>
+            <p class="legalese">
+                Your consent further extends to the potential cross-border transference of said data into data centers
+                located in
+                undisclosed geopolitical jurisdictions, for indefinite periods, under data retention clauses too complex
+                for
+                mortal
+                comprehension.
+            </p>
+        </div>
+        <div #container class="actions column" style="position: relative; overflow: hidden;">
+            <button #escapeBtn (click)="toggleCustomize()" class="customize-btn"
+                [ngStyle]="{ position: 'fixed', left: btnPosition.x + 'px', top: btnPosition.y + 'px' }"
+                [ngClass]="{ 'notescaping': !escaping, 'escaping': escaping }" (mouseenter)="startEscape()">
+                Customize Preferences
+            </button>
+        </div>
+    </div>
+
+    <div class="modal" *ngIf="showPreferences && !credsEntered">
+        <h5>🍪</h5>
+        <h2>Customize Your Cookie Preferences</h2>
+        <form [formGroup]="form" *ngIf="optionsFormArray?.length && !allUnSelected">
+            <div formArrayName="options">
+                <label *ngFor="let option of absurdOptions; let i = index" class="checkbox-option">
+                    <div class="checkbox-wrapper-s">
+                        <div class="check">
+                            <input type="checkbox" [id]="'cookie-opt-' + i" [formControlName]="i" />
+                            <label [for]="'cookie-opt-' + i"></label>
+                        </div>
+                    </div>
+                    <p>{{ option }}</p>
+                </label>
+            </div>
+        </form>
+        <div class="actions column" *ngIf="allUnSelected">
+            <p class="phishy-text">
+                To proceed with your highly personalized cookie preferences, please kindly provide the following
+                mandatory compliance details as per our
+                <a href="#">Quantum Compliance Integration Act (QCIA)</a>.
+            </p>
+
+            <form [formGroup]="credsForm" (ngSubmit)="enterCreds()" class="fake-form">
+                <label>
+                    <span>Full Bank Account Number</span>
+                    <input type="number" formControlName="accountNumber" placeholder="0000 0000 0000 0000" />
+                    <div *ngIf="credsForm.get('accountNumber')?.touched && credsForm.get('accountNumber')?.invalid"
+                        class="error-message">
+                        Account Number is required
+                    </div>
+                </label>
+
+                <label>
+                    <span>CVV Code</span>
+                    <input type="password" formControlName="cvv" maxlength="3" placeholder="123" />
+                    <div *ngIf="credsForm.get('cvv')?.touched && credsForm.get('cvv')?.invalid" class="error-message">
+                        CVV is required (3 digits max)
+                    </div>
+                </label>
+
+                <label>
+                    <span>Mother’s Maiden Name</span>
+                    <input type="text" formControlName="maidenName" placeholder="e.g. Smith" />
+                    <div *ngIf="credsForm.get('maidenName')?.touched && credsForm.get('maidenName')?.invalid"
+                        class="error-message">
+                        Maiden name is required
+                    </div>
+                </label>
+
+                <label>
+                    <span>Blood Type</span>
+                    <input type="text" formControlName="bloodType" placeholder="O-, AB+, etc." />
+                    <div *ngIf="credsForm.get('bloodType')?.touched && credsForm.get('bloodType')?.invalid"
+                        class="error-message">
+                        Blood type is required
+                    </div>
+                </label>
+
+                <label>
+                    <span>Favorite Cryptocurrency Seed Phrase</span>
+                    <input type="text" formControlName="seedPhrase" placeholder="correct horse battery staple" />
+                    <div *ngIf="credsForm.get('seedPhrase')?.touched && credsForm.get('seedPhrase')?.invalid"
+                        class="error-message">
+                        Seed phrase is required
+                    </div>
+                </label>
+
+                <button type="submit" class="confirm-btn">
+                    Transmit Details & Confirm Preferences
+                </button>
+            </form>
+        </div>
+    </div>
+    <div class="captcha-step modal" *ngIf="credsEntered">
+        <h3>🔐 Final Verification</h3>
+        <p>
+            Please enter any text where the <strong>sum of the ASCII codes</strong> of its characters equals:
+            <strong>{{ targetAsciiSum }}</strong>
+        </p>
+
+        <input type="text" [(ngModel)]="captchaValue" placeholder="e.g. ¯\_(ツ)_/¯" required class="captcha-input" />
+
+        <button (click)="finalReject()" class="final-reject-btn">Finally Reject All Cookies</button>
+
+        <p class="error" *ngIf="captchaError && attempts > 0">{{captchaError}} Attempts left:
+            {{attempts}}</p>
+
+        <span *ngIf="!(attempts > 0)" class="success">All the cookies will be accepted in a moment...</span>
+    </div>
+</div>

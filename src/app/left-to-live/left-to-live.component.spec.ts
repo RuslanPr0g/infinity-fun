@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { LeftToLiveComponent } from './left-to-live.component';
+import { LeftToLiveGameComponent } from './left-to-live.component';
 
-describe('LeftToLiveComponent', () => {
-  let component: LeftToLiveComponent;
-  let fixture: ComponentFixture<LeftToLiveComponent>;
+describe('LeftToLiveGameComponent', () => {
+  let component: LeftToLiveGameComponent;
+  let fixture: ComponentFixture<LeftToLiveGameComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [LeftToLiveComponent]
+      imports: [LeftToLiveGameComponent]
     })
-    .compileComponents();
+      .compileComponents();
 
-    fixture = TestBed.createComponent(LeftToLiveComponent);
+    fixture = TestBed.createComponent(LeftToLiveGameComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

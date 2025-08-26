@@ -6,6 +6,7 @@ import { GameRoute } from '../../../core/models/game-route.model';
 })
 export class GameRouteService {
   private games: GameRoute[] = [
+    { name: 'Reject All Cookies', route: '/reject-cookies', color: '#3A59D1' },
     { name: 'Country Guesser', route: '/country-guesser', color: '#809D3C' },
     { name: 'Math Comparer', route: '/math-comparer', color: '#B2A5FF' },
     { name: 'Color Reaction', route: '/color-click', color: '#ff6347' },

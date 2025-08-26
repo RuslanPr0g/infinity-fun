@@ -10,7 +10,7 @@ import { SoundService } from '../shared/services/sound/sound.service';
   templateUrl: './math-comparer.component.html',
   styleUrl: './math-comparer.component.scss',
 })
-export class MathComparerComponent {
+export class MathComparerGameComponent {
   leftExpression: string = '';
   rightExpression: string = '';
   nextToShow: string = '';
@@ -30,9 +30,8 @@ export class MathComparerComponent {
     let expression = `${this.getRandomNumber()}`;
 
     for (let i = 0; i < length; i++) {
-      expression += ` ${
-        operators[Math.floor(Math.random() * operators.length)]
-      } ${this.getRandomNumber()}`;
+      expression += ` ${operators[Math.floor(Math.random() * operators.length)]
+        } ${this.getRandomNumber()}`;
     }
 
     return expression;
@@ -107,7 +106,7 @@ export class MathComparerComponent {
 
     this.correctSide =
       this.evaluateExpression(this.leftExpression) >
-      this.evaluateExpression(this.rightExpression)
+        this.evaluateExpression(this.rightExpression)
         ? 'left'
         : 'right';
     this.nextToShow = this.generateExpression();
