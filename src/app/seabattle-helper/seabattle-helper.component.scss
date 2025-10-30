@@ -3,12 +3,54 @@
   justify-content: center;
   align-items: center;
   padding: 20px;
+  width: 100%;
+  overflow-x: auto;
+  background: #001f3f;
 }
 
-.board {
+.board-wrapper {
   display: inline-block;
-  border: 3px solid #0d47a1;
-  background: #001f3f;
+  border-radius: 6px;
+}
+
+.top-labels {
+  display: flex;
+  align-items: center;
+  margin-left: 35px;
+}
+
+.top-number {
+  width: 36px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.corner {
+  width: 35px;
+  height: 30px;
+}
+
+.board-with-labels {
+  display: flex;
+  flex-direction: column;
+}
+
+.row-with-label {
+  display: flex;
+  align-items: center;
+}
+
+.left-label {
+  width: 35px;
+  text-align: center;
+  color: #fff;
+  font-weight: bold;
+  font-size: 12px;
 }
 
 .row {
@@ -16,8 +58,8 @@
 }
 
 .cell {
-  width: 50px;
-  height: 50px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -27,6 +69,7 @@
   transition: background 0.2s ease;
   font-size: 12px;
   color: #fff;
+  flex-shrink: 0;
 }
 
 .cell.empty {
@@ -51,4 +94,26 @@
   right: 2px;
   font-size: 10px;
   color: rgba(255, 255, 255, 0.8);
+}
+
+@media (max-width: 600px) {
+  .cell {
+    width: 28px;
+    height: 28px;
+    font-size: 10px;
+  }
+
+  .top-number,
+  .left-label {
+    width: 28px;
+    font-size: 10px;
+  }
+
+  .top-labels {
+    margin-left: 28px;
+  }
+
+  .corner {
+    width: 28px;
+  }
 }

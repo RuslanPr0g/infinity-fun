@@ -7,7 +7,7 @@ import { GameRoute } from '../../../core/models/game-route.model';
 export class GameRouteService {
   private games: GameRoute[] = [
     {
-      name: 'Sea Battle Probability Matrix',
+      name: 'Sea Battle Matrix',
       route: '/seabattle',
       color: '#299becff',
       imageUrl: '/images/seabattle.jpg',

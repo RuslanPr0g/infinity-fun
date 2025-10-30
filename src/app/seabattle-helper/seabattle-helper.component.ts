@@ -21,6 +21,11 @@ export class SeaBattleHelperGameComponent implements OnInit {
   probabilityMatrix: number[][] = [];
   readonly ships = [4, 3, 3, 2, 2, 2, 1, 1, 1, 1];
 
+  readonly letters = Array.from({ length: this.size }, (_, i) =>
+    String.fromCharCode(65 + i)
+  );
+  readonly numbers = Array.from({ length: this.size }, (_, i) => i + 1);
+
   ngOnInit() {
     this.resetGrid();
     this.updateProbabilities();
