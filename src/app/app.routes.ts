@@ -5,7 +5,7 @@ import { CountryGuesserGameComponent } from './country-guesser/country-guesser.c
 import { MathComparerGameComponent } from './math-comparer/math-comparer.component';
 import { LeftToLiveGameComponent } from './left-to-live/left-to-live.component';
 import { RejectCookiesGameComponent } from './reject-cookies/reject-cookies.component';
-import { SeaBattleHelperGameComponent } from './seabattle-helper/seabattle-helper';
+import { SeaBattleHelperGameComponent } from './seabattle-helper/seabattle-helper.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },

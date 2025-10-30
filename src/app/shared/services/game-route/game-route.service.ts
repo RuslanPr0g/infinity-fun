@@ -6,12 +6,12 @@ import { GameRoute } from '../../../core/models/game-route.model';
 })
 export class GameRouteService {
   private games: GameRoute[] = [
-    // {
-    //   name: 'Sea Battle Probability Matrix',
-    //   route: '/seabattle',
-    //   color: '#299becff',
-    //   imageUrl: '/images/seabattle.jpg',
-    // },
+    {
+      name: 'Sea Battle Probability Matrix',
+      route: '/seabattle',
+      color: '#299becff',
+      imageUrl: '/images/seabattle.jpg',
+    },
     {
       name: 'Reject All Cookies',
       route: '/reject-cookies',

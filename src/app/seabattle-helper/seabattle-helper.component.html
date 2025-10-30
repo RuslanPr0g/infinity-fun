@@ -1,0 +1,16 @@
+<div class="seabattle-container">
+  <div class="board">
+    <div class="row" *ngFor="let row of grid; let y = index">
+      <div
+        class="cell"
+        *ngFor="let cell of row; let x = index"
+        [ngClass]="cell.state"
+        (click)="onCellClick(x, y)"
+      >
+        <div class="probability">
+          {{ probabilityMatrix[y][x] > 0 ? probabilityMatrix[y][x] : "" }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
