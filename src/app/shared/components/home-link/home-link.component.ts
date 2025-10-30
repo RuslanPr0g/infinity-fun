@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-home-link',
@@ -6,4 +7,6 @@ import { Component } from '@angular/core';
   templateUrl: './home-link.component.html',
   styleUrls: ['./home-link.component.scss'],
 })
-export class HomeLinkComponent {}
+export class HomeLinkComponent {
+  releaseVersion = environment.releaseVersion;
+}
