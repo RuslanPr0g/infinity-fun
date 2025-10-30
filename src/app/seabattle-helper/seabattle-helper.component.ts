@@ -255,4 +255,30 @@ export class SeaBattleHelperGameComponent implements OnInit {
     }
     return hits;
   }
+
+  getCellColor(x: number, y: number): string {
+    const cell = this.grid[y][x];
+    if (cell.state === 'hit') return '#ff9800';
+    if (cell.state === 'kill') return '#e53935';
+    if (cell.state === 'miss') return '#546e7a';
+    if (cell.state === 'empty') {
+      const max = this.getMaxProbability();
+      const value = this.probabilityMatrix[y][x];
+      if (max === 0 || value === 0) return '#003366';
+      const intensity = Math.round((value / max) * 255);
+      return `rgb(${intensity},0,${255 - intensity})`;
+    }
+    return '#003366';
+  }
+
+  getMaxProbability(): number {
+    let max = 0;
+    for (let y = 0; y < this.size; y++) {
+      for (let x = 0; x < this.size; x++) {
+        if (this.probabilityMatrix[y][x] > max)
+          max = this.probabilityMatrix[y][x];
+      }
+    }
+    return max;
+  }
 }

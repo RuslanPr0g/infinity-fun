@@ -5,6 +5,7 @@
         class="cell"
         *ngFor="let cell of row; let x = index"
         [ngClass]="cell.state"
+        [ngStyle]="{ 'background-color': getCellColor(x, y) }"
         (click)="onCellClick(x, y)"
       >
         <div class="probability">
