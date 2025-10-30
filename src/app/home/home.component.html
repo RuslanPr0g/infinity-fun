@@ -1,4 +1,8 @@
 <div class="home-container">
+  <video autoplay muted loop playsinline id="background-video">
+    <source src="videos/background.mp4" type="video/mp4" />
+  </video>
+
   <div>
     <h1
       appTypewriter
@@ -18,19 +22,31 @@
 
   <ul class="game-list">
     <li *ngFor="let game of games" class="game-item">
+      @if (game.imageUrl) {
+      <button
+        (click)="navigateToGame(game)"
+        class="game-button"
+        [ngStyle]="{
+          'background-image': 'url(' + game.imageUrl + ')'
+        }"
+      >
+        <div class="overlay"></div>
+        <div class="content">
+          {{ game.name }}
+        </div>
+      </button>
+      } @else {
       <button
         (click)="navigateToGame(game)"
         class="game-button"
         [style.background-color]="game.color"
       >
-        <img
-          *ngIf="game.imageUrl"
-          [src]="game.imageUrl"
-          alt="{{ game.name }}"
-          class="game-image"
-        />
-        {{ game.name }}
+        <div class="overlay"></div>
+        <div class="content">
+          {{ game.name }}
+        </div>
       </button>
+      }
     </li>
   </ul>
 </div>

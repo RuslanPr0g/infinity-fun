@@ -21,6 +21,16 @@ export class HomeComponent implements OnInit {
     this.games = this.gameService.getGames();
   }
 
+  ngAfterViewInit() {
+    const video = document.getElementById(
+      'background-video'
+    ) as HTMLVideoElement;
+    if (video) {
+      video.playbackRate = 0.1;
+      video.volume = 0;
+    }
+  }
+
   navigateToGame(game: GameRoute) {
     if (game.isExternal) {
       window.open(game.route, '_blank');
