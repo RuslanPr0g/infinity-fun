@@ -5,6 +5,7 @@ type CellState = 'empty' | 'miss' | 'hit' | 'kill';
 
 interface Cell {
   state: CellState;
+  autoMiss?: boolean;
 }
 
 @Component({
@@ -39,33 +40,138 @@ export class SeaBattleHelperGameComponent implements OnInit {
   }
 
   onCellClick(x: number, y: number) {
-    const order: CellState[] = ['empty', 'miss', 'hit', 'kill'];
     const cell = this.grid[y][x];
-    const next = order[(order.indexOf(cell.state) + 1) % order.length];
-    cell.state = next;
 
-    this.recalculateMissesAroundKills([x, y]);
+    if (!this.canClickCell(x, y)) return;
+
+    if (cell.state === 'kill') {
+      this.clearKilledShip(x, y);
+    } else {
+      const order: CellState[] = ['empty', 'miss', 'hit', 'kill'];
+      const next = order[(order.indexOf(cell.state) + 1) % order.length];
+      cell.state = next;
+      if (next === 'kill') this.propagateKill(x, y);
+      if (next === 'empty') this.recalculateMissesAroundKills();
+    }
+
     this.updateProbabilities();
-
     this.grid = [...this.grid];
   }
 
-  recalculateMissesAroundKills(skip?: [number, number]) {
+  canClickCell(x: number, y: number) {
+    const hits = this.getHitCoords();
+    if (hits.length === 0) return true;
+
+    const cell = this.grid[y][x];
+    if (cell.state === 'hit' || cell.state === 'kill') return true;
+
+    return hits.some(([hx, hy]) => Math.abs(hx - x) + Math.abs(hy - y) === 1);
+  }
+
+  propagateKill(x: number, y: number) {
+    const queue: [number, number][] = [[x, y]];
+    const visited = new Set<string>();
+
+    while (queue.length) {
+      const [cx, cy] = queue.shift()!;
+      const key = `${cx},${cy}`;
+      if (visited.has(key)) continue;
+      visited.add(key);
+
+      this.grid[cy][cx].state = 'kill';
+      this.markSurroundingMiss(cx, cy);
+
+      for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+          const nx = cx + dx;
+          const ny = cy + dy;
+          if (
+            nx >= 0 &&
+            ny >= 0 &&
+            nx < this.size &&
+            ny < this.size &&
+            this.grid[ny][nx].state === 'hit'
+          ) {
+            queue.push([nx, ny]);
+          }
+        }
+      }
+    }
+  }
+
+  clearKilledShip(x: number, y: number) {
+    const shipCells: [number, number][] = [];
+    const visited = new Set<string>();
+    const queue: [number, number][] = [[x, y]];
+
+    while (queue.length) {
+      const [cx, cy] = queue.shift()!;
+      const key = `${cx},${cy}`;
+      if (visited.has(key)) continue;
+      visited.add(key);
+
+      if (this.grid[cy][cx].state === 'kill') {
+        shipCells.push([cx, cy]);
+        const dirs: [number, number][] = [
+          [1, 0],
+          [-1, 0],
+          [0, 1],
+          [0, -1],
+        ];
+        for (const [dx, dy] of dirs) {
+          const nx = cx + dx;
+          const ny = cy + dy;
+          if (
+            nx >= 0 &&
+            ny >= 0 &&
+            nx < this.size &&
+            ny < this.size &&
+            this.grid[ny][nx].state === 'kill'
+          ) {
+            queue.push([nx, ny]);
+          }
+        }
+      }
+    }
+
+    for (const [cx, cy] of shipCells) {
+      this.grid[cy][cx].state = 'empty';
+    }
+
+    // Clear surrounding auto-misses
+    for (const [cx, cy] of shipCells) {
+      for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+          const nx = cx + dx;
+          const ny = cy + dy;
+          if (
+            nx >= 0 &&
+            ny >= 0 &&
+            nx < this.size &&
+            ny < this.size &&
+            this.grid[ny][nx].autoMiss
+          ) {
+            this.grid[ny][nx].state = 'empty';
+            delete this.grid[ny][nx].autoMiss;
+          }
+        }
+      }
+    }
+  }
+
+  recalculateMissesAroundKills() {
     for (let y = 0; y < this.size; y++) {
       for (let x = 0; x < this.size; x++) {
         if (this.grid[y][x].state === 'miss') {
-          if (!skip || x !== skip[0] || y !== skip[1]) {
-            this.grid[y][x].state = 'empty';
-          }
+          this.grid[y][x].state = 'empty';
+          delete this.grid[y][x].autoMiss;
         }
       }
     }
 
     for (let y = 0; y < this.size; y++) {
       for (let x = 0; x < this.size; x++) {
-        if (this.grid[y][x].state === 'kill') {
-          this.markSurroundingMiss(x, y);
-        }
+        if (this.grid[y][x].state === 'kill') this.markSurroundingMiss(x, y);
       }
     }
   }
@@ -83,6 +189,7 @@ export class SeaBattleHelperGameComponent implements OnInit {
           this.grid[ny][nx].state === 'empty'
         ) {
           this.grid[ny][nx].state = 'miss';
+          this.grid[ny][nx].autoMiss = true;
         }
       }
     }
@@ -93,7 +200,6 @@ export class SeaBattleHelperGameComponent implements OnInit {
     const hits = this.getHitCoords();
 
     for (const shipSize of this.ships) {
-      // horizontal
       for (let y = 0; y < this.size; y++) {
         for (let x = 0; x <= this.size - shipSize; x++) {
           if (this.canPlaceShip(x, y, shipSize, true, hits)) {
@@ -102,7 +208,6 @@ export class SeaBattleHelperGameComponent implements OnInit {
           }
         }
       }
-      // vertical
       for (let y = 0; y <= this.size - shipSize; y++) {
         for (let x = 0; x < this.size; x++) {
           if (this.canPlaceShip(x, y, shipSize, false, hits)) {
@@ -124,7 +229,6 @@ export class SeaBattleHelperGameComponent implements OnInit {
     for (let i = 0; i < shipSize; i++) {
       const cx = horizontal ? x + i : x;
       const cy = horizontal ? y : y + i;
-
       if (cx >= this.size || cy >= this.size) return false;
       const state = this.grid[cy][cx].state;
       if (state === 'miss' || state === 'kill') return false;
