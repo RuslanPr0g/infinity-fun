@@ -19,6 +19,19 @@ export class HomeComponent implements OnInit {
 
   ngOnInit() {
     this.games = this.gameService.getGames();
+
+    this.games.forEach((game) => {
+      if (!game.imageUrl) return;
+
+      const img = new Image();
+      img.src = game.imageUrl;
+
+      img.onload = () => {};
+
+      img.onerror = () => {
+        game.imageUrl = undefined;
+      };
+    });
   }
 
   ngAfterViewInit() {
