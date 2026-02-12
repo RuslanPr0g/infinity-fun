@@ -113,9 +113,23 @@
   padding: 24px;
 }
 
-.element-image {
-  margin-bottom: 24px;
+.body-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
 
+.images-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.details-section {
+  width: 100%;
+}
+
+.element-image {
   img {
     width: 100%;
     max-width: 400px;
@@ -153,6 +167,24 @@
   }
 }
 
+.wikipedia-link {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+
+  a {
+    color: $color-country-guesser;
+    text-decoration: none;
+    font-size: 14px;
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 0.8;
+      text-decoration: underline;
+    }
+  }
+}
+
 @media (min-width: 1024px) {
   .modal-overlay {
     padding: 0;
@@ -181,6 +213,24 @@
 
   .modal-body {
     padding: 40px;
+  }
+
+  .body-grid {
+    display: grid;
+    grid-template-columns: 400px 1fr;
+    gap: 40px;
+  }
+
+  .images-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .element-image {
+    img {
+      max-width: 100%;
+    }
   }
 
   .element-header {

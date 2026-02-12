@@ -37,4 +37,9 @@ export class PeriodicElementDetailComponent {
     const regex = new RegExp(this.element.name, 'gi');
     return text.replace(regex, '***');
   }
+
+  getWikipediaLink(): string {
+    if (!this.element?.name) return '';
+    return `https://en.wikipedia.org/wiki/${this.element.name}`;
+  }
 }

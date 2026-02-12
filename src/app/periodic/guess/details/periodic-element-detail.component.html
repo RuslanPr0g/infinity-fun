@@ -27,81 +27,107 @@
     </div>
 
     <div class="modal-body">
-      <div class="element-image" *ngIf="element?.image?.url">
-        <img
-          [src]="element?.image?.url"
-          [alt]="hideName ? '***' : element?.name"
-        />
-      </div>
+      <div class="body-grid">
+        <div class="images-section">
+          <div class="element-image" *ngIf="element?.image?.url">
+            <img
+              [src]="element?.image?.url"
+              [alt]="hideName ? '***' : element?.name"
+            />
+          </div>
 
-      <div class="element-details">
-        <div class="detail-row" *ngIf="element?.summary">
-          <span class="label">Summary</span>
-          <span class="value">{{ maskName(element?.summary) }}</span>
+          <div class="element-image" *ngIf="element?.bohr_model_image">
+            <img [src]="element?.bohr_model_image" alt="Bohr Model" />
+          </div>
+
+          <div class="element-image" *ngIf="element?.spectral_img">
+            <img [src]="element?.spectral_img" alt="Spectral" />
+          </div>
         </div>
 
-        <div class="detail-row" *ngIf="element?.appearance">
-          <span class="label">Appearance</span>
-          <span class="value">{{ maskName(element?.appearance) }}</span>
-        </div>
+        <div class="details-section">
+          <div class="element-details">
+            <div class="detail-row" *ngIf="element?.summary">
+              <span class="label">Summary</span>
+              <span class="value">{{ maskName(element?.summary) }}</span>
+            </div>
 
-        <div class="detail-row" *ngIf="element?.category">
-          <span class="label">Category</span>
-          <span class="value">{{ maskName(element?.category) }}</span>
-        </div>
+            <div class="detail-row" *ngIf="element?.appearance">
+              <span class="label">Appearance</span>
+              <span class="value">{{ maskName(element?.appearance) }}</span>
+            </div>
 
-        <div class="detail-row" *ngIf="element?.period">
-          <span class="label">Period</span>
-          <span class="value">{{ element?.period }}</span>
-        </div>
+            <div class="detail-row" *ngIf="element?.category">
+              <span class="label">Category</span>
+              <span class="value">{{ maskName(element?.category) }}</span>
+            </div>
 
-        <div class="detail-row" *ngIf="element?.group">
-          <span class="label">Group</span>
-          <span class="value">{{ element?.group }}</span>
-        </div>
+            <div class="detail-row" *ngIf="element?.period">
+              <span class="label">Period</span>
+              <span class="value">{{ element?.period }}</span>
+            </div>
 
-        <div class="detail-row" *ngIf="element?.atomic_mass">
-          <span class="label">Atomic Mass</span>
-          <span class="value">{{
-            element?.atomic_mass | number: "1.2-2"
-          }}</span>
-        </div>
+            <div class="detail-row" *ngIf="element?.group">
+              <span class="label">Group</span>
+              <span class="value">{{ element?.group }}</span>
+            </div>
 
-        <div class="detail-row" *ngIf="element?.phase">
-          <span class="label">Phase</span>
-          <span class="value">{{ element?.phase }}</span>
-        </div>
+            <div class="detail-row" *ngIf="element?.atomic_mass">
+              <span class="label">Atomic Mass</span>
+              <span class="value">{{
+                element?.atomic_mass | number: "1.2-2"
+              }}</span>
+            </div>
 
-        <div class="detail-row" *ngIf="element?.density">
-          <span class="label">Density</span>
-          <span class="value">{{ element?.density | number: "1.2-2" }}</span>
-        </div>
+            <div class="detail-row" *ngIf="element?.phase">
+              <span class="label">Phase</span>
+              <span class="value">{{ element?.phase }}</span>
+            </div>
 
-        <div class="detail-row" *ngIf="element?.melt">
-          <span class="label">Melting Point</span>
-          <span class="value">{{ element?.melt | number: "1.2-0" }} K</span>
-        </div>
+            <div class="detail-row" *ngIf="element?.density">
+              <span class="label">Density</span>
+              <span class="value">{{
+                element?.density | number: "1.2-2"
+              }}</span>
+            </div>
 
-        <div class="detail-row" *ngIf="element?.boil">
-          <span class="label">Boiling Point</span>
-          <span class="value">{{ element?.boil | number: "1.2-0" }} K</span>
-        </div>
+            <div class="detail-row" *ngIf="element?.melt">
+              <span class="label">Melting Point</span>
+              <span class="value">{{ element?.melt | number: "1.2-0" }} K</span>
+            </div>
 
-        <div class="detail-row" *ngIf="element?.molar_heat">
-          <span class="label">Molar Heat</span>
-          <span class="value"
-            >{{ element?.molar_heat | number: "1.2-2" }} J/(mol·K)</span
-          >
-        </div>
+            <div class="detail-row" *ngIf="element?.boil">
+              <span class="label">Boiling Point</span>
+              <span class="value">{{ element?.boil | number: "1.2-0" }} K</span>
+            </div>
 
-        <div class="detail-row" *ngIf="element?.discovered_by">
-          <span class="label">Discovered By</span>
-          <span class="value">{{ maskName(element?.discovered_by) }}</span>
-        </div>
+            <div class="detail-row" *ngIf="element?.molar_heat">
+              <span class="label">Molar Heat</span>
+              <span class="value"
+                >{{ element?.molar_heat | number: "1.2-2" }} J/(mol·K)</span
+              >
+            </div>
 
-        <div class="detail-row" *ngIf="element?.named_by">
-          <span class="label">Named By</span>
-          <span class="value">{{ maskName(element?.named_by) }}</span>
+            <div class="detail-row" *ngIf="element?.discovered_by">
+              <span class="label">Discovered By</span>
+              <span class="value">{{ maskName(element?.discovered_by) }}</span>
+            </div>
+
+            <div class="detail-row" *ngIf="element?.named_by">
+              <span class="label">Named By</span>
+              <span class="value">{{ maskName(element?.named_by) }}</span>
+            </div>
+
+            <div class="wikipedia-link">
+              <a
+                [href]="getWikipediaLink()"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Learn more on Wikipedia →
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
