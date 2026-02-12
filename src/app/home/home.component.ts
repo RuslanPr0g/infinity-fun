@@ -15,28 +15,18 @@ import { DirectiveModule } from '../shared/directives/directive.module';
 export class HomeComponent implements OnInit {
   games: GameRoute[] = [];
 
-  constructor(private router: Router, private gameService: GameRouteService) {}
+  constructor(
+    private router: Router,
+    private gameService: GameRouteService,
+  ) {}
 
   ngOnInit() {
     this.games = this.gameService.getGames();
-
-    this.games.forEach((game) => {
-      if (!game.imageUrl) return;
-
-      const img = new Image();
-      img.src = game.imageUrl;
-
-      img.onload = () => {};
-
-      img.onerror = () => {
-        game.imageUrl = undefined;
-      };
-    });
   }
 
   ngAfterViewInit() {
     const video = document.getElementById(
-      'background-video'
+      'background-video',
     ) as HTMLVideoElement;
     if (video) {
       video.playbackRate = 0.1;
