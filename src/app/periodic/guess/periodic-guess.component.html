@@ -20,7 +20,11 @@
     </div>
 
     <div class="controls">
-      <input [(ngModel)]="guess" placeholder="Guess element name" />
+      <input
+        [(ngModel)]="guess"
+        placeholder="Guess element name"
+        (keydown.enter)="submit()"
+      />
       <button (click)="submit()">Check</button>
       <button
         class="info-btn"

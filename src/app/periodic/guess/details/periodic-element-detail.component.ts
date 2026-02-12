@@ -1,4 +1,10 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  HostListener,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PeriodicElement } from '../../models/periodic.model';
 
@@ -15,6 +21,13 @@ export class PeriodicElementDetailComponent {
   @Output() close = new EventEmitter<void>();
 
   hideName = true;
+
+  @HostListener('document:keydown.escape')
+  onEscapePress(): void {
+    if (this.isOpen) {
+      this.onClose();
+    }
+  }
 
   toggleHideName(): void {
     this.hideName = !this.hideName;
