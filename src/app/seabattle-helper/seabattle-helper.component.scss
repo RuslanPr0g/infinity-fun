@@ -5,7 +5,6 @@
   padding: 20px;
   width: 100%;
   overflow-x: auto;
-  background: #001f3f;
 }
 
 .board-wrapper {
@@ -20,8 +19,8 @@
 }
 
 .top-number {
-  width: 36px;
-  height: 30px;
+  width: 50px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -58,8 +57,8 @@
 }
 
 .cell {
-  width: 36px;
-  height: 36px;
+  width: 50px;
+  height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -85,7 +84,7 @@
 }
 
 .cell.kill {
-  background-color: #e53935;
+  background-color: #92211f;
 }
 
 .probability {
@@ -93,7 +92,7 @@
   bottom: 2px;
   right: 2px;
   font-size: 10px;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(240, 237, 237, 0.8);
 }
 
 @media (max-width: 600px) {

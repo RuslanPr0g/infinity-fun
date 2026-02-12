@@ -1,20 +1,21 @@
-@import '../../../../colors';
+@import "../../../../colors";
 
 :host {
-    display: flex;
-    align-items: center;
-    max-height: 72px;
-    min-height: 72px;
+  display: flex;
+  align-items: center;
+  max-height: 72px;
+  min-height: 72px;
 }
 
 .home-link {
-    font-size: 1.2rem;
-    color: $link-color;
-    text-decoration: none;
+  font-size: 1.2rem;
+  color: $link-color;
+  text-decoration: none;
 }
 
 .version {
-    color: $primary-text-color;
-    font-size: 8px;
-    text-align: center;
+  color: $primary-text-color;
+  font-size: 8px;
+  text-align: center;
+  padding-top: 5px;
 }

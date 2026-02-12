@@ -1,0 +1,87 @@
+name: CD On Commit
+
+on:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: write
+
+jobs:
+  deploy-on-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the source code
+        uses: actions/checkout@v3
+
+      - name: Configure Git
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "GitHub Actions"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+
+      - name: Determine new tag from commit message
+        id: newtag
+        shell: bash
+        run: |
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          if [[ $COMMIT_MSG =~ v([0-9]+\.[0-9]+\.[0-9]+) ]]; then
+            NEW_TAG="v${BASH_REMATCH[1]}"
+            LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+            NEW_VERSION=${NEW_TAG#v}
+            LATEST_VERSION=${LATEST_TAG#v}
+
+            IFS='.' read -r NEW_MAJOR NEW_MINOR NEW_PATCH <<< "$NEW_VERSION"
+            IFS='.' read -r LATEST_MAJOR LATEST_MINOR LATEST_PATCH <<< "$LATEST_VERSION"
+
+            if (( NEW_MAJOR < LATEST_MAJOR )) || \
+              (( NEW_MAJOR == LATEST_MAJOR && NEW_MINOR < LATEST_MINOR )) || \
+              (( NEW_MAJOR == LATEST_MAJOR && NEW_MINOR == LATEST_MINOR && NEW_PATCH <= LATEST_PATCH )); then
+              echo "New version ($NEW_TAG) is not greater than latest tag ($LATEST_TAG), skipping deployment."
+              echo "tag=" >> $GITHUB_OUTPUT
+            else
+              echo "tag=$NEW_TAG" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "tag=" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Push new tag
+        if: ${{ steps.newtag.outputs.tag != '' }}
+        run: |
+          git tag ${{ steps.newtag.outputs.tag }}
+          git push origin ${{ steps.newtag.outputs.tag }}
+
+      - name: Create GitHub Release
+        if: ${{ steps.newtag.outputs.tag != '' }}
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ steps.newtag.outputs.tag }}
+          release_name: ${{ steps.newtag.outputs.tag }}
+          body: "Automated release generated from commit."
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        if: ${{ steps.newtag.outputs.tag != '' }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        if: ${{ steps.newtag.outputs.tag != '' }}
+        run: npm install
+
+      - name: Set release version in Angular environment
+        if: ${{ steps.newtag.outputs.tag != '' }}
+        run: |
+          sed "s/__RELEASE_VERSION__/${{ steps.newtag.outputs.tag }}/" src/environments/environment.prod.ts.template > src/environments/environment.prod.ts
+
+      - name: Run deployment
+        if: ${{ steps.newtag.outputs.tag != '' }}
+        run: npm run deploy

@@ -1,9 +1,8 @@
+<app-space-background></app-space-background>
+
 <div class="home-link">
   <app-home-link></app-home-link>
 </div>
-<div
-  [@routeTransition]="route.snapshot.data"
-  style="display: contents; overflow: hidden"
->
+<div style="display: contents; overflow: hidden">
   <router-outlet></router-outlet>
 </div>

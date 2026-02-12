@@ -1,208 +1,213 @@
-@import '../../colors';
+@import "../../colors";
 
 .container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .img {
-    display: flex;
-    justify-content: center;
-    margin: 0 auto;
-    position: relative;
+  display: flex;
+  justify-content: center;
+  margin: 0 auto;
+  position: relative;
 }
 
 .flag-image {
-    max-width: 480px;
-    height: auto;
-    margin: 20px 0;
-    justify-self: center;
-    border: 2px solid $primary-text-color;
-    max-width: 360px;
-    min-width: 360px;
-    width: 480px;
-    max-height: 240px;
+  max-width: 480px;
+  height: auto;
+  margin: 20px 0;
+  justify-self: center;
+  border: 2px solid $primary-text-color;
+  max-width: 360px;
+  min-width: 360px;
+  width: 480px;
+  max-height: 240px;
 }
 
 .green-background {
-    background: radial-gradient(circle closest-side, #5B913B, #121212);
+  background: radial-gradient(circle closest-side, #5b913b, transparent);
 }
 
 .red-background {
-    background: radial-gradient(circle closest-side, #B82132, #121212);
+  background: radial-gradient(circle closest-side, #b82132, transparent);
 }
 
 .bandw {
-    filter: grayscale(100%);
+  filter: grayscale(100%);
 }
 
 .guess-input {
-    padding: 10px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    max-width: 480px;
-    min-width: 480px;
-    align-self: center;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  max-width: 480px;
+  min-width: 480px;
+  align-self: center;
 }
 
 .check-button {
-    background-color: #4CAF50;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    margin: 15px 2px;
-    max-width: 480px;
-    min-width: 480px;
-    align-self: center;
+  background-color: #4caf50;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  margin: 15px 2px;
+  max-width: 480px;
+  min-width: 480px;
+  align-self: center;
 }
 
 .check-button:hover {
-    background-color: #45a049;
+  background-color: #45a049;
 }
 
 .mode-selector {
-    display: flex;
-    gap: 20px;
-    align-items: center;
-    flex-direction: column;
-    margin-top: 40px;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  flex-direction: column;
+  margin-top: 40px;
 }
 
 .mode-selector label {
-    display: flex;
-    align-items: center;
-    font-size: 16px;
-    cursor: pointer;
-    position: relative;
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  cursor: pointer;
+  position: relative;
 }
 
 .mode-selector input[type="radio"] {
-    appearance: none;
-    -webkit-appearance: none;
-    border-radius: 50%;
-    border: 2px solid #bbb;
-    width: 18px;
-    height: 18px;
-    margin-right: 8px;
-    transition: background-color 0.3s, border-color 0.3s;
+  appearance: none;
+  -webkit-appearance: none;
+  border-radius: 50%;
+  border: 2px solid #bbb;
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+  transition:
+    background-color 0.3s,
+    border-color 0.3s;
 }
 
 .mode-selector input[type="radio"]:checked {
-    background-color: #4caf50;
-    border-color: #4caf50;
+  background-color: #4caf50;
+  border-color: #4caf50;
 }
 
 .mode-selector input[type="radio"]:checked::before {
-    content: '';
-    position: absolute;
-    top: 3px;
-    left: 3px;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background-color: white;
-    transition: background-color 0.3s;
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: white;
+  transition: background-color 0.3s;
 }
 
 .mode-selector label:hover input[type="radio"] {
-    border-color: #888;
+  border-color: #888;
 }
 
 label {
-    display: flex;
-    align-items: center;
-    font-size: 16px;
-    cursor: pointer;
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  cursor: pointer;
 }
 
 input[type="checkbox"] {
-    appearance: none;
-    -webkit-appearance: none;
-    border-radius: 4px;
-    border: 2px solid #bbb;
-    width: 20px;
-    height: 20px;
-    margin-right: 10px;
-    position: relative;
-    transition: background-color 0.3s, border-color 0.3s;
+  appearance: none;
+  -webkit-appearance: none;
+  border-radius: 4px;
+  border: 2px solid #bbb;
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  position: relative;
+  transition:
+    background-color 0.3s,
+    border-color 0.3s;
 }
 
 input[type="checkbox"]:checked {
-    background-color: #4caf50;
-    border-color: #4caf50;
+  background-color: #4caf50;
+  border-color: #4caf50;
 }
 
 input[type="checkbox"]:checked::before {
-    content: '';
-    position: absolute;
-    top: 4px;
-    left: 4px;
-    width: 12px;
-    height: 12px;
-    background-color: white;
-    transition: background-color 0.3s;
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 12px;
+  height: 12px;
+  background-color: white;
+  transition: background-color 0.3s;
 }
 
 label:hover input[type="checkbox"] {
-    border-color: #888;
+  border-color: #888;
 }
 
 .guess-button {
-    background: linear-gradient(135deg, #98D8EF, #3B6790);
-    color: white;
-    font-size: 16px;
-    padding: 12px 24px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.3s ease, transform 0.3s ease;
-    width: 480px;
-    margin: 4px 2px;
+  background: linear-gradient(135deg, #98d8ef, #3b6790);
+  color: white;
+  font-size: 16px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition:
+    background 0.3s ease,
+    transform 0.3s ease;
+  width: 480px;
+  margin: 4px 2px;
 
-    &:hover {
-        background: linear-gradient(100deg, #98D8EF, #3B6790);
-    }
+  &:hover {
+    background: linear-gradient(100deg, #98d8ef, #3b6790);
+  }
 
-    &:disabled {
-        background: #B0BEC5;
-        cursor: not-allowed;
-    }
+  &:disabled {
+    background: #b0bec5;
+    cursor: not-allowed;
+  }
 
-    &:focus {
-        outline: none;
-        box-shadow: 0 0 5px rgba(159, 193, 8, 0.5);
-    }
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 5px rgba(159, 193, 8, 0.5);
+  }
 }
 
 .score {
-    margin-bottom: 15px;
+  margin-bottom: 15px;
 }
 
 @media (max-width: 550px) {
-    .flag-image {
-        max-width: 200px;
-    }
+  .flag-image {
+    max-width: 200px;
+  }
 
-    h1 {
-        display: none;
-    }
+  h1 {
+    display: none;
+  }
 
-    .guess-input,
-    .check-button,
-    .guess-button {
-        width: 237px;
-        min-width: 100px;
-        font-size: 10px;
-        line-height: 15px;
-    }
+  .guess-input,
+  .check-button,
+  .guess-button {
+    width: 237px;
+    min-width: 100px;
+    font-size: 10px;
+    line-height: 15px;
+  }
 
-    .mode-selector label {
-        font-size: 10px;
-    }
-
+  .mode-selector label {
+    font-size: 10px;
+  }
 }

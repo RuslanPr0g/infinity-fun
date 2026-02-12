@@ -1,0 +1,78 @@
+<div class="game-container">
+  <div class="range-selection" *ngIf="gameState === 'range-selection'">
+    <h1 class="title">Guess the Day of Week</h1>
+
+    <div class="instructions">
+      <p>
+        Select a date range and guess what day of the week each date falls on!
+      </p>
+    </div>
+
+    <div class="date-input-group">
+      <div class="date-input">
+        <label for="start-date">Start Date:</label>
+        <input
+          type="date"
+          id="start-date"
+          [(ngModel)]="startDate"
+          [min]="minDate"
+        />
+      </div>
+      <div class="date-input">
+        <label for="end-date">End Date:</label>
+        <input
+          type="date"
+          id="end-date"
+          [(ngModel)]="endDate"
+          [max]="maxDate"
+        />
+      </div>
+    </div>
+
+    <button
+      class="start-button"
+      (click)="startGame()"
+      [disabled]="!isValidDateRange()"
+    >
+      Start Game
+    </button>
+  </div>
+
+  <div class="game-screen" *ngIf="gameState === 'playing'">
+    <div class="game-header">
+      <div class="streak">Streak: {{ streak }}</div>
+      <button class="end-button" (click)="endGame()">End Game</button>
+    </div>
+
+    <div class="date-display">
+      <p class="label">What day of the week is:</p>
+      <p class="date">{{ currentDateString }}</p>
+    </div>
+
+    <div class="days-grid">
+      <button
+        *ngFor="let day of days"
+        class="day-button"
+        [ngClass]="{
+          selected: selectedDay === day,
+          correct:
+            selectedDay === day && selectedDay === correctDay && showFeedback,
+          incorrect:
+            selectedDay === day && selectedDay !== correctDay && showFeedback,
+        }"
+        (click)="selectDay(day)"
+        [disabled]="selectedDay !== null"
+      >
+        {{ day }}
+      </button>
+    </div>
+
+    <div class="feedback" *ngIf="showFeedback" [ngClass]="feedbackType">
+      {{
+        feedbackType === "correct"
+          ? "✓ Correct!"
+          : "✗ Wrong! It was " + correctDay
+      }}
+    </div>
+  </div>
+</div>

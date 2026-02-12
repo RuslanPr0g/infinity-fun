@@ -22,7 +22,7 @@ export class SeaBattleHelperGameComponent implements OnInit {
   readonly ships = [4, 3, 3, 2, 2, 2, 1, 1, 1, 1];
 
   readonly letters = Array.from({ length: this.size }, (_, i) =>
-    String.fromCharCode(65 + i)
+    String.fromCharCode(65 + i),
   );
   readonly numbers = Array.from({ length: this.size }, (_, i) => i + 1);
 
@@ -33,14 +33,16 @@ export class SeaBattleHelperGameComponent implements OnInit {
 
   resetGrid() {
     this.grid = Array.from({ length: this.size }, () =>
-      Array.from({ length: this.size }, () => ({ state: 'empty' as CellState }))
+      Array.from({ length: this.size }, () => ({
+        state: 'empty' as CellState,
+      })),
     );
     this.clearProbabilities();
   }
 
   clearProbabilities() {
     this.probabilityMatrix = Array.from({ length: this.size }, () =>
-      Array(this.size).fill(0)
+      Array(this.size).fill(0),
     );
   }
 
@@ -229,7 +231,7 @@ export class SeaBattleHelperGameComponent implements OnInit {
     y: number,
     shipSize: number,
     horizontal: boolean,
-    hits: [number, number][]
+    hits: [number, number][],
   ): boolean {
     for (let i = 0; i < shipSize; i++) {
       const cx = horizontal ? x + i : x;
@@ -243,7 +245,7 @@ export class SeaBattleHelperGameComponent implements OnInit {
       const coversAllHits = hits.every(([hx, hy]) =>
         horizontal
           ? hy === y && hx >= x && hx < x + shipSize
-          : hx === x && hy >= y && hy < y + shipSize
+          : hx === x && hy >= y && hy < y + shipSize,
       );
       if (!coversAllHits) return false;
     }
@@ -264,13 +266,13 @@ export class SeaBattleHelperGameComponent implements OnInit {
   getCellColor(x: number, y: number): string {
     const cell = this.grid[y][x];
     if (cell.state === 'hit') return '#ff9800';
-    if (cell.state === 'kill') return '#e53935';
+    if (cell.state === 'kill') return '#a00502';
     if (cell.state === 'miss') return '#546e7a';
     if (cell.state === 'empty') {
       const max = this.getMaxProbability();
       const value = this.probabilityMatrix[y][x];
       if (max === 0 || value === 0) return '#003366';
-      const intensity = Math.round((value / max) * 255);
+      const intensity = Math.round((value / max) * 225);
       return `rgb(${intensity},0,${255 - intensity})`;
     }
     return '#003366';

@@ -1,0 +1,25 @@
+<div class="space">
+  <div
+    class="star"
+    *ngFor="let star of stars"
+    [ngStyle]="{
+      top: star.top + '%',
+      left: star.left + '%',
+      width: star.size + 'px',
+      height: star.size + 'px',
+      animationDuration: star.duration + 's',
+      animationDelay: star.delay + 's',
+    }"
+  ></div>
+
+  <div
+    class="shooting-star"
+    *ngFor="let s of shootingStars"
+    [ngStyle]="{
+      top: s.top + '%',
+      left: s.left + '%',
+      animationDuration: s.duration + 's',
+      animationDelay: s.delay + 's',
+    }"
+  ></div>
+</div>

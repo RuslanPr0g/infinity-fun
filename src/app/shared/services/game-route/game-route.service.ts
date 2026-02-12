@@ -25,6 +25,12 @@ export class GameRouteService {
       imageUrl: '/images/guessaflag.jpg',
     },
     {
+      name: 'Guess Day of Week',
+      route: '/guess-day-of-week',
+      color: '#8B5A3C',
+      imageUrl: '/images/calendar.jpg',
+    },
+    {
       name: 'Math Comparer',
       route: '/math-comparer',
       color: '#B2A5FF',
