@@ -1,141 +1,141 @@
-@import '../../colors';
+@import "../../colors";
 
 .title {
-    margin-bottom: 2%;
-    line-height: 24px;
+  margin-bottom: 2%;
+  line-height: 24px;
 }
 
 .months-summary {
-    margin-top: 24px;
-    line-height: 1.6;
-    font-size: 18px;
-    text-align: left;
+  margin-top: 24px;
+  line-height: 1.6;
+  font-size: 18px;
+  text-align: left;
 }
 
 .summary-title {
-    font-size: 24px;
-    font-weight: bold;
-    color: #4635B1;
-    margin-bottom: 20px;
+  font-size: 24px;
+  font-weight: bold;
+  color: $color-months-left;
+  margin-bottom: 20px;
 }
 
 .summary-text {
-    margin-bottom: 16px;
-    font-size: 16px;
-    font-weight: normal;
+  margin-bottom: 16px;
+  font-size: 16px;
+  font-weight: normal;
 }
 
 .summary-item {
-    margin-bottom: 12px;
-    font-size: 16px;
-    line-height: 1.5;
+  margin-bottom: 12px;
+  font-size: 16px;
+  line-height: 1.5;
 }
 
 .summary-item strong {
-    color: #4635B1;
+  color: $color-months-left;
 }
 
 span {
-    font-weight: bold;
-    font-size: 22px;
-    color: #872341;
+  font-weight: bold;
+  font-size: 22px;
+  color: $color-months-left;
 }
 
 .game-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .legend {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin-bottom: 16px;
-    text-align: center;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 16px;
+  text-align: center;
 }
 
 .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    white-space: nowrap;
-    margin-left: 16px;
-    margin-top: 8px;
-    min-width: 10%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  margin-left: 16px;
+  margin-top: 8px;
+  min-width: 10%;
 }
 
 .months {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 4px;
-    max-width: 90vw;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+  max-width: 90vw;
 }
 
 .circle {
-    width: 1.5vw;
-    height: 1.5vw;
-    border-radius: 50%;
+  width: 1.5vw;
+  height: 1.5vw;
+  border-radius: 50%;
 }
 
 .sleep {
-    background-color: #7886C7;
+  background-color: #7886c7;
 }
 
 .work {
-    background-color: #E195AB;
+  background-color: lighten-color($color-color-reaction, 0.1);
 }
 
 .chores {
-    background-color: #F0A04B;
+  background-color: #f0a04b;
 }
 
 .eating {
-    background-color: #98D8EF;
+  background-color: #98d8ef;
 }
 
 .free {
-    background-color: #77B254;
+  background-color: $color-country-guesser;
 }
 
 .controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  max-width: 100%;
+  margin-bottom: 16px;
+
+  .control {
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-direction: column;
-    max-width: 100%;
-    margin-bottom: 16px;
+    margin: 6px auto;
 
-    .control {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 6px auto;
-
-        label {
-            margin-right: 16px;
-            font-size: 1rem;
-        }
-
-        input {
-            padding: 5px;
-            text-align: center;
-            border: 2px solid #dae3f3;
-            border-radius: 4px;
-            font-size: 14px;
-            width: 60px;
-        }
+    label {
+      margin-right: 16px;
+      font-size: 1rem;
     }
+
+    input {
+      padding: 5px;
+      text-align: center;
+      border: 2px solid #dae3f3;
+      border-radius: 4px;
+      font-size: 14px;
+      width: 60px;
+    }
+  }
 }
 
 @media (max-width: 600px) {
-    .title {
-        font-size: 14px;
-    }
+  .title {
+    font-size: 14px;
+  }
 
-    .circle {
-        width: 3vw;
-        height: 3vw;
-    }
+  .circle {
+    width: 3vw;
+    height: 3vw;
+  }
 }

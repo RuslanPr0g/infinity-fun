@@ -1,3 +1,5 @@
+@import "../../colors";
+
 .seabattle-container {
   display: flex;
   justify-content: center;
@@ -62,7 +64,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #0d47a1;
+  border: 1px solid $color-seabattle;
   cursor: pointer;
   position: relative;
   transition: background 0.2s ease;
@@ -72,19 +74,19 @@
 }
 
 .cell.empty {
-  background-color: #003366;
+  background-color: darken-color($color-seabattle, 0.4);
 }
 
 .cell.miss {
-  background-color: #546e7a;
+  background-color: rgba($color-seabattle, 0.5);
 }
 
 .cell.hit {
-  background-color: #ff9800;
+  background-color: $color-guess-day;
 }
 
 .cell.kill {
-  background-color: #92211f;
+  background-color: $color-months-left;
 }
 
 .probability {

@@ -5,6 +5,7 @@ import { GameRoute } from '../../../core/models/game-route.model';
   providedIn: 'root',
 })
 export class GameRouteService {
+  // Please, make sure that the colors are matching the color scheme here: _colors.scss
   private games: GameRoute[] = [
     {
       name: 'Sea Battle Matrix',

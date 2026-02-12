@@ -24,7 +24,11 @@
 .title {
   font-size: clamp(24px, 6vw, 48px);
   margin: 0;
-  background: linear-gradient(135deg, #5d8736, #809d3c);
+  background: linear-gradient(
+    135deg,
+    $color-guess-day,
+    lighten-color($color-guess-day, 0.15)
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -77,9 +81,9 @@
 
     &:focus {
       outline: none;
-      border-color: #809d3c;
+      border-color: $color-guess-day;
       background-color: rgba(#fff, 0.1);
-      box-shadow: 0 0 10px rgba(128, 157, 60, 0.3);
+      box-shadow: 0 0 10px rgba($color-guess-day, 0.3);
     }
   }
 }
@@ -99,13 +103,17 @@
 }
 
 .start-button {
-  background: linear-gradient(135deg, #5d8736, #809d3c);
-  color: #fff;
+  background: linear-gradient(
+    135deg,
+    $color-guess-day,
+    darken-color($color-guess-day, 0.1)
+  );
+  color: $button-text-color;
   min-width: 200px;
 
   &:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(93, 135, 54, 0.4);
+    box-shadow: 0 10px 20px rgba($color-guess-day, 0.4);
   }
 
   &:disabled {
@@ -120,12 +128,12 @@
 }
 
 .end-button {
-  background-color: rgba(#a31d1d, 0.6);
-  color: #fff;
+  background-color: rgba($color-months-left, 0.6);
+  color: $button-text-color;
   min-width: 120px;
 
   &:hover {
-    background-color: rgba(#a31d1d, 0.8);
+    background-color: rgba($color-months-left, 0.8);
     transform: translateY(-2px);
   }
 
@@ -155,7 +163,7 @@
 .streak {
   font-size: clamp(16px, 3vw, 24px);
   font-weight: bold;
-  color: #5d8736;
+  color: $color-guess-day;
 }
 
 .date-display {
@@ -163,8 +171,12 @@
   flex-direction: column;
   gap: 20px;
   padding: 30px;
-  background: linear-gradient(135deg, rgba(#5d8736, 0.15), rgba(#809d3c, 0.15));
-  border: 2px solid rgba(#809d3c, 0.3);
+  background: linear-gradient(
+    135deg,
+    rgba($color-guess-day, 0.15),
+    rgba($color-guess-day, 0.1)
+  );
+  border: 2px solid rgba($color-guess-day, 0.3);
   border-radius: 12px;
 
   .label {
@@ -176,7 +188,7 @@
   .date {
     font-size: clamp(20px, 4vw, 32px);
     font-weight: bold;
-    color: #809d3c;
+    color: $color-guess-day;
     margin: 0;
     letter-spacing: 0.5px;
   }
@@ -203,8 +215,8 @@
   text-transform: capitalize;
 
   &:hover:not(:disabled) {
-    background-color: rgba(#809d3c, 0.3);
-    border-color: #809d3c;
+    background-color: rgba($color-guess-day, 0.3);
+    border-color: $color-guess-day;
     transform: translateY(-2px);
   }
 
@@ -217,22 +229,22 @@
   }
 
   &.selected {
-    background-color: rgba(#5d8736, 0.5);
-    border-color: #5d8736;
+    background-color: rgba($color-guess-day, 0.5);
+    border-color: $color-guess-day;
   }
 
   &.correct {
-    background-color: rgba(#5d8736, 0.8);
-    border-color: #5d8736;
+    background-color: rgba($color-country-guesser, 0.8);
+    border-color: $color-country-guesser;
     color: #fff;
-    box-shadow: 0 0 15px rgba(93, 135, 54, 0.5);
+    box-shadow: 0 0 15px rgba($color-country-guesser, 0.5);
   }
 
   &.incorrect {
-    background-color: rgba(#a31d1d, 0.8);
-    border-color: #a31d1d;
+    background-color: rgba($color-months-left, 0.8);
+    border-color: $color-months-left;
     color: #fff;
-    box-shadow: 0 0 15px rgba(163, 29, 29, 0.5);
+    box-shadow: 0 0 15px rgba($color-months-left, 0.5);
   }
 }
 
@@ -244,15 +256,15 @@
   animation: slideIn 0.3s ease;
 
   &.correct {
-    background-color: rgba(#5d8736, 0.3);
-    color: #5d8736;
-    border: 2px solid #5d8736;
+    background-color: rgba($color-country-guesser, 0.3);
+    color: $color-country-guesser;
+    border: 2px solid $color-country-guesser;
   }
 
   &.incorrect {
-    background-color: rgba(#a31d1d, 0.3);
-    color: #a31d1d;
-    border: 2px solid #a31d1d;
+    background-color: rgba($color-months-left, 0.3);
+    color: $color-months-left;
+    border: 2px solid $color-months-left;
   }
 }
 

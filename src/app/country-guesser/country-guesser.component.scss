@@ -26,11 +26,19 @@
 }
 
 .green-background {
-  background: radial-gradient(circle closest-side, #5b913b, transparent);
+  background: radial-gradient(
+    circle closest-side,
+    $color-country-guesser,
+    transparent
+  );
 }
 
 .red-background {
-  background: radial-gradient(circle closest-side, #b82132, transparent);
+  background: radial-gradient(
+    circle closest-side,
+    $color-months-left,
+    transparent
+  );
 }
 
 .bandw {
@@ -48,8 +56,8 @@
 }
 
 .check-button {
-  background-color: #4caf50;
-  color: white;
+  background-color: $color-country-guesser;
+  color: $button-text-color;
   padding: 10px 20px;
   border: none;
   border-radius: 4px;
@@ -59,10 +67,13 @@
   max-width: 480px;
   min-width: 480px;
   align-self: center;
+  transition: all 0.3s ease;
 }
 
 .check-button:hover {
-  background-color: #45a049;
+  background-color: darken-color($color-country-guesser, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba($color-country-guesser, 0.4);
 }
 
 .mode-selector {
@@ -95,8 +106,8 @@
 }
 
 .mode-selector input[type="radio"]:checked {
-  background-color: #4caf50;
-  border-color: #4caf50;
+  background-color: $color-country-guesser;
+  border-color: $color-country-guesser;
 }
 
 .mode-selector input[type="radio"]:checked::before {
@@ -137,8 +148,8 @@ input[type="checkbox"] {
 }
 
 input[type="checkbox"]:checked {
-  background-color: #4caf50;
-  border-color: #4caf50;
+  background-color: $color-country-guesser;
+  border-color: $color-country-guesser;
 }
 
 input[type="checkbox"]:checked::before {
@@ -157,8 +168,12 @@ label:hover input[type="checkbox"] {
 }
 
 .guess-button {
-  background: linear-gradient(135deg, #98d8ef, #3b6790);
-  color: white;
+  background: linear-gradient(
+    135deg,
+    $color-country-guesser,
+    darken-color($color-country-guesser, 0.1)
+  );
+  color: $button-text-color;
   font-size: 16px;
   padding: 12px 24px;
   border: none;
@@ -171,7 +186,13 @@ label:hover input[type="checkbox"] {
   margin: 4px 2px;
 
   &:hover {
-    background: linear-gradient(100deg, #98d8ef, #3b6790);
+    background: linear-gradient(
+      100deg,
+      lighten-color($color-country-guesser, 0.1),
+      $color-country-guesser
+    );
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba($color-country-guesser, 0.4);
   }
 
   &:disabled {
@@ -181,7 +202,7 @@ label:hover input[type="checkbox"] {
 
   &:focus {
     outline: none;
-    box-shadow: 0 0 5px rgba(159, 193, 8, 0.5);
+    box-shadow: 0 0 5px rgba($color-country-guesser, 0.5);
   }
 }
 

@@ -3,4 +3,21 @@ $primary-text-color: #f0f0f0;
 $button-bg-color: #008cba;
 $button-hover-color: #005f72;
 $button-text-color: #fff;
-$link-color: #D9EAFD;
+$link-color: #d9eafd;
+
+$color-seabattle: #0ea5e9;
+$color-reject-cookies: #6366f1;
+$color-country-guesser: #10b981;
+$color-guess-day: #f59e0b;
+$color-math-comparer: #8b5cf6;
+$color-color-reaction: #ec4899;
+$color-months-left: #ef4444;
+$color-algorithms: #6b7280;
+
+@function lighten-color($color, $amount: 0.15) {
+  @return mix($color, white, 100% - ($amount * 100%));
+}
+
+@function darken-color($color, $amount: 0.15) {
+  @return mix($color, black, 100% - ($amount * 100%));
+}
