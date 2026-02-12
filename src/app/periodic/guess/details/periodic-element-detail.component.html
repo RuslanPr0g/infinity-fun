@@ -26,6 +26,29 @@
       </label>
     </div>
 
+    <div class="search-section">
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Search elements..."
+        [(ngModel)]="searchQuery"
+        (input)="onSearchChange($event.target)"
+      />
+      <div
+        class="search-results"
+        *ngIf="showSearchResults && filteredElements.length"
+      >
+        <div
+          class="search-result-item"
+          *ngFor="let el of filteredElements"
+          (click)="selectElement(el)"
+        >
+          <span class="result-symbol">{{ el.symbol }}</span>
+          <span class="result-name">{{ el.name }}</span>
+        </div>
+      </div>
+    </div>
+
     <div class="modal-body">
       <div class="body-grid">
         <div class="images-section">
@@ -38,10 +61,6 @@
 
           <div class="element-image" *ngIf="element?.bohr_model_image">
             <img [src]="element?.bohr_model_image" alt="Bohr Model" />
-          </div>
-
-          <div class="element-image" *ngIf="element?.spectral_img">
-            <img [src]="element?.spectral_img" alt="Spectral" />
           </div>
         </div>
 

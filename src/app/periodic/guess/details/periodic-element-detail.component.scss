@@ -109,6 +109,71 @@
   font-size: 14px;
 }
 
+.search-section {
+  padding: 16px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  position: relative;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba($primary-text-color, 0.12);
+  background: rgba(255, 255, 255, 0.02);
+  color: $primary-text-color;
+  font-size: 14px;
+
+  &::placeholder {
+    color: rgba($primary-text-color, 0.4);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: rgba($primary-text-color, 0.2);
+    background: rgba(255, 255, 255, 0.04);
+  }
+}
+
+.search-results {
+  position: absolute;
+  top: 60px;
+  left: 24px;
+  right: 24px;
+  background: rgba(20, 20, 30, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 10;
+}
+
+.search-result-item {
+  padding: 10px 12px;
+  cursor: pointer;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  transition: background 0.2s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+}
+
+.result-symbol {
+  min-width: 30px;
+  font-weight: 700;
+  color: $color-country-guesser;
+  font-size: 14px;
+}
+
+.result-name {
+  color: $primary-text-color;
+  font-size: 14px;
+  flex: 1;
+}
+
 .modal-body {
   padding: 24px;
 }
@@ -211,6 +276,15 @@
     padding: 24px 40px;
   }
 
+  .search-section {
+    padding: 24px 40px;
+  }
+
+  .search-results {
+    left: 40px;
+    right: 40px;
+  }
+
   .modal-body {
     padding: 40px;
   }
@@ -272,5 +346,11 @@
 
   .detail-row {
     grid-template-columns: 100px 1fr;
+  }
+
+  .search-results {
+    left: 16px;
+    right: 16px;
+    max-height: 250px;
   }
 }
