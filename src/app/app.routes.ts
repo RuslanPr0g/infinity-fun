@@ -7,10 +7,12 @@ import { LeftToLiveGameComponent } from './left-to-live/left-to-live.component';
 import { RejectCookiesGameComponent } from './reject-cookies/reject-cookies.component';
 import { SeaBattleHelperGameComponent } from './seabattle-helper/seabattle-helper.component';
 import { GuessDayOfWeekComponent } from './guess-day-of-week/guess-day-of-week.component';
+import { PeriodicGameComponent } from './periodic/periodic-game.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'home', component: HomeComponent },
+  { path: 'periodic', component: PeriodicGameComponent },
   { path: 'color-click', component: ClickColorGameComponent },
   { path: 'country-guesser', component: CountryGuesserGameComponent },
   { path: 'math-comparer', component: MathComparerGameComponent },

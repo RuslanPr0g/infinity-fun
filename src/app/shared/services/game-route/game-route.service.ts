@@ -13,6 +13,16 @@ export class GameRouteService {
       color: '#0EA5E9',
     },
     {
+      name: 'Periodic Quiz',
+      route: '/periodic',
+      color: '#1648a3',
+    },
+    {
+      name: 'Guess Day of Week',
+      route: '/guess-day-of-week',
+      color: '#F59E0B',
+    },
+    {
       name: 'Reject All Cookies',
       route: '/reject-cookies',
       color: '#6366F1',
@@ -23,14 +33,9 @@ export class GameRouteService {
       color: '#10B981',
     },
     {
-      name: 'Guess Day of Week',
-      route: '/guess-day-of-week',
-      color: '#F59E0B',
-    },
-    {
       name: 'Math Comparer',
       route: '/math-comparer',
-      color: '#8B5CF6',
+      color: '#044d4d',
     },
     {
       name: 'Color Reaction',

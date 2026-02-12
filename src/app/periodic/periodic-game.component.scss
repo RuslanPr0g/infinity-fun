@@ -1,0 +1,24 @@
+@import "../../colors";
+
+.periodic-page {
+  min-height: calc(100vh - 88px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
+}
+
+.header h1 {
+  margin: 0 0 12px 0;
+  font-size: 28px;
+  color: $primary-text-color;
+}
+
+@media (min-width: 1024px) {
+  .periodic-page {
+    padding: 40px;
+  }
+  .header h1 {
+    font-size: 42px;
+  }
+}

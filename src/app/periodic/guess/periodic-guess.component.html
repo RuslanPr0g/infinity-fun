@@ -1,0 +1,34 @@
+<div class="guess-wrap" *ngIf="!loading">
+  <div class="card">
+    <div class="info">
+      <div class="symbol">{{ current?.symbol }}</div>
+      <div class="meta">
+        <div class="number">#{{ current?.number }}</div>
+        <div class="period">Period {{ current?.period }}</div>
+      </div>
+    </div>
+
+    <div class="image" *ngIf="current?.image?.url">
+      <img
+        [src]="current?.image?.url"
+        [alt]="current?.image?.title || current?.name"
+      />
+    </div>
+
+    <div class="controls">
+      <input [(ngModel)]="guess" placeholder="Guess element name" />
+      <button (click)="submit()">Check</button>
+    </div>
+
+    <div class="feedback" *ngIf="feedback">
+      <div
+        [class.correct]="feedback === 'correct'"
+        [class.incorrect]="feedback === 'incorrect'"
+      >
+        {{ feedback === "correct" ? "Correct" : "Try again" }}
+      </div>
+    </div>
+
+    <div class="score">Score: {{ score }}</div>
+  </div>
+</div>

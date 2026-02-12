@@ -1,0 +1,143 @@
+@import "../../../colors";
+
+.guess-wrap {
+  width: 100%;
+  max-width: 820px;
+  margin: 0 auto;
+}
+
+@media (min-width: 1024px) {
+  .guess-wrap {
+    max-width: 1400px;
+  }
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 20px;
+  display: grid;
+  grid-template-columns: 1fr 140px;
+  gap: 16px;
+  align-items: center;
+  backdrop-filter: blur(6px) saturate(120%);
+}
+
+@media (min-width: 1024px) {
+  .card {
+    padding: 32px;
+    gap: 24px;
+    grid-template-columns: 1fr 220px;
+    min-width: 500px;
+  }
+}
+
+.info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.symbol {
+  font-size: 48px;
+  font-weight: 700;
+  color: $color-country-guesser;
+}
+
+@media (min-width: 1024px) {
+  .symbol {
+    font-size: 72px;
+  }
+}
+
+.meta {
+  color: rgba($primary-text-color, 0.8);
+}
+
+.image img {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid rgba($primary-text-color, 0.08);
+}
+
+@media (min-width: 1024px) {
+  .image img {
+    width: 180px;
+    height: 180px;
+  }
+}
+
+.controls {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.controls input {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba($primary-text-color, 0.12);
+  background: rgba(255, 255, 255, 0.02);
+  color: $primary-text-color;
+}
+
+.controls button {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(
+    135deg,
+    $color-country-guesser,
+    darken-color($color-country-guesser, 0.08)
+  );
+  color: $button-text-color;
+}
+
+@media (min-width: 1024px) {
+  .controls input {
+    padding: 14px 16px;
+    font-size: 16px;
+  }
+  .controls button {
+    padding: 14px 20px;
+    font-size: 16px;
+  }
+}
+
+.feedback div {
+  margin-top: 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  display: inline-block;
+}
+
+.feedback .correct {
+  background: rgba($color-country-guesser, 0.12);
+  color: $color-country-guesser;
+}
+
+.feedback .incorrect {
+  background: rgba($color-months-left, 0.12);
+  color: $color-months-left;
+}
+
+.score {
+  grid-column: 1 / -1;
+  margin-top: 8px;
+  color: rgba($primary-text-color, 0.8);
+}
+
+@media (max-width: 720px) {
+  .card {
+    grid-template-columns: 1fr;
+  }
+  .image img {
+    width: 100%;
+    height: 180px;
+  }
+}
