@@ -45,9 +45,15 @@ export class PeriodicGuessComponent implements OnInit {
     if (this.guess.trim().toLowerCase() === expected) {
       this.feedback = 'correct';
       this.score += 1;
-      setTimeout(() => this.next(), 900);
+      setTimeout(() => {
+        this.feedback = null;
+        this.next();
+      }, 900);
     } else {
       this.feedback = 'incorrect';
+      setTimeout(() => {
+        this.feedback = null;
+      }, 500);
     }
   }
 

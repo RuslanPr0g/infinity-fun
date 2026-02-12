@@ -1,5 +1,9 @@
 <div class="guess-wrap" *ngIf="!loading">
-  <div class="card">
+  <div
+    class="card"
+    [class.correct]="feedback === 'correct'"
+    [class.incorrect]="feedback === 'incorrect'"
+  >
     <div class="info">
       <div class="symbol">{{ current?.symbol }}</div>
       <div class="meta">
@@ -25,15 +29,6 @@
       >
         ℹ
       </button>
-    </div>
-
-    <div class="feedback" *ngIf="feedback">
-      <div
-        [class.correct]="feedback === 'correct'"
-        [class.incorrect]="feedback === 'incorrect'"
-      >
-        {{ feedback === "correct" ? "Correct" : "Try again" }}
-      </div>
     </div>
 
     <div class="score">Score: {{ score }}</div>
