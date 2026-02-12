@@ -1,13 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { PeriodicTableService } from '../../shared/services/periodic-table/periodic-table.service';
-import { PeriodicElement } from '../periodic.model';
+import { PeriodicElement } from '../models/periodic.model';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { PeriodicElementDetailComponent } from './details/periodic-element-detail.component';
 
 @Component({
   selector: 'app-periodic-guess',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PeriodicElementDetailComponent],
   templateUrl: './periodic-guess.component.html',
   styleUrls: ['./periodic-guess.component.scss'],
 })
@@ -18,6 +19,7 @@ export class PeriodicGuessComponent implements OnInit {
   guess = '';
   feedback: 'correct' | 'incorrect' | null = null;
   score = 0;
+  showDetailModal = false;
 
   constructor(private svc: PeriodicTableService) {}
 
@@ -47,5 +49,13 @@ export class PeriodicGuessComponent implements OnInit {
     } else {
       this.feedback = 'incorrect';
     }
+  }
+
+  openDetailModal(): void {
+    this.showDetailModal = true;
+  }
+
+  closeDetailModal(): void {
+    this.showDetailModal = false;
   }
 }

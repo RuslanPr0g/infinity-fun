@@ -18,6 +18,13 @@
     <div class="controls">
       <input [(ngModel)]="guess" placeholder="Guess element name" />
       <button (click)="submit()">Check</button>
+      <button
+        class="info-btn"
+        (click)="openDetailModal()"
+        title="View element details"
+      >
+        ℹ
+      </button>
     </div>
 
     <div class="feedback" *ngIf="feedback">
@@ -32,3 +39,9 @@
     <div class="score">Score: {{ score }}</div>
   </div>
 </div>
+
+<app-periodic-element-detail
+  [element]="current"
+  [isOpen]="showDetailModal"
+  (close)="closeDetailModal()"
+></app-periodic-element-detail>

@@ -3,7 +3,7 @@ import { from, Observable, of } from 'rxjs';
 import {
   PeriodicElement,
   PeriodicTablePayload,
-} from '../../../periodic/periodic.model';
+} from '../../../periodic/models/periodic.model';
 
 @Injectable({ providedIn: 'root' })
 export class PeriodicTableService {

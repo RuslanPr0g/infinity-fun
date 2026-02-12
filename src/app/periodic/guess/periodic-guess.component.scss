@@ -96,6 +96,14 @@
     darken-color($color-country-guesser, 0.08)
   );
   color: $button-text-color;
+  cursor: pointer;
+}
+
+.controls .info-btn {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 10px 12px;
+  font-size: 16px;
+  min-width: auto;
 }
 
 @media (min-width: 1024px) {
@@ -106,6 +114,9 @@
   .controls button {
     padding: 14px 20px;
     font-size: 16px;
+  }
+  .controls .info-btn {
+    padding: 14px 16px;
   }
 }
 
