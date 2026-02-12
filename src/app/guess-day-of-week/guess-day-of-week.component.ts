@@ -43,8 +43,6 @@ export class GuessDayOfWeekComponent {
   startDate: string = this.minDate;
   endDate: string = this.maxDate;
 
-  constructor(private soundService: SoundService) {}
-
   isValidDateRange(): boolean {
     if (!this.startDate || !this.endDate) return false;
     const start = new Date(this.startDate);
@@ -98,9 +96,7 @@ export class GuessDayOfWeekComponent {
 
     if (isCorrect) {
       this.streak++;
-      this.soundService.playCorrect();
     } else {
-      this.soundService.playWrong();
     }
 
     setTimeout(() => {

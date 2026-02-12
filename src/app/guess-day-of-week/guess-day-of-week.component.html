@@ -41,7 +41,13 @@
   <div class="game-screen" *ngIf="gameState === 'playing'">
     <div class="game-header">
       <div class="streak">Streak: {{ streak }}</div>
-      <button class="end-button" (click)="endGame()">End Game</button>
+      <div class="feedback" *ngIf="showFeedback" [ngClass]="feedbackType">
+        {{
+          feedbackType === "correct"
+            ? "✓ Correct!"
+            : "✗ Wrong! It was " + correctDay
+        }}
+      </div>
     </div>
 
     <div class="date-display">
@@ -65,14 +71,6 @@
       >
         {{ day }}
       </button>
-    </div>
-
-    <div class="feedback" *ngIf="showFeedback" [ngClass]="feedbackType">
-      {{
-        feedbackType === "correct"
-          ? "✓ Correct!"
-          : "✗ Wrong! It was " + correctDay
-      }}
     </div>
   </div>
 </div>
