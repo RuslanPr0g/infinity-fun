@@ -134,7 +134,6 @@
   }
 }
 
-// Game Screen
 .game-screen {
   display: flex;
   flex-direction: column;
@@ -268,7 +267,6 @@
   }
 }
 
-// Mobile Responsive
 @media (max-width: 600px) {
   .game-container {
     padding: 20px;
