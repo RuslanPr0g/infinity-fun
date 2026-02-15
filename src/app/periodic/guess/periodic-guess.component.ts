@@ -18,7 +18,7 @@ export class PeriodicGuessComponent implements OnInit {
   current?: PeriodicElement;
   guess = '';
   feedback: 'correct' | 'incorrect' | null = null;
-  score = 0;
+  streak = 0;
   showDetailModal = false;
 
   constructor(private svc: PeriodicTableService) {}
@@ -44,12 +44,13 @@ export class PeriodicGuessComponent implements OnInit {
     const expected = (this.current.name || '').trim().toLowerCase();
     if (this.guess.trim().toLowerCase() === expected) {
       this.feedback = 'correct';
-      this.score += 1;
+      this.streak += 1;
       setTimeout(() => {
         this.feedback = null;
         this.next();
       }, 900);
     } else {
+      this.streak = 0;
       this.feedback = 'incorrect';
       setTimeout(() => {
         this.feedback = null;

@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { SoundService } from '../shared/services/sound/sound.service';
 
 type GameState = 'range-selection' | 'playing' | 'ended';
 
@@ -97,6 +96,7 @@ export class GuessDayOfWeekComponent {
     if (isCorrect) {
       this.streak++;
     } else {
+      this.streak = 0;
     }
 
     setTimeout(() => {
