@@ -17,7 +17,5 @@ import { SpaceBackgroundComponent } from './space-background/space-background.co
   styleUrl: './app.component.scss',
 })
 export class AppComponent {
-  title: string = 'infinityfun';
-
   constructor(protected route: ActivatedRoute) {}
 }

@@ -1,0 +1,93 @@
+<div class="game-container">
+  <div class="countdown-wrapper">
+    <div class="title-section">
+      <h1 class="title" *ngIf="!isEditingTitle" (click)="toggleTitleEdit()">
+        {{ title }}
+      </h1>
+      <input
+        *ngIf="isEditingTitle"
+        type="text"
+        [(ngModel)]="title"
+        (blur)="onTitleBlur()"
+        (keyup.enter)="onTitleBlur()"
+        class="title-input"
+        #titleInput
+        autofocus
+      />
+      <span
+        class="edit-icon"
+        (click)="toggleTitleEdit()"
+        *ngIf="!isEditingTitle"
+        >✏️</span
+      >
+    </div>
+
+    <div class="countdown-display" *ngIf="timeLeft">
+      <div class="target-info">
+        <p class="target-date">{{ targetDate | date: "fullDate" }}</p>
+      </div>
+
+      <div class="time-display">
+        <div class="time-unit">
+          <span class="number">{{ timeLeft.days }}</span>
+          <span class="label">Days</span>
+        </div>
+        <div class="time-unit">
+          <span class="number">{{ timeLeft.hours }}</span>
+          <span class="label">Hours</span>
+        </div>
+        <div class="time-unit">
+          <span class="number">{{ timeLeft.minutes }}</span>
+          <span class="label">Minutes</span>
+        </div>
+        <div class="time-unit">
+          <span class="number">{{ timeLeft.seconds }}</span>
+          <span class="label">Seconds</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="share-section" *ngIf="targetDate">
+      <p class="share-label">Share this countdown:</p>
+      <input
+        type="text"
+        [value]="getShareUrl()"
+        readonly
+        class="share-url"
+        #shareInput
+      />
+      <button (click)="copyToClipboard()" class="copy-button">Copy URL</button>
+    </div>
+
+    <div class="input-section">
+      <div class="input-group">
+        <label for="date-input">Select a specific date:</label>
+        <input
+          type="date"
+          id="date-input"
+          [(ngModel)]="selectedDate"
+          (change)="onDateChange()"
+          [min]="minDate"
+          class="date-input"
+        />
+      </div>
+
+      <div class="or-divider">OR</div>
+
+      <div class="input-group">
+        <label for="day-select">Select next occurrence of day:</label>
+        <select
+          id="day-select"
+          [(ngModel)]="selectedDayOfWeek"
+          (change)="onDayOfWeekChange()"
+          class="day-select"
+        >
+          <option value="">Choose a day</option>
+          <option *ngFor="let day of daysOfWeek" [value]="day">
+            {{ day }}
+          </option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>

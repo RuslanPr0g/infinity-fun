@@ -8,6 +8,7 @@ import { RejectCookiesGameComponent } from './reject-cookies/reject-cookies.comp
 import { SeaBattleHelperGameComponent } from './seabattle-helper/seabattle-helper.component';
 import { GuessDayOfWeekComponent } from './guess-day-of-week/guess-day-of-week.component';
 import { PeriodicGameComponent } from './periodic/periodic-game.component';
+import { DateCountdownComponent } from './date-countdown/date-countdown.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -20,5 +21,6 @@ export const routes: Routes = [
   { path: 'reject-cookies', component: RejectCookiesGameComponent },
   { path: 'seabattle', component: SeaBattleHelperGameComponent },
   { path: 'guess-day-of-week', component: GuessDayOfWeekComponent },
+  { path: 'date-countdown', component: DateCountdownComponent },
   { path: '**', redirectTo: '' },
 ];

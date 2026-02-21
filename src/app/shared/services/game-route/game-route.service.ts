@@ -48,6 +48,11 @@ export class GameRouteService {
       color: '#EF4444',
     },
     {
+      name: 'Date Countdown',
+      route: '/date-countdown',
+      color: '#9c1d1d',
+    },
+    {
       name: 'Algorithms Graph',
       route: 'https://ruslanpr0g.github.io/algo-graph/',
       color: '#6B7280',

@@ -13,6 +13,7 @@ $color-math-comparer: #8b5cf6;
 $color-color-reaction: #ec4899;
 $color-months-left: #ef4444;
 $color-algorithms: #6b7280;
+$color-date-countdown: #9c1d1d;
 
 @function lighten-color($color, $amount: 0.15) {
   @return mix($color, white, 100% - ($amount * 100%));
