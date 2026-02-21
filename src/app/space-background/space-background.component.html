@@ -2,24 +2,20 @@
   <div
     class="star"
     *ngFor="let star of stars"
-    [ngStyle]="{
-      top: star.top + '%',
-      left: star.left + '%',
-      width: star.size + 'px',
-      height: star.size + 'px',
-      animationDuration: star.duration + 's',
-      animationDelay: star.delay + 's',
-    }"
+    [style.top.%]="star.top"
+    [style.left.%]="star.left"
+    [style.width.px]="star.size"
+    [style.height.px]="star.size"
+    [style.animation-duration.s]="star.duration"
+    [style.animation-delay.s]="star.delay"
   ></div>
 
   <div
     class="shooting-star"
     *ngFor="let s of shootingStars"
-    [ngStyle]="{
-      top: s.top + '%',
-      left: s.left + '%',
-      animationDuration: s.duration + 's',
-      animationDelay: s.delay + 's',
-    }"
+    [style.top.%]="s.top"
+    [style.left.%]="s.left"
+    [style.animation-duration.s]="s.duration"
+    [style.animation-delay.s]="s.delay"
   ></div>
 </div>

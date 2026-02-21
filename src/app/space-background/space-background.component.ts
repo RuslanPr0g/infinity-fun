@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 
 interface Star {
   top: number;
@@ -22,19 +22,21 @@ interface ShootingStar {
   imports: [CommonModule],
   templateUrl: './space-background.component.html',
   styleUrls: ['./space-background.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SpaceBackgroundComponent implements OnInit {
   stars: Star[] = [];
   shootingStars: ShootingStar[] = [];
 
   ngOnInit(): void {
-    this.generateStars(200);
-    this.generateShootingStars(5);
+    this.stars = this.generateStars(70);
+    this.shootingStars = this.generateShootingStars(4);
   }
 
-  generateStars(count: number) {
+  generateStars(count: number): Star[] {
+    const stars: Star[] = [];
     for (let i = 0; i < count; i++) {
-      this.stars.push({
+      stars.push({
         top: Math.random() * 100,
         left: Math.random() * 100,
         size: Math.random() * 3 + 1,
@@ -42,16 +44,19 @@ export class SpaceBackgroundComponent implements OnInit {
         delay: Math.random() * 45,
       });
     }
+    return stars;
   }
 
-  generateShootingStars(count: number) {
+  generateShootingStars(count: number): ShootingStar[] {
+    const shootingStars: ShootingStar[] = [];
     for (let i = 0; i < count; i++) {
-      this.shootingStars.push({
+      shootingStars.push({
         top: Math.random() * 50,
         left: Math.random() * 100,
         duration: Math.random() * 10 + 15,
         delay: Math.random() * 56,
       });
     }
+    return shootingStars;
   }
 }
