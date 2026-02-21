@@ -22,7 +22,13 @@
       >
     </div>
 
-    <div class="countdown-display" *ngIf="timeLeft">
+    <div
+      class="countdown-display"
+      *ngIf="timeLeft"
+      (click)="copyCountdownText()"
+      title="Click to copy time left"
+      [ngClass]="{ copied: copied }"
+    >
       <div class="target-info">
         <p class="target-date">{{ targetDate | date: "fullDate" }}</p>
       </div>

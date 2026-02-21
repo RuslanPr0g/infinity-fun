@@ -27,6 +27,7 @@ export class DateCountdownComponent implements OnInit, OnDestroy {
   private intervalSub: Subscription | null = null;
   title: string = 'Date Countdown';
   isEditingTitle: boolean = false;
+  copied: boolean = false;
 
   minDate: string;
   maxDate: string;
@@ -176,7 +177,7 @@ export class DateCountdownComponent implements OnInit, OnDestroy {
     if (!this.timeLeft) return '';
     const { days, hours, minutes, seconds, isPast } = this.timeLeft;
     const timeStr = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-    return isPast ? `${timeStr} ago` : `${timeStr} left`;
+    return `${timeStr}`;
   }
 
   getShareUrl(): string {
@@ -200,5 +201,19 @@ export class DateCountdownComponent implements OnInit, OnDestroy {
       document.body.removeChild(tempInput);
       alert('URL copied to clipboard (fallback method)');
     });
+  }
+
+  copyCountdownText(): void {
+    if (this.timeLeft) {
+      navigator.clipboard
+        .writeText(this.getCountdownText())
+        .then(() => {
+          this.copied = true;
+          setTimeout(() => (this.copied = false), 2000);
+        })
+        .catch(() => {
+          alert('Failed to copy countdown text');
+        });
+    }
   }
 }
