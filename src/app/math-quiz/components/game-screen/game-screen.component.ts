@@ -34,7 +34,7 @@ import { TypedAnswerComponent } from '../typed-answer/typed-answer.component';
 
       @if (question.answerType === 'typed') {
         <app-typed-answer
-          [locked]="gameState === 'feedback'"
+          [disabled]="gameState === 'feedback'"
           [inputMode]="typedInputMode"
           (answered)="answerSubmitted.emit($event)"
         />
