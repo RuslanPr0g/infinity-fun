@@ -45,50 +45,40 @@ type TransitionAction =
   ],
   template: `
     <div class="math-quiz-container">
-      @switch (gameState()) {
-        @case ('lobby') {
-          <app-mode-select (modeSelected)="onModeSelected($event)" />
+      @if (gameState() === 'playing' || gameState() === 'feedback') {
+        @if (currentQuestion() && sessionSnapshot()) {
+          <app-game-screen
+            [question]="currentQuestion()!"
+            [sessionSnapshot]="sessionSnapshot()!"
+            [gameState]="gameState() === 'feedback' ? 'feedback' : 'playing'"
+            [isLastAnswerCorrect]="lastAnswerCorrect()"
+            [lastCorrectAnswer]="currentQuestion()!.correctAnswer"
+            (answerSubmitted)="onAnswerSubmitted($event)"
+            (nextQuestion)="onNext()"
+          />
         }
-        @case ('difficulty-select') {
-          @if (selectedMode()) {
-            <app-difficulty-select
-              [mode]="selectedMode()!"
-              (difficultySelected)="onDifficultySelected($event)"
-              (back)="onBack()"
-            />
+      } @else {
+        @switch (gameState()) {
+          @case ('lobby') {
+            <app-mode-select (modeSelected)="onModeSelected($event)" />
           }
-        }
-        @case ('playing') {
-          @if (currentQuestion() && sessionSnapshot()) {
-            <app-game-screen
-              [question]="currentQuestion()!"
-              [sessionSnapshot]="sessionSnapshot()!"
-              [gameState]="'playing'"
-              [isLastAnswerCorrect]="null"
-              [lastCorrectAnswer]="''"
-              (answerSubmitted)="onAnswerSubmitted($event)"
-            />
+          @case ('difficulty-select') {
+            @if (selectedMode()) {
+              <app-difficulty-select
+                [mode]="selectedMode()!"
+                (difficultySelected)="onDifficultySelected($event)"
+                (back)="onBack()"
+              />
+            }
           }
-        }
-        @case ('feedback') {
-          @if (currentQuestion() && sessionSnapshot()) {
-            <app-game-screen
-              [question]="currentQuestion()!"
-              [sessionSnapshot]="sessionSnapshot()!"
-              [gameState]="'feedback'"
-              [isLastAnswerCorrect]="lastAnswerCorrect()"
-              [lastCorrectAnswer]="currentQuestion()!.correctAnswer"
-              (nextQuestion)="onNext()"
-            />
-          }
-        }
-        @case ('results') {
-          @if (sessionResult()) {
-            <app-results
-              [result]="sessionResult()!"
-              (playAgain)="onPlayAgain()"
-              (changeMode)="onChangeMode()"
-            />
+          @case ('results') {
+            @if (sessionResult()) {
+              <app-results
+                [result]="sessionResult()!"
+                (playAgain)="onPlayAgain()"
+                (changeMode)="onChangeMode()"
+              />
+            }
           }
         }
       }

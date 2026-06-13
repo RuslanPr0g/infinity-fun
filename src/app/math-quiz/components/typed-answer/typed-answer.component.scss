@@ -23,9 +23,14 @@
       border-color: colors.$button-bg-color;
     }
 
-    &:disabled {
-      opacity: 0.5;
-    }
+  &.typed-answer-locked input {
+    opacity: 0.85;
+    cursor: default;
+  }
+
+  input:read-only {
+    opacity: 0.85;
+  }
   }
 
   button {

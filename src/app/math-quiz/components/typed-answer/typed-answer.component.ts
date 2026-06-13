@@ -5,7 +5,9 @@ import {
   ElementRef,
   EventEmitter,
   Input,
+  OnChanges,
   Output,
+  SimpleChanges,
   ViewChild,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -15,7 +17,7 @@ import { FormsModule } from '@angular/forms';
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="typed-answer">
+    <div class="typed-answer" [class.typed-answer-locked]="locked">
       <input
         #answerInput
         type="text"
@@ -23,19 +25,24 @@ import { FormsModule } from '@angular/forms';
         [attr.pattern]="inputMode === 'decimal' ? '[0-9]*[.,]?[0-9]*' : '[0-9]*'"
         autocomplete="off"
         [(ngModel)]="value"
-        (keyup.enter)="submit()"
-        [disabled]="disabled"
+        [readonly]="locked"
+        (keydown)="onKeydown($event)"
+        (blur)="onBlur()"
         aria-label="Your answer"
       />
-      <button type="button" (click)="submit()" [disabled]="disabled">
+      <button
+        type="button"
+        (click)="submit()"
+        [disabled]="locked || !value.trim()"
+      >
         Submit
       </button>
     </div>
   `,
   styleUrl: './typed-answer.component.scss',
 })
-export class TypedAnswerComponent implements AfterViewInit {
-  @Input() disabled = false;
+export class TypedAnswerComponent implements AfterViewInit, OnChanges {
+  @Input() locked = false;
   @Input() inputMode: 'numeric' | 'decimal' = 'numeric';
   @Output() answered = new EventEmitter<string>();
 
@@ -44,14 +51,55 @@ export class TypedAnswerComponent implements AfterViewInit {
   value = '';
 
   ngAfterViewInit(): void {
-    if (!this.disabled) {
-      this.answerInput.nativeElement.focus();
+    this.focusInput();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (!changes['locked']) return;
+
+    if (this.locked) {
+      this.keepFocus();
+      return;
+    }
+
+    if (!changes['locked'].firstChange) {
+      this.value = '';
+      this.focusInput();
+    }
+  }
+
+  onKeydown(event: KeyboardEvent): void {
+    if (this.locked) {
+      event.preventDefault();
+      return;
+    }
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      this.submit();
+    }
+  }
+
+  onBlur(): void {
+    if (this.locked) {
+      this.keepFocus();
     }
   }
 
   submit(): void {
-    if (this.disabled || !this.value.trim()) return;
+    if (this.locked || !this.value.trim()) return;
     this.answered.emit(this.value);
-    this.value = '';
+  }
+
+  private focusInput(): void {
+    requestAnimationFrame(() => this.answerInput?.nativeElement.focus());
+  }
+
+  private keepFocus(): void {
+    requestAnimationFrame(() => {
+      const el = this.answerInput?.nativeElement;
+      if (el && document.activeElement !== el) {
+        el.focus();
+      }
+    });
   }
 }
