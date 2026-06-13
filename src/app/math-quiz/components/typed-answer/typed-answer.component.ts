@@ -19,6 +19,9 @@ import { FormsModule } from '@angular/forms';
       <input
         #answerInput
         type="text"
+        [attr.inputmode]="inputMode"
+        [attr.pattern]="inputMode === 'decimal' ? '[0-9]*[.,]?[0-9]*' : '[0-9]*'"
+        autocomplete="off"
         [(ngModel)]="value"
         (keyup.enter)="submit()"
         [disabled]="disabled"
@@ -33,6 +36,7 @@ import { FormsModule } from '@angular/forms';
 })
 export class TypedAnswerComponent implements AfterViewInit {
   @Input() disabled = false;
+  @Input() inputMode: 'numeric' | 'decimal' = 'numeric';
   @Output() answered = new EventEmitter<string>();
 
   @ViewChild('answerInput') answerInput!: ElementRef<HTMLInputElement>;

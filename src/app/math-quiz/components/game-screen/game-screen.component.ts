@@ -35,6 +35,7 @@ import { TypedAnswerComponent } from '../typed-answer/typed-answer.component';
       @if (question.answerType === 'typed') {
         <app-typed-answer
           [disabled]="gameState === 'feedback'"
+          [inputMode]="typedInputMode"
           (answered)="answerSubmitted.emit($event)"
         />
       } @else {
@@ -65,4 +66,8 @@ export class GameScreenComponent {
 
   @Output() answerSubmitted = new EventEmitter<string>();
   @Output() nextQuestion = new EventEmitter<void>();
+
+  get typedInputMode(): 'numeric' | 'decimal' {
+    return (this.question.tolerance ?? 0) > 0 ? 'decimal' : 'numeric';
+  }
 }
