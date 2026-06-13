@@ -1,0 +1,16 @@
+@use '../../../../colors' as colors;
+
+.feedback-line {
+  margin: 1rem 0 0;
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.feedback-correct {
+  color: #22c55e;
+}
+
+.feedback-incorrect {
+  color: #ef4444;
+}

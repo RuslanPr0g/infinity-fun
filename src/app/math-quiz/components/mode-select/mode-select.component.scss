@@ -1,0 +1,62 @@
+@use '../../../../colors' as colors;
+
+.mode-select {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.title {
+  color: colors.$primary-text-color;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  color: rgba(colors.$primary-text-color, 0.7);
+  margin-bottom: 2rem;
+}
+
+.mode-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mode-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.5rem 1rem;
+  border: 2px solid rgba(colors.$primary-text-color, 0.15);
+  border-radius: 12px;
+  background: rgba(colors.$primary-text-color, 0.05);
+  color: colors.$primary-text-color;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    transform: scale(1.03);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    border-color: colors.$color-math-quiz;
+  }
+
+  .mode-icon {
+    font-size: 2rem;
+  }
+
+  .mode-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  .mode-desc {
+    font-size: 0.85rem;
+    opacity: 0.8;
+  }
+}

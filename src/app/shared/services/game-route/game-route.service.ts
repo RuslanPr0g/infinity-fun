@@ -53,6 +53,11 @@ export class GameRouteService {
       color: '#9c1d1d',
     },
     {
+      name: 'Math Quiz',
+      route: '/math-quiz',
+      color: '#f97316',
+    },
+    {
       name: 'Algorithms Graph',
       route: 'https://ruslanpr0g.github.io/algo-graph/',
       color: '#6B7280',

@@ -1,0 +1,23 @@
+@use '../../../../colors' as colors;
+
+.game-screen {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  color: colors.$primary-text-color;
+  font-size: 1.1rem;
+}
+
+.question-text {
+  font-size: 1.75rem;
+  text-align: center;
+  margin: 2rem 0;
+  color: colors.$primary-text-color;
+  word-break: break-word;
+}

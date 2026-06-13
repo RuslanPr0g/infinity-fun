@@ -1,0 +1,7 @@
+@use '../../colors' as colors;
+
+.math-quiz-container {
+  min-height: 80vh;
+  color: colors.$primary-text-color;
+  padding: 1rem;
+}

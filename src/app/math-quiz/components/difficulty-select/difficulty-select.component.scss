@@ -1,0 +1,73 @@
+@use '../../../../colors' as colors;
+
+.difficulty-select {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  color: colors.$link-color;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  padding: 0;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.title {
+  color: colors.$primary-text-color;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.difficulty-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.difficulty-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.5rem 1rem;
+  border: 2px solid rgba(colors.$primary-text-color, 0.15);
+  border-radius: 12px;
+  background: rgba(colors.$primary-text-color, 0.05);
+  color: colors.$primary-text-color;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    transform: scale(1.03);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    border-color: colors.$color-math-quiz;
+  }
+
+  .diff-label {
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+
+  .diff-desc {
+    font-size: 0.85rem;
+    opacity: 0.8;
+  }
+
+  .diff-time {
+    font-size: 0.9rem;
+    color: colors.$color-math-quiz;
+    font-weight: 500;
+  }
+}
