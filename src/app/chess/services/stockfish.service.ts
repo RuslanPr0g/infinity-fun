@@ -7,9 +7,9 @@
  * Per-move flow:  position fen <fen> → go movetime <ms> → bestmove <move>
  */
 
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
+import { APP_BASE_HREF } from '@angular/common';
 
-const WORKER_PATH = '/stockfish/stockfish-18-lite-single.js';
 const DEFAULT_THINK_MS = 400;
 
 interface PendingRequest {
@@ -30,6 +30,13 @@ export class StockfishService {
   private queue: Array<{ fen: string; thinkMs: number; resolve: (m: string | null) => void }> = [];
   private busy = false;
   private uciReady = false;
+  private readonly baseHref = inject(APP_BASE_HREF, { optional: true }) || '/';
+
+  private getWorkerPath(): string {
+    // Remove trailing slash to avoid double slashes when appending /stockfish/
+    const base = this.baseHref === '/' ? '' : this.baseHref.replace(/\/$/, '');
+    return `${base}/stockfish/stockfish-18-lite-single.js`;
+  }
 
   /**
    * Initialise the Web Worker and complete the UCI handshake.
@@ -43,7 +50,7 @@ export class StockfishService {
       this.initReject = reject;
 
       try {
-        this.worker = new Worker(WORKER_PATH);
+        this.worker = new Worker(this.getWorkerPath());
       } catch (e) {
         reject(e);
         return;
@@ -83,7 +90,7 @@ export class StockfishService {
   async isAlreadyCached(): Promise<boolean> {
     if (!('caches' in globalThis)) return false;
     try {
-      const response = await caches.match(WORKER_PATH);
+      const response = await caches.match(this.getWorkerPath());
       return response !== undefined;
     } catch {
       return false;
