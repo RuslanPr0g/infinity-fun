@@ -11,6 +11,7 @@ import { Injectable, signal, inject } from '@angular/core';
 import { APP_BASE_HREF } from '@angular/common';
 
 const DEFAULT_THINK_MS = 400;
+const DEBUG = (globalThis as any).STOCKFISH_DEBUG ?? false;
 
 interface PendingRequest {
   resolve: (move: string | null) => void;
@@ -57,17 +58,20 @@ export class StockfishService {
       }
 
       this.worker.onmessage = (event: MessageEvent<string>) => {
+        if (DEBUG) console.log('[Stockfish ←]', event.data);
         this.handleMessage(event.data);
       };
 
       this.worker.onerror = (event) => {
         const err = new Error(`Stockfish worker error: ${event.message}`);
+        if (DEBUG) console.error('[Stockfish ERROR]', err.message);
         this.initReject?.(err);
         this.pendingMove?.reject(err);
         this.initReject = null;
         this.pendingMove = null;
       };
 
+      if (DEBUG) console.log('[Stockfish →] uci');
       this.send('uci');
     });
   }
@@ -157,7 +161,9 @@ export class StockfishService {
       resolve: next.resolve,
       reject: () => { next.resolve(null); },
     };
+    if (DEBUG) console.log('[Stockfish →] position fen', next.fen.substring(0, 40) + '...');
     this.send(`position fen ${next.fen}`);
+    if (DEBUG) console.log(`[Stockfish →] go movetime ${next.thinkMs}`);
     this.send(`go movetime ${next.thinkMs}`);
   }
 }
