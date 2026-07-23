@@ -5,8 +5,10 @@
  * score its own candidates. `attackersOf` counts attackers of a square (a
  * counting superset of `isSquareAttacked`) for hanging-piece detection.
  * `evaluateBoard` is a static material+positional evaluation used by Hard's
- * lookahead. `burnHazard`/`burnAdjustment` are the Shrinking Board Royale
- * burn-awareness terms Easy/Medium/Hard all share. `heuristicScore` /
+ * lookahead. `burnHazard`/`royaleBurnAdjustment` are the Shrinking Board
+ * Royale burn-awareness terms Easy/Medium/Hard all share — including
+ * penalizing every OTHER own piece left stranded on the doomed ring, not
+ * just the piece being moved. `heuristicScore` /
  * `rankByHeuristic` are the "Medium-style" single-move scorer: Medium uses it
  * directly (plus randomization), Hard reuses it to rank its own candidates
  * and the opponent's plausible replies before its lookahead.
@@ -238,19 +240,44 @@ export function burnHazard(
   return { remainingRounds: remaining, doomedSquares: new Set(doomed) };
 }
 
+/** Scale applied to the value of every own piece left stranded on the doomed ring. */
+const ABANDON_PENALTY_SCALE = 0.9;
+
 /**
- * The burn penalty / evacuation-bonus terms Easy/Medium/Hard all share:
- * penalize landing on the doomed ring, reward leaving it, and give a king
- * evacuation a large extra push.
+ * How urgently a candidate should react to pieces stranded on the doomed
+ * ring. `remainingRounds <= 2` is provably this color's LAST move before
+ * the ring burns in alternating-turn Royale — whichever side is on move,
+ * the opponent's single intervening ply (if any) never gives this color
+ * another chance first — so abandonment counts at full value there. One
+ * stage earlier there's still a further chance, so it counts for less,
+ * encouraging early repositioning without panicking.
  */
-export function burnAdjustment(
+function burnUrgency(remainingRounds: number): number {
+  return remainingRounds <= 2 ? 1 : 0.5;
+}
+
+/**
+ * The full Shrinking Royale burn-awareness term Easy/Medium/Hard all share:
+ * penalize landing on the doomed ring, reward leaving it (with a large extra
+ * push for a king evacuation), AND penalize every OTHER piece of `color`
+ * still stranded on the doomed ring. Only one piece can be relocated per
+ * move in this turn-based mode, so anything else of the mover's own left
+ * behind is lost for certain once the burn is imminent — weighting the
+ * penalty by `PIECE_VALUES` makes abandoning a queen matter far more than
+ * abandoning a pawn, and lets a candidate that rescues the single MOST
+ * valuable at-risk piece outrank one that rescues a cheaper one, or one
+ * that ignores the ring entirely for an unrelated move.
+ */
+export function royaleBurnAdjustment(
   position: GamePosition,
+  color: PieceColor,
   mover: PieceType,
   from: Square,
   to: Square,
 ): number {
   const hazard = burnHazard(position);
   if (!hazard) return 0;
+
   let adjustment = 0;
   const destDoomed = hazard.doomedSquares.has(to);
   const originDoomed = hazard.doomedSquares.has(from);
@@ -263,6 +290,17 @@ export function burnAdjustment(
       adjustment += 50; // a safe king evacuation always outranks quiet moves
     }
   }
+
+  let abandoned = 0;
+  for (const sq of hazard.doomedSquares) {
+    if (sq === from) continue; // this candidate is already rescuing whatever stood here
+    const piece = pieceAt(position.board, sq);
+    if (piece && piece.color === color) {
+      abandoned += PIECE_VALUES[piece.type];
+    }
+  }
+  adjustment -= abandoned * ABANDON_PENALTY_SCALE * burnUrgency(hazard.remainingRounds);
+
   return adjustment;
 }
 
@@ -348,7 +386,7 @@ export function heuristicScore(
     score -= PIECE_VALUES.king;
   }
 
-  score += burnAdjustment(position, mover.type, intent.from, intent.to);
+  score += royaleBurnAdjustment(position, color, mover.type, intent.from, intent.to);
   score += positionalScore(boardAfter, color) - positionalScore(board, color);
 
   return { intent, score, capturesKing, kingSafeAfter };

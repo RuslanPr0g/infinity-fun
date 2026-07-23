@@ -173,5 +173,32 @@ describe('EasyBot', () => {
         });
       }
     });
+
+    it('rescues the more valuable of two pieces stranded on the doomed ring, not just the king', () => {
+      // Both the queen (a5) and the rook (h15) sit on the doomed ring 0;
+      // only one piece can move this turn. A knight capture (e6xf8) is
+      // available as an unrelated, tempting-looking alternative, but
+      // abandoning the queen is far costlier than abandoning the rook or
+      // passing up a single pawn, so the queen must be the one saved.
+      const board = boardFrom(
+        { h8: 'wK*', b2: 'bK*', a5: 'wQ*', h15: 'wR*', e6: 'wN*', f8: 'bP' },
+        15,
+      );
+      const position: GamePosition = {
+        board,
+        round: 23, // roundsUntilBurn(23, 0) === 2 — last chance
+        consecutivePassRounds: 0,
+        burnedRings: 0,
+      };
+      const engine = new ShrinkingRoyaleEngine(undefined, position);
+      for (let seed = 0; seed < 10; seed++) {
+        const bot = new EasyBot(mulberry32(seed));
+        const choice = bot.chooseMove(position, 'white', engine);
+        expect(choice.kind).toBe('move');
+        if (choice.kind === 'move') {
+          expect(choice.from).toBe(parseSquare('a5', 15));
+        }
+      }
+    });
   });
 });

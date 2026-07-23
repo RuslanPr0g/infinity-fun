@@ -10,20 +10,12 @@
  * Pure TypeScript — no Angular imports.
  */
 
-import {
-  PIECE_VALUES,
-  PieceColor,
-  boardSize,
-  findKing,
-  opponentOf,
-  pieceAt,
-} from '../core/board';
+import { PIECE_VALUES, PieceColor, findKing, opponentOf, pieceAt } from '../core/board';
 import { isSquareAttacked } from '../core/move-gen';
 import type { ChessBot } from '../bot';
 import type { ChessVariantEngine, GamePosition, MoveIntent } from '../variant';
 import { PASS_INTENT } from '../variant';
-import { doomedRingSquares, roundsUntilBurn } from '../burn';
-import { applySolo } from './evaluation';
+import { applySolo, royaleBurnAdjustment } from './evaluation';
 
 type MoveIntentOnly = Extract<MoveIntent, { kind: 'move' }>;
 
@@ -110,23 +102,7 @@ export class EasyBot implements ChessBot {
       score -= PIECE_VALUES.king;
     }
 
-    if (position.burnedRings !== undefined) {
-      const remaining = roundsUntilBurn(position.round, position.burnedRings);
-      if (remaining !== null && remaining <= 3) {
-        const doomed = doomedRingSquares(position.burnedRings, boardSize(board));
-        const destDoomed = doomed.includes(intent.to);
-        const originDoomed = doomed.includes(intent.from);
-        if (destDoomed) {
-          score -= PIECE_VALUES[mover.type];
-        }
-        if (originDoomed) {
-          score += PIECE_VALUES[mover.type] * 0.8; // evacuation bonus
-          if (mover.type === 'king' && !destDoomed) {
-            score += 50; // a safe king evacuation always outranks quiet moves
-          }
-        }
-      }
-    }
+    score += royaleBurnAdjustment(position, color, mover.type, intent.from, intent.to);
 
     score += this.random() * 0.75; // stay unpredictable
 

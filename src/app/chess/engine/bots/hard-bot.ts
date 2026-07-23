@@ -34,9 +34,9 @@ import {
   HeuristicScore,
   MoveIntentOnly,
   applySolo,
-  burnAdjustment,
   evaluateBoard,
   rankByHeuristic,
+  royaleBurnAdjustment,
 } from './evaluation';
 
 /** My candidate pool size, ranked by Medium-style static score. */
@@ -171,8 +171,9 @@ export class HardBot implements ChessBot {
         finalBoard = applySolo(boardAfterMine, enemy, bestReply);
         const replyMover = pieceAt(boardAfterMine, bestReply.from);
         if (replyMover) {
-          replyAdjustment = burnAdjustment(
+          replyAdjustment = royaleBurnAdjustment(
             midPosition,
+            enemy,
             replyMover.type,
             bestReply.from,
             bestReply.to,
@@ -182,7 +183,7 @@ export class HardBot implements ChessBot {
 
       const mover = pieceAt(position.board, intent.from);
       const myAdjustment = mover
-        ? burnAdjustment(position, mover.type, intent.from, intent.to)
+        ? royaleBurnAdjustment(position, color, mover.type, intent.from, intent.to)
         : 0;
 
       const score = evaluateBoard(finalBoard, color) + myAdjustment + replyAdjustment;
