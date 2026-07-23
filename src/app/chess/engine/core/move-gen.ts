@@ -30,6 +30,12 @@ export type CastleSide = 'king' | 'queen';
  */
 export interface MoveGenOptions {
   readonly promotionRanks?: Record<PieceColor, number>;
+  /**
+   * Replaces the default double-step start rank (1 for white, size-2 for
+   * black) — used by modes whose pawns spawn away from the back rank
+   * (Shrinking Board Royale's spawnOffset).
+   */
+  readonly pawnStartRanks?: Record<PieceColor, number>;
 }
 
 export interface Move {
@@ -195,7 +201,8 @@ function pawnMoves(
   const size = boardSize(board);
   const moves: Move[] = [];
   const direction = piece.color === 'white' ? 1 : -1;
-  const startRank = piece.color === 'white' ? 1 : size - 2;
+  const defaultStartRank = piece.color === 'white' ? 1 : size - 2;
+  const startRank = options?.pawnStartRanks?.[piece.color] ?? defaultStartRank;
   const defaultLastRank = piece.color === 'white' ? size - 1 : 0;
   const lastRank = options?.promotionRanks?.[piece.color] ?? defaultLastRank;
   const file = fileOf(from, size);

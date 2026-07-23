@@ -8,8 +8,13 @@
 import { Square, fileOf, rankOf, square } from './core/board';
 
 export const ROYALE_BOARD_SIZE = 15;
-/** A ring burns at the end of every BURN_INTERVAL-th round. */
-export const BURN_INTERVAL = 6;
+/**
+ * A ring burns at the end of every BURN_INTERVAL-th round. Royale plays
+ * alternating turns now, so a "round" is a single ply (one player's move),
+ * not a pair of moves — 12 plies is ~6 moves per player, matching the old
+ * simultaneous-round pacing of BURN_INTERVAL=6.
+ */
+export const BURN_INTERVAL = 12;
 /** Burning stops once the intact core is 5×5 (15 − 2·5). */
 export const MAX_BURNED_RINGS = 5;
 

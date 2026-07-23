@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, computed, signal } from '@angular/core';
 import {
   PieceColor,
   PieceType,
@@ -14,7 +14,11 @@ import {
   ONGOING_STATUS,
   RoundResolution,
 } from '../engine/variant';
-import { ChessModeDescriptor, chessModeById } from '../models/chess-modes';
+import {
+  ChessModeDescriptor,
+  TurnStyle,
+  chessModeById,
+} from '../models/chess-modes';
 
 export type OpponentKind = 'hotseat' | 'bot';
 
@@ -62,13 +66,32 @@ export class ChessSessionService {
   readonly capturedByBlack = signal<PieceType[]>([]);
   readonly config = signal<ChessSessionConfig | null>(null);
 
+  /**
+   * True when the entering color may pass this turn — always true in
+   * Simultaneous Chess, but only true in alternate (Royale) modes when the
+   * entering color has zero legal moves.
+   */
+  readonly passAllowed = computed<boolean>(() => {
+    const engine = this.engine;
+    const position = this.position();
+    if (!engine || !position || this.phase() !== 'entry') return false;
+    return engine
+      .legalIntents(position, this.entryColor())
+      .some((intent) => intent.kind === 'pass');
+  });
+
   private engine: ChessVariantEngine | null = null;
   private bot: ChessBot | null = null;
   private botColor: PieceColor = 'black';
+  private turnStyle: TurnStyle = 'simultaneous';
 
   start(config: ChessSessionConfig): void {
     const mode = this.requireMode(config.modeId);
-    this.engine = mode.engineFactory();
+    this.turnStyle = mode.turnStyle;
+    this.engine = mode.engineFactory({
+      opponent: config.opponent,
+      botId: config.botId,
+    });
 
     this.bot = null;
     if (config.opponent === 'bot') {
@@ -85,10 +108,20 @@ export class ChessSessionService {
     this.moveLog.set([]);
     this.capturedByWhite.set([]);
     this.capturedByBlack.set([]);
+    // Alternate mode always starts with White on move; simultaneous mode's
+    // "entry color" is really about whose privacy screen shows first.
     this.entryColor.set(
-      config.opponent === 'bot' ? config.humanColor ?? 'white' : 'white',
+      this.turnStyle === 'simultaneous' && config.opponent === 'bot'
+        ? config.humanColor ?? 'white'
+        : 'white',
     );
     this.phase.set('entry');
+
+    if (this.turnStyle === 'alternate') {
+      // If the bot plays the color that moves first, it goes immediately —
+      // the human sees it land as a reveal before their own first entry.
+      this.playBotAlternateTurnIfDue();
+    }
   }
 
   /** Legal intents for the entering player's piece on `from`. */
@@ -106,6 +139,12 @@ export class ChessSessionService {
     if (!engine || !config || this.phase() !== 'entry') return;
 
     engine.submitIntent(this.entryColor(), intent);
+
+    if (this.turnStyle === 'alternate') {
+      // No handoff, no simultaneous reveal — just resolve this one move.
+      this.resolveRound();
+      return;
+    }
 
     if (config.opponent === 'hotseat') {
       if (this.entryColor() === 'white') {
@@ -137,6 +176,18 @@ export class ChessSessionService {
       this.phase.set('game-over');
       return;
     }
+
+    if (this.turnStyle === 'alternate') {
+      // The color that just moved was the entering color; alternate to
+      // the other side, then let the bot move immediately if it's its turn
+      // (the human sees that as its own separate reveal step).
+      this.entryColor.set(opponentOf(this.entryColor()));
+      if (!this.playBotAlternateTurnIfDue()) {
+        this.phase.set('entry');
+      }
+      return;
+    }
+
     const config = this.config();
     this.entryColor.set(
       config?.opponent === 'bot' ? config.humanColor ?? 'white' : 'white',
@@ -155,6 +206,7 @@ export class ChessSessionService {
   reset(): void {
     this.engine = null;
     this.bot = null;
+    this.turnStyle = 'simultaneous';
     this.config.set(null);
     this.position.set(null);
     this.status.set(ONGOING_STATUS);
@@ -164,6 +216,23 @@ export class ChessSessionService {
     this.capturedByBlack.set([]);
     this.entryColor.set('white');
     this.phase.set('idle');
+  }
+
+  /**
+   * Alternate mode only: if it's the bot's turn (per `entryColor`), submit
+   * its move and resolve immediately, so the human sees it as its own
+   * reveal step rather than an entry prompt. Returns true if the bot moved.
+   */
+  private playBotAlternateTurnIfDue(): boolean {
+    const engine = this.engine;
+    const config = this.config();
+    if (!engine || !config || config.opponent !== 'bot' || !this.bot) return false;
+    if (this.entryColor() !== this.botColor) return false;
+    if (this.status().outcome !== 'ongoing') return false;
+    const botIntent = this.bot.chooseMove(engine.position, this.botColor, engine);
+    engine.submitIntent(this.botColor, botIntent);
+    this.resolveRound();
+    return true;
   }
 
   private resolveRound(): void {

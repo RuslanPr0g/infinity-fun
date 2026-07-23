@@ -44,3 +44,21 @@
     }
   }
 }
+
+// Desktop playing screen: the host is a grid item stretched to fill the
+// leftover height of the side column, so the log itself grows to match and
+// scrolls internally instead of stopping at the mobile 220px cap.
+@media (min-width: 900px) {
+  :host {
+    display: block;
+    min-height: 0;
+    height: 100%;
+  }
+
+  .move-log {
+    max-height: none;
+    height: 100%;
+    min-height: 0;
+    overflow-y: auto;
+  }
+}

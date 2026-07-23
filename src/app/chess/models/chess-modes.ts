@@ -9,14 +9,39 @@ import { ChessVariantEngine } from '../engine/variant';
 import { SimultaneousChessEngine } from '../engine/variants/simultaneous-engine';
 import { ShrinkingRoyaleEngine } from '../engine/variants/shrinking-royale-engine';
 
+/** Opponent setup handed to a mode's engineFactory when a game is started. */
+export interface ModeSetup {
+  readonly opponent: 'hotseat' | 'bot';
+  readonly botId?: string;
+}
+
+/**
+ * 'simultaneous': both players submit privately, then reveal together.
+ * 'alternate': plays like regular chess — one visible move per turn.
+ */
+export type TurnStyle = 'simultaneous' | 'alternate';
+
 export interface ChessModeDescriptor {
   readonly id: string;
   readonly name: string;
   readonly tagline: string;
   /** Five short lines summarising the ruleset on the mode card. */
   readonly rulesSummary: ReadonlyArray<string>;
-  readonly engineFactory: () => ChessVariantEngine;
+  readonly turnStyle: TurnStyle;
+  readonly engineFactory: (setup?: ModeSetup) => ChessVariantEngine;
   readonly enabled: boolean;
+}
+
+/** spawnOffset (rings kept clear of the border) by bot difficulty — harder bots spawn you closer to the fire. */
+const ROYALE_SPAWN_OFFSET_BY_BOT: Record<string, number> = {
+  easy: 3,
+  medium: 2,
+  hard: 1,
+};
+
+function royaleSpawnOffset(setup?: ModeSetup): number {
+  if (!setup || setup.opponent !== 'bot') return 2; // hotseat
+  return ROYALE_SPAWN_OFFSET_BY_BOT[setup.botId ?? ''] ?? 2;
 }
 
 export const CHESS_MODES: ReadonlyArray<ChessModeDescriptor> = [
@@ -31,6 +56,7 @@ export const CHESS_MODES: ReadonlyArray<ChessModeDescriptor> = [
       'No check or checkmate — capture the enemy king to win. Passing is a legal move.',
       'Both kings falling together is a draw, as are three all-pass rounds in a row.',
     ],
+    turnStyle: 'simultaneous',
     engineFactory: () => new SimultaneousChessEngine(),
     enabled: true,
   },
@@ -39,13 +65,15 @@ export const CHESS_MODES: ReadonlyArray<ChessModeDescriptor> = [
     name: 'Shrinking Royale',
     tagline: 'A 15×15 battlefield that burns away — outlast the fire.',
     rulesSummary: [
-      'A 15×15 board with pawns massed across the entire front line on both sides.',
-      'All Simultaneous Chess rules apply: secret moves reveal together, bounces and whiffs and all.',
-      'The outer ring burns away every 6 rounds, shrinking the battlefield down to a 5×5 core.',
-      'Any piece caught standing on a burning ring is destroyed with it — a burned king loses the game.',
-      'No castling in this mode; the board is too busy collapsing to stand still.',
+      'Plays like regular chess — alternating turns, one visible move at a time.',
+      'No check or checkmate — capture the enemy king to win.',
+      'Pieces spawn back from the edge; harder bots spawn your army closer to the fire.',
+      'The outer ring burns away every 12 moves, shrinking the battlefield down to a 5×5 core — anything caught standing on it burns too.',
+      'No castling, and no passing — you may only pass when you have zero legal moves.',
     ],
-    engineFactory: () => new ShrinkingRoyaleEngine(),
+    turnStyle: 'alternate',
+    engineFactory: (setup) =>
+      new ShrinkingRoyaleEngine({ spawnOffset: royaleSpawnOffset(setup) }),
     enabled: true,
   },
 ];

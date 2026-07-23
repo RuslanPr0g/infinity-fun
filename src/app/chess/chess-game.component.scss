@@ -14,6 +14,10 @@
   @media (max-width: 480px) {
     padding: 0.6rem 0.6rem 1.5rem;
   }
+
+  @media (min-width: 900px) {
+    max-width: 980px;
+  }
 }
 
 .playing {
@@ -21,6 +25,59 @@
   flex-direction: column;
   gap: 0.6rem;
   margin-top: 0.75rem;
+}
+
+// Mobile/default: a plain flex column in DOM order — top tray, board, bottom
+// tray, controls, log — identical to the pre-desktop-layout markup.
+.play-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+// Desktop: board on the left sized to guarantee the whole playing screen
+// fits the viewport with no page scroll; a side column on the right holds
+// the trays/controls/log, with the log growing to fill leftover height and
+// scrolling internally. Named grid areas re-place the same DOM nodes without
+// reordering them, so the mobile flex layout above stays untouched.
+@media (min-width: 900px) {
+  .play-layout {
+    --board-size: min(560px, calc(100vh - 200px));
+    display: grid;
+    grid-template-columns: var(--board-size) minmax(280px, 340px);
+    grid-template-rows: auto auto auto 1fr;
+    grid-template-areas:
+      'board tray-top'
+      'board controls'
+      'board tray-bottom'
+      'board log';
+    column-gap: 1.25rem;
+    row-gap: 0.6rem;
+    height: var(--board-size);
+  }
+
+  .board-wrap {
+    grid-area: board;
+  }
+
+  .tray-top {
+    grid-area: tray-top;
+  }
+
+  .tray-bottom {
+    grid-area: tray-bottom;
+  }
+
+  .controls {
+    grid-area: controls;
+  }
+
+  app-move-log {
+    grid-area: log;
+    display: block;
+    min-height: 0;
+    overflow: hidden;
+  }
 }
 
 .top-bar {

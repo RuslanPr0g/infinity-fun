@@ -8,6 +8,11 @@ function move(from: string, to: string): MoveIntent {
   return { kind: 'move', from: parseSquare(from), to: parseSquare(to) };
 }
 
+/** Royale plays on a 15×15 board. */
+function royaleMove(from: string, to: string): MoveIntent {
+  return { kind: 'move', from: parseSquare(from, 15), to: parseSquare(to, 15) };
+}
+
 describe('ChessSessionService', () => {
   let service: ChessSessionService;
 
@@ -168,5 +173,83 @@ describe('ChessSessionService', () => {
     expect(service.phase()).toBe('idle');
     expect(service.position()).toBeNull();
     expect(service.moveLog()).toEqual([]);
+  });
+
+  describe('Alternate mode (Shrinking Royale) — one move per turn, no handoff', () => {
+    it('hotseat: entry white → confirm → reveal → entry black, with no handoff phase', () => {
+      service.start({ modeId: 'shrinking-royale', opponent: 'hotseat' });
+      expect(service.phase()).toBe('entry');
+      expect(service.entryColor()).toBe('white');
+
+      // Default (hotseat) spawnOffset is 2: white pawns start on rank 4.
+      service.confirmIntent(royaleMove('a4', 'a5'));
+      expect(service.phase()).toBe('reveal');
+      expect(service.moveLog().length).toBe(1);
+
+      service.completeReveal();
+      expect(service.phase()).toBe('entry');
+      expect(service.entryColor()).toBe('black');
+    });
+
+    it('vs bot as black (bot=white): the bot has already moved after start, phase is reveal', () => {
+      service.start({
+        modeId: 'shrinking-royale',
+        opponent: 'bot',
+        botId: 'easy',
+        humanColor: 'black',
+      });
+      expect(service.phase()).toBe('reveal');
+      expect(service.lastResolution()).not.toBeNull();
+
+      service.completeReveal();
+      expect(service.phase()).toBe('entry');
+      expect(service.entryColor()).toBe('black');
+    });
+
+    it('vs bot as white: human confirms → reveal (human) → completeReveal → reveal (bot) → completeReveal → human entry', () => {
+      service.start({
+        modeId: 'shrinking-royale',
+        opponent: 'bot',
+        botId: 'easy',
+        humanColor: 'white',
+      });
+      expect(service.phase()).toBe('entry');
+      expect(service.entryColor()).toBe('white');
+
+      // botId 'easy' -> spawnOffset 3: white pawns start on rank 5.
+      service.confirmIntent(royaleMove('a5', 'a6'));
+      expect(service.phase()).toBe('reveal');
+      const humanResolution = service.lastResolution();
+      expect(humanResolution?.events.some((event) => event.color === 'white')).toBeTrue();
+
+      service.completeReveal();
+      // The bot's move plays out automatically as a second reveal step.
+      expect(service.phase()).toBe('reveal');
+      const botResolution = service.lastResolution();
+      expect(botResolution).not.toBe(humanResolution);
+      expect(botResolution?.events.some((event) => event.color === 'black')).toBeTrue();
+
+      service.completeReveal();
+      expect(service.phase()).toBe('entry');
+      expect(service.entryColor()).toBe('white');
+    });
+
+    it('rejects an illegal confirm (no piece there) and stays in entry, never a handoff', () => {
+      service.start({ modeId: 'shrinking-royale', opponent: 'hotseat' });
+      expect(() => service.confirmIntent(royaleMove('a11', 'a10'))).toThrow();
+      expect(service.phase()).toBe('entry');
+    });
+  });
+
+  describe('passAllowed', () => {
+    it('is always true during simultaneous entry', () => {
+      service.start({ modeId: 'simultaneous', opponent: 'hotseat' });
+      expect(service.passAllowed()).toBeTrue();
+    });
+
+    it('is false in Royale entry while legal moves exist', () => {
+      service.start({ modeId: 'shrinking-royale', opponent: 'hotseat' });
+      expect(service.passAllowed()).toBeFalse();
+    });
   });
 });

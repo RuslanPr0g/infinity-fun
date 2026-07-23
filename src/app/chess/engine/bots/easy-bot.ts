@@ -115,7 +115,7 @@ export class EasyBot implements ChessBot {
 
     if (position.burnedRings !== undefined) {
       const remaining = roundsUntilBurn(position.round, position.burnedRings);
-      if (remaining !== null && remaining <= 2) {
+      if (remaining !== null && remaining <= 3) {
         const doomed = doomedRingSquares(position.burnedRings, boardSize(board));
         const destDoomed = doomed.includes(intent.to);
         const originDoomed = doomed.includes(intent.from);

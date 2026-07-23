@@ -152,16 +152,17 @@ describe('EasyBot', () => {
         { a1: 'wK*', g7: 'wR', h8: 'bK' },
         15,
       );
-      // Round 5 with no rings burned yet: roundsUntilBurn(5, 0) === 2, so the
-      // burn-awareness heuristic is active. a1 sits on the doomed ring 0; its
-      // only neighbor off that ring is b2.
+      // Round 11 (white to move) with no rings burned yet:
+      // roundsUntilBurn(11, 0) === 2, so the burn-awareness heuristic is
+      // active. a1 sits on the doomed ring 0; its only neighbor off that
+      // ring is b2.
       const position: GamePosition = {
         board,
-        round: 5,
+        round: 11,
         consecutivePassRounds: 0,
         burnedRings: 0,
       };
-      const engine = new ShrinkingRoyaleEngine(position);
+      const engine = new ShrinkingRoyaleEngine(undefined, position);
       for (let seed = 0; seed < 10; seed++) {
         const bot = new EasyBot(mulberry32(seed));
         const choice = bot.chooseMove(position, 'white', engine);

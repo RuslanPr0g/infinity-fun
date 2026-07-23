@@ -81,84 +81,90 @@ type ScreenState = 'mode-select' | 'opponent-select' | 'playing';
               </button>
             </div>
 
-            <app-captured-tray
-              [owner]="opponentOfPerspective()"
-              [captured]="capturedFor(opponentOfPerspective())"
-            />
+            <div class="play-layout">
+              <app-captured-tray
+                class="tray-top"
+                [owner]="opponentOfPerspective()"
+                [captured]="capturedFor(opponentOfPerspective())"
+              />
 
-            <div class="board-wrap">
-              <app-chess-board
-                [board]="displayBoard()"
-                [perspective]="perspective()"
-                [selectedSquare]="selectedSquare()"
-                [targetSquares]="targetSquares()"
-                [pendingFrom]="pendingFrom()"
-                [pendingTo]="pendingTo()"
-                [highlightSquares]="lastRoundSquares()"
-                [hiddenSquares]="hiddenSquares()"
-                [voidSquares]="voidSquaresList()"
-                [dangerSquares]="dangerSquaresList()"
-                (squareTapped)="onSquareTapped($event)"
-              >
-                @if (revealResolution(); as resolution) {
-                  <app-reveal-layer
-                    [resolution]="resolution"
-                    [perspective]="perspective()"
-                    (done)="onRevealDone()"
-                  />
-                }
-              </app-chess-board>
-            </div>
+              <div class="board-wrap">
+                <app-chess-board
+                  [board]="displayBoard()"
+                  [perspective]="perspective()"
+                  [selectedSquare]="selectedSquare()"
+                  [targetSquares]="targetSquares()"
+                  [pendingFrom]="pendingFrom()"
+                  [pendingTo]="pendingTo()"
+                  [highlightSquares]="lastRoundSquares()"
+                  [hiddenSquares]="hiddenSquares()"
+                  [voidSquares]="voidSquaresList()"
+                  [dangerSquares]="dangerSquaresList()"
+                  (squareTapped)="onSquareTapped($event)"
+                >
+                  @if (revealResolution(); as resolution) {
+                    <app-reveal-layer
+                      [resolution]="resolution"
+                      [perspective]="perspective()"
+                      (done)="onRevealDone()"
+                    />
+                  }
+                </app-chess-board>
+              </div>
 
-            <app-captured-tray
-              [owner]="perspective()"
-              [captured]="capturedFor(perspective())"
-            />
+              <app-captured-tray
+                class="tray-bottom"
+                [owner]="perspective()"
+                [captured]="capturedFor(perspective())"
+              />
 
-            @if (session.phase() === 'entry') {
-              <div class="controls">
-                @if (pendingIsPromotion()) {
-                  <div class="promotion-pick">
-                    <span class="promo-label">Promote to</span>
-                    @for (option of promotionOptions; track option) {
+              @if (session.phase() === 'entry') {
+                <div class="controls">
+                  @if (pendingIsPromotion()) {
+                    <div class="promotion-pick">
+                      <span class="promo-label">Promote to</span>
+                      @for (option of promotionOptions; track option) {
+                        <button
+                          type="button"
+                          class="promo-button"
+                          [class.active]="pendingPromotion() === option"
+                          (click)="setPromotion(option)"
+                        >
+                          <app-chess-piece [piece]="promoPreview(option)" />
+                        </button>
+                      }
+                    </div>
+                  }
+                  <div class="action-row">
+                    @if (session.passAllowed()) {
+                      <button type="button" class="pass-button" (click)="onPass()">
+                        Pass
+                      </button>
+                    }
+                    @if (settings.confirmMoves() || pendingIsPromotion()) {
                       <button
                         type="button"
-                        class="promo-button"
-                        [class.active]="pendingPromotion() === option"
-                        (click)="setPromotion(option)"
+                        class="confirm-button"
+                        [disabled]="pendingIntent() === null"
+                        (click)="onConfirm()"
                       >
-                        <app-chess-piece [piece]="promoPreview(option)" />
+                        {{ confirmLabel() }}
                       </button>
                     }
                   </div>
-                }
-                <div class="action-row">
-                  <button type="button" class="pass-button" (click)="onPass()">
-                    Pass
-                  </button>
-                  @if (settings.confirmMoves() || pendingIsPromotion()) {
-                    <button
-                      type="button"
-                      class="confirm-button"
-                      [disabled]="pendingIntent() === null"
-                      (click)="onConfirm()"
-                    >
-                      {{ confirmLabel() }}
-                    </button>
-                  }
+                  <label class="confirm-toggle">
+                    <input
+                      type="checkbox"
+                      [checked]="settings.confirmMoves()"
+                      (change)="onToggleConfirm($event)"
+                    />
+                    Ask to confirm moves
+                  </label>
                 </div>
-                <label class="confirm-toggle">
-                  <input
-                    type="checkbox"
-                    [checked]="settings.confirmMoves()"
-                    (change)="onToggleConfirm($event)"
-                  />
-                  Ask to confirm moves
-                </label>
-              </div>
-            }
+              }
 
-            <app-move-log [entries]="session.moveLog()" />
+              <app-move-log [entries]="session.moveLog()" />
+            </div>
           </div>
 
           @if (session.phase() === 'handoff') {
@@ -242,7 +248,7 @@ export class ChessGameComponent implements OnDestroy {
     const burnedRings = position?.burnedRings;
     if (!position || burnedRings === undefined) return [];
     const remaining = roundsUntilBurn(position.round, burnedRings);
-    if (remaining === null || remaining > 2) return [];
+    if (remaining === null || remaining > 3) return [];
     return doomedRingSquares(burnedRings, boardSize(position.board));
   });
 
@@ -252,7 +258,7 @@ export class ChessGameComponent implements OnDestroy {
     if (!position || burnedRings === undefined) return null;
     const remaining = roundsUntilBurn(position.round, burnedRings);
     if (remaining === null) return null;
-    return `ring burns in ${remaining} round${remaining === 1 ? '' : 's'}`;
+    return `ring burns in ${remaining} move${remaining === 1 ? '' : 's'}`;
   });
 
   readonly targetSquares = computed<Square[]>(() => {
