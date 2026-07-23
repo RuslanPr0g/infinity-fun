@@ -58,7 +58,10 @@ export class StockfishService {
       }
 
       this.worker.onmessage = (event: MessageEvent<string>) => {
-        if (DEBUG) console.log('[Stockfish ←]', event.data);
+        // Log only non-move responses to avoid revealing the bot's move
+        if (DEBUG && !event.data.startsWith('bestmove')) {
+          console.log('[Stockfish ←]', event.data);
+        }
         this.handleMessage(event.data);
       };
 
@@ -140,6 +143,7 @@ export class StockfishService {
     }
 
     if (line.startsWith('bestmove')) {
+      if (DEBUG) console.log('[Stockfish] Move computed');
       const parts = line.split(' ');
       // "bestmove (none)" or "bestmove 0000" means no move
       const move = parts[1] && parts[1] !== '(none)' && parts[1] !== '0000'
@@ -161,9 +165,8 @@ export class StockfishService {
       resolve: next.resolve,
       reject: () => { next.resolve(null); },
     };
-    if (DEBUG) console.log('[Stockfish →] position fen', next.fen.substring(0, 40) + '...');
+    if (DEBUG) console.log('[Stockfish] Computing best move...');
     this.send(`position fen ${next.fen}`);
-    if (DEBUG) console.log(`[Stockfish →] go movetime ${next.thinkMs}`);
     this.send(`go movetime ${next.thinkMs}`);
   }
 }
