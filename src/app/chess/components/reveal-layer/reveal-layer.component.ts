@@ -3,9 +3,10 @@ import {
   Component,
   EventEmitter,
   Input,
+  OnChanges,
   OnDestroy,
-  OnInit,
   Output,
+  SimpleChanges,
 } from '@angular/core';
 import {
   Piece,
@@ -102,7 +103,7 @@ interface AnimItem {
   `,
   styleUrl: './reveal-layer.component.scss',
 })
-export class RevealLayerComponent implements OnInit, OnDestroy {
+export class RevealLayerComponent implements OnChanges, OnDestroy {
   @Input({ required: true }) resolution!: RoundResolution;
   @Input() perspective: PieceColor = 'white';
   @Input() durationMs = 1700;
@@ -114,7 +115,20 @@ export class RevealLayerComponent implements OnInit, OnDestroy {
   private timer: ReturnType<typeof setTimeout> | null = null;
   private finished = false;
 
-  ngOnInit(): void {
+  /**
+   * Turn-based modes (e.g. Shrinking Royale) can chain two reveals
+   * back-to-back — the human's move, then the bot's reply — without the
+   * host ever leaving the 'reveal' phase in between. That means this
+   * component's `@if` in the parent never toggles off/on, so Angular reuses
+   * the same instance and only updates `resolution` via `ngOnChanges`
+   * instead of recreating it. Rebuilding here (rather than in `ngOnInit`,
+   * which only ever runs once) keeps every new round's reveal — including
+   * chained ones — animating and auto-advancing correctly.
+   */
+  ngOnChanges(changes: SimpleChanges): void {
+    if (!changes['resolution']) return;
+    if (this.timer) clearTimeout(this.timer);
+    this.finished = false;
     this.buildItems();
     this.timer = setTimeout(() => this.finish(), this.durationMs);
   }
