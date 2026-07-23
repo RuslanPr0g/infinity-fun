@@ -1,0 +1,107 @@
+.reveal {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  cursor: pointer;
+}
+
+.glyph {
+  position: absolute;
+  width: 12.5%;
+  height: 12.5%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(1.4rem, 6.5vw, 2.4rem);
+  pointer-events: none;
+
+  &.slide {
+    left: var(--fx);
+    top: var(--fy);
+    animation: slide-to 0.9s ease-in-out 0.2s forwards;
+  }
+
+  &.bounce {
+    left: var(--fx);
+    top: var(--fy);
+    animation: bounce-back 1.2s ease-in-out 0.2s;
+  }
+
+  &.victim {
+    animation: fade-out 0.5s ease-in 0.85s forwards;
+  }
+}
+
+.miss {
+  position: absolute;
+  width: 12.5%;
+  height: 12.5%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(1.1rem, 5vw, 1.8rem);
+  color: #ef4444;
+  font-weight: 700;
+  opacity: 0;
+  animation: miss-flash 1s ease 0.6s;
+  pointer-events: none;
+}
+
+.pass-chip {
+  position: absolute;
+  left: 50%;
+  top: 62%;
+  transform: translateX(-50%);
+  background: rgba(18, 18, 18, 0.85);
+  color: #f0f0f0;
+  border: 1px solid #14b8a6;
+  border-radius: 999px;
+  padding: 0.3rem 0.9rem;
+  font-size: 0.85rem;
+  pointer-events: none;
+
+  &.black {
+    top: 30%;
+  }
+}
+
+@keyframes slide-to {
+  to {
+    left: var(--tx);
+    top: var(--ty);
+  }
+}
+
+@keyframes bounce-back {
+  0%,
+  100% {
+    left: var(--fx);
+    top: var(--fy);
+  }
+  55% {
+    left: calc((var(--fx) + var(--tx)) / 2);
+    top: calc((var(--fy) + var(--ty)) / 2);
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+
+@keyframes miss-flash {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1.25);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}

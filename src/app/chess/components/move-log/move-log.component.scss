@@ -1,0 +1,46 @@
+@use '../../../../colors' as colors;
+
+.move-log {
+  border: 2px solid rgba(colors.$primary-text-color, 0.12);
+  border-radius: 12px;
+  padding: 0.9rem;
+  max-height: 220px;
+  overflow-y: auto;
+  text-align: left;
+  color: colors.$primary-text-color;
+
+  .log-title {
+    font-size: 0.95rem;
+    color: colors.$color-unusual-chess;
+    margin-bottom: 0.5rem;
+  }
+
+  .empty {
+    font-size: 0.85rem;
+    opacity: 0.6;
+  }
+
+  .rounds {
+    list-style: none;
+  }
+
+  .round {
+    margin-bottom: 0.6rem;
+
+    .round-number {
+      font-size: 0.8rem;
+      color: colors.$color-unusual-chess;
+    }
+
+    .outcomes {
+      list-style: none;
+      margin-top: 0.2rem;
+
+      li {
+        font-size: 0.82rem;
+        opacity: 0.85;
+        margin-bottom: 0.15rem;
+      }
+    }
+  }
+}

@@ -1,0 +1,58 @@
+@use '../../../../colors' as colors;
+
+.game-over {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(18, 18, 18, 0.88);
+  padding: 1.5rem;
+}
+
+.panel {
+  text-align: center;
+  color: colors.$primary-text-color;
+  border: 2px solid colors.$color-unusual-chess;
+  border-radius: 16px;
+  background: colors.$primary-bg-color;
+  padding: 2rem 2.5rem;
+  max-width: 420px;
+
+  .result {
+    color: colors.$color-unusual-chess;
+    margin-bottom: 0.5rem;
+  }
+
+  .reason {
+    opacity: 0.8;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+  }
+
+  .actions {
+    display: flex;
+    gap: 0.75rem;
+
+    button {
+      flex: 1;
+      padding: 0.8rem 1rem;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .rematch {
+      border: none;
+      background: colors.$color-unusual-chess;
+      color: #04211d;
+    }
+
+    .change {
+      border: 2px solid rgba(colors.$primary-text-color, 0.25);
+      background: transparent;
+      color: colors.$primary-text-color;
+    }
+  }
+}

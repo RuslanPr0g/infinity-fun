@@ -1,0 +1,45 @@
+@use '../../../../colors' as colors;
+
+.privacy {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: colors.$primary-bg-color;
+  padding: 1.5rem;
+}
+
+.panel {
+  text-align: center;
+  color: colors.$primary-text-color;
+  max-width: 420px;
+
+  .icon {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 1rem;
+  }
+
+  .headline {
+    margin-bottom: 0.5rem;
+  }
+
+  .hint {
+    opacity: 0.7;
+    margin-bottom: 2rem;
+    font-size: 0.9rem;
+  }
+
+  .ready-button {
+    padding: 0.9rem 2rem;
+    border: none;
+    border-radius: 8px;
+    background: colors.$color-unusual-chess;
+    color: #04211d;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+}

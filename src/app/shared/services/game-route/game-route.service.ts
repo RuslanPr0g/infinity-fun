@@ -58,6 +58,11 @@ export class GameRouteService {
       color: '#f97316',
     },
     {
+      name: 'Unusual Chess',
+      route: '/chess',
+      color: '#14B8A6',
+    },
+    {
       name: 'Algorithms Graph',
       route: 'https://ruslanpr0g.github.io/algo-graph/',
       color: '#6B7280',

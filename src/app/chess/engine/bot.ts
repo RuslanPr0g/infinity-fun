@@ -1,0 +1,46 @@
+/**
+ * Bot contract + typed difficulty registry. Adding a future difficulty means
+ * implementing `ChessBot` and appending one entry to `BOT_DIFFICULTIES` —
+ * the opponent-select UI renders from this list only.
+ *
+ * Pure TypeScript — no Angular imports.
+ */
+
+import { PieceColor } from './core/board';
+import { ChessVariantEngine, GamePosition, MoveIntent } from './variant';
+import { EasyBot } from './bots/easy-bot';
+
+export interface ChessBot {
+  readonly id: string;
+  readonly name: string;
+  /**
+   * Choose an intent for `color` from the start-of-round `position`.
+   * The bot never sees the opponent's pending move for the round — it is
+   * given the same position the human chooses from.
+   */
+  chooseMove(
+    position: GamePosition,
+    color: PieceColor,
+    engine: ChessVariantEngine,
+  ): MoveIntent;
+}
+
+export interface BotDifficulty {
+  readonly id: string;
+  readonly name: string;
+  readonly description: string;
+  readonly create: () => ChessBot;
+}
+
+export const BOT_DIFFICULTIES: ReadonlyArray<BotDifficulty> = [
+  {
+    id: 'easy',
+    name: 'Easy',
+    description: 'Likes safe captures, keeps its king out of danger, and mixes things up.',
+    create: () => new EasyBot(),
+  },
+];
+
+export function botDifficultyById(id: string): BotDifficulty | undefined {
+  return BOT_DIFFICULTIES.find((difficulty) => difficulty.id === id);
+}

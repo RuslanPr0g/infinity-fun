@@ -10,6 +10,7 @@ import { GuessDayOfWeekComponent } from './guess-day-of-week/guess-day-of-week.c
 import { PeriodicGameComponent } from './periodic/periodic-game.component';
 import { DateCountdownComponent } from './date-countdown/date-countdown.component';
 import { MathQuizGameComponent } from './math-quiz/math-quiz-game.component';
+import { ChessGameComponent } from './chess/chess-game.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -24,5 +25,6 @@ export const routes: Routes = [
   { path: 'guess-day-of-week', component: GuessDayOfWeekComponent },
   { path: 'date-countdown', component: DateCountdownComponent },
   { path: 'math-quiz', component: MathQuizGameComponent },
+  { path: 'chess', component: ChessGameComponent },
   { path: '**', redirectTo: '' },
 ];

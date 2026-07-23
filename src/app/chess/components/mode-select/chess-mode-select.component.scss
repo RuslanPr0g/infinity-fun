@@ -1,0 +1,93 @@
+@use '../../../../colors' as colors;
+
+.mode-select {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  text-align: center;
+  color: colors.$primary-text-color;
+}
+
+.title {
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  color: rgba(colors.$primary-text-color, 0.7);
+  margin-bottom: 1.5rem;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  justify-content: safe center;
+}
+
+.tab {
+  flex: 0 0 auto;
+  padding: 0.55rem 1.2rem;
+  border-radius: 999px 999px 0 0;
+  border: 2px solid rgba(colors.$primary-text-color, 0.15);
+  border-bottom: none;
+  background: rgba(colors.$primary-text-color, 0.05);
+  color: colors.$primary-text-color;
+  cursor: pointer;
+
+  &.active {
+    border-color: colors.$color-unusual-chess;
+    color: colors.$color-unusual-chess;
+    background: rgba(20, 184, 166, 0.1);
+  }
+}
+
+.card {
+  border: 2px solid rgba(colors.$primary-text-color, 0.15);
+  border-radius: 12px;
+  background: rgba(colors.$primary-text-color, 0.05);
+  padding: 1.5rem;
+  text-align: left;
+
+  .mode-name {
+    color: colors.$color-unusual-chess;
+    margin-bottom: 0.25rem;
+  }
+
+  .tagline {
+    color: rgba(colors.$primary-text-color, 0.8);
+    margin-bottom: 1rem;
+  }
+
+  .rules {
+    margin: 0 0 1.25rem 1.2rem;
+
+    li {
+      font-size: 0.9rem;
+      margin-bottom: 0.4rem;
+      color: rgba(colors.$primary-text-color, 0.85);
+    }
+  }
+
+  .play-button {
+    display: block;
+    width: 100%;
+    padding: 0.8rem;
+    border: none;
+    border-radius: 8px;
+    background: colors.$color-unusual-chess;
+    color: #04211d;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+      background: colors.lighten-color(colors.$color-unusual-chess);
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+  }
+}
