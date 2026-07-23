@@ -51,6 +51,10 @@ export class GameOverOverlayComponent {
         return 'Both players passed three rounds in a row.';
       case 'resignation':
         return 'By resignation.';
+      case 'king-burned':
+        return 'The king burned with the board.';
+      case 'both-kings-burned':
+        return 'Both kings burned together.';
       default:
         return '';
     }

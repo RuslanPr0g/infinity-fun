@@ -1,8 +1,11 @@
 /**
  * Core chess board representation. Pure TypeScript — no Angular imports.
  *
- * Squares are indices 0–63: file = sq % 8 (0 = 'a'), rank = floor(sq / 8)
- * (0 = rank 1, White's home rank). Boards are immutable arrays of 64 cells.
+ * Squares are indices 0–(size*size-1): file = sq % size (0 = 'a'), rank =
+ * floor(sq / size) (0 = rank 1, White's home rank). Boards are immutable
+ * arrays of size*size cells. The classic 8×8 board remains the default
+ * everywhere; larger boards (e.g. 15×15 Shrinking Board Royale) carry their
+ * size implicitly as board.length — see `boardSize`.
  */
 
 export type PieceColor = 'white' | 'black';
@@ -29,38 +32,57 @@ export type Board = ReadonlyArray<Piece | null>;
 
 export const BOARD_SIZE = 8;
 export const SQUARE_COUNT = 64;
+/** Board dimension used when no explicit size is threaded through. */
+export const DEFAULT_BOARD_SIZE = 8;
 
-export const FILES = 'abcdefgh';
+export const FILES = 'abcdefghijklmno';
 
-export function square(file: number, rank: number): Square {
-  return rank * BOARD_SIZE + file;
+/** Board dimension (N of an N×N board), derived from its cell count. */
+export function boardSize(board: Board): number {
+  return Math.round(Math.sqrt(board.length));
 }
 
-export function fileOf(sq: Square): number {
-  return sq % BOARD_SIZE;
+export function square(
+  file: number,
+  rank: number,
+  size = DEFAULT_BOARD_SIZE,
+): Square {
+  return rank * size + file;
 }
 
-export function rankOf(sq: Square): number {
-  return Math.floor(sq / BOARD_SIZE);
+export function fileOf(sq: Square, size = DEFAULT_BOARD_SIZE): number {
+  return sq % size;
 }
 
-export function isInside(file: number, rank: number): boolean {
-  return file >= 0 && file < BOARD_SIZE && rank >= 0 && rank < BOARD_SIZE;
+export function rankOf(sq: Square, size = DEFAULT_BOARD_SIZE): number {
+  return Math.floor(sq / size);
+}
+
+export function isInside(
+  file: number,
+  rank: number,
+  size = DEFAULT_BOARD_SIZE,
+): boolean {
+  return file >= 0 && file < size && rank >= 0 && rank < size;
 }
 
 /** 'e4' → square index. Throws on malformed input (test fixtures rely on it). */
-export function parseSquare(name: string): Square {
-  const file = FILES.indexOf(name[0]);
-  const rank = Number(name[1]) - 1;
-  if (name.length !== 2 || file < 0 || rank < 0 || rank >= BOARD_SIZE) {
+export function parseSquare(name: string, size = DEFAULT_BOARD_SIZE): Square {
+  const match = /^([a-o])(\d{1,2})$/.exec(name);
+  if (!match) {
     throw new Error(`Invalid square name: ${name}`);
   }
-  return square(file, rank);
+  const file = FILES.indexOf(match[1]);
+  const rank = Number(match[2]) - 1;
+  if (file < 0 || file >= size || rank < 0 || rank >= size) {
+    throw new Error(`Invalid square name: ${name}`);
+  }
+  return square(file, rank, size);
 }
 
 /** Square index → 'e4'. */
-export function squareName(sq: Square): string {
-  return `${FILES[fileOf(sq)]}${rankOf(sq) + 1}`;
+export function squareName(sq: Square, size = DEFAULT_BOARD_SIZE): string {
+  return `${FILES[fileOf(sq, size)]}${rankOf(sq, size) + 1}`;
 }
 
 export function opponentOf(color: PieceColor): PieceColor {
@@ -77,6 +99,11 @@ export function makePiece(
 
 export function emptyBoard(): Board {
   return new Array<Piece | null>(SQUARE_COUNT).fill(null);
+}
+
+/** Empty size×size board, for variants that do not use the default 8×8. */
+export function emptyBoardOf(size: number): Board {
+  return new Array<Piece | null>(size * size).fill(null);
 }
 
 const BACK_RANK_ORDER: PieceType[] = [
@@ -136,7 +163,7 @@ export function countPieces(board: Board): number {
 }
 
 export function findKing(board: Board, color: PieceColor): Square | null {
-  for (let sq = 0; sq < SQUARE_COUNT; sq++) {
+  for (let sq = 0; sq < board.length; sq++) {
     const piece = board[sq];
     if (piece && piece.type === 'king' && piece.color === color) {
       return sq;
@@ -188,7 +215,10 @@ export const PIECE_NAMES: Record<PieceType, string> = {
  * color letter + piece letter (K Q R B N P); a trailing '*' marks the
  * piece as already moved.
  */
-export function boardFrom(placements: Record<string, string>): Board {
+export function boardFrom(
+  placements: Record<string, string>,
+  size = DEFAULT_BOARD_SIZE,
+): Board {
   const letterToType: Record<string, PieceType> = {
     K: 'king',
     Q: 'queen',
@@ -197,14 +227,14 @@ export function boardFrom(placements: Record<string, string>): Board {
     N: 'knight',
     P: 'pawn',
   };
-  const cells = new Array<Piece | null>(SQUARE_COUNT).fill(null);
+  const cells = new Array<Piece | null>(size * size).fill(null);
   for (const [name, code] of Object.entries(placements)) {
     const color: PieceColor = code[0] === 'w' ? 'white' : 'black';
     const type = letterToType[code[1]];
     if (!type || (code[0] !== 'w' && code[0] !== 'b')) {
       throw new Error(`Invalid piece code: ${code}`);
     }
-    cells[parseSquare(name)] = makePiece(type, color, code.endsWith('*'));
+    cells[parseSquare(name, size)] = makePiece(type, color, code.endsWith('*'));
   }
   return cells;
 }

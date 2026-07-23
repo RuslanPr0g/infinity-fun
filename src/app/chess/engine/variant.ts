@@ -19,6 +19,8 @@ export interface GamePosition {
   readonly round: number;
   /** Consecutive rounds (immediately preceding) in which both players passed. */
   readonly consecutivePassRounds: number;
+  /** Number of outer rings burned away so far (Shrinking Board Royale only). */
+  readonly burnedRings?: number;
 }
 
 export type MoveIntent =
@@ -40,7 +42,8 @@ export type ResolutionEventType =
   | 'whiffed'
   | 'promoted'
   | 'castled'
-  | 'passed';
+  | 'passed'
+  | 'burned';
 
 /**
  * One atomic outcome within a round resolution. Each player's intent
@@ -72,7 +75,9 @@ export type GameEndReason =
   | 'king-captured'
   | 'both-kings-captured'
   | 'triple-pass'
-  | 'resignation';
+  | 'resignation'
+  | 'king-burned'
+  | 'both-kings-burned';
 
 export interface GameStatus {
   readonly outcome: GameOutcome;

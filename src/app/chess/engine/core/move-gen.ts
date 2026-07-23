@@ -9,11 +9,11 @@
  */
 
 import {
-  BOARD_SIZE,
   Board,
   Piece,
   PieceColor,
   Square,
+  boardSize,
   fileOf,
   isInside,
   pieceAt,
@@ -22,6 +22,15 @@ import {
 } from './board';
 
 export type CastleSide = 'king' | 'queen';
+
+/**
+ * Per-variant overrides for move generation. `promotionRanks` replaces the
+ * default last-rank promotion rule (size-1 for white, 0 for black) — used by
+ * modes whose board shrinks or whose promotion rank otherwise differs.
+ */
+export interface MoveGenOptions {
+  readonly promotionRanks?: Record<PieceColor, number>;
+}
 
 export interface Move {
   readonly from: Square;
@@ -132,14 +141,15 @@ function stepMoves(
   piece: Piece,
   offsets: ReadonlyArray<readonly [number, number]>,
 ): Move[] {
+  const size = boardSize(board);
   const moves: Move[] = [];
-  const file = fileOf(from);
-  const rank = rankOf(from);
+  const file = fileOf(from, size);
+  const rank = rankOf(from, size);
   for (const [df, dr] of offsets) {
     const f = file + df;
     const r = rank + dr;
-    if (!isInside(f, r)) continue;
-    const to = square(f, r);
+    if (!isInside(f, r, size)) continue;
+    const to = square(f, r, size);
     const occupant = pieceAt(board, to);
     if (occupant && occupant.color === piece.color) continue;
     moves.push(makeMove(from, to, { isCapture: occupant !== null }));
@@ -153,15 +163,16 @@ function slidingMoves(
   piece: Piece,
   directions: ReadonlyArray<readonly [number, number]>,
 ): Move[] {
+  const size = boardSize(board);
   const moves: Move[] = [];
-  const file = fileOf(from);
-  const rank = rankOf(from);
+  const file = fileOf(from, size);
+  const rank = rankOf(from, size);
   for (const [df, dr] of directions) {
-    for (let step = 1; step < BOARD_SIZE; step++) {
+    for (let step = 1; step < size; step++) {
       const f = file + df * step;
       const r = rank + dr * step;
-      if (!isInside(f, r)) break;
-      const to = square(f, r);
+      if (!isInside(f, r, size)) break;
+      const to = square(f, r, size);
       const occupant = pieceAt(board, to);
       if (occupant) {
         if (occupant.color !== piece.color) {
@@ -175,30 +186,44 @@ function slidingMoves(
   return moves;
 }
 
-function pawnMoves(board: Board, from: Square, piece: Piece): Move[] {
+function pawnMoves(
+  board: Board,
+  from: Square,
+  piece: Piece,
+  options?: MoveGenOptions,
+): Move[] {
+  const size = boardSize(board);
   const moves: Move[] = [];
   const direction = piece.color === 'white' ? 1 : -1;
-  const startRank = piece.color === 'white' ? 1 : 6;
-  const lastRank = piece.color === 'white' ? 7 : 0;
-  const file = fileOf(from);
-  const rank = rankOf(from);
+  const startRank = piece.color === 'white' ? 1 : size - 2;
+  const defaultLastRank = piece.color === 'white' ? size - 1 : 0;
+  const lastRank = options?.promotionRanks?.[piece.color] ?? defaultLastRank;
+  const file = fileOf(from, size);
+  const rank = rankOf(from, size);
 
   const oneAheadRank = rank + direction;
-  if (isInside(file, oneAheadRank)) {
-    const oneAhead = square(file, oneAheadRank);
+  if (isInside(file, oneAheadRank, size)) {
+    const oneAhead = square(file, oneAheadRank, size);
     if (!pieceAt(board, oneAhead)) {
       moves.push(
         makeMove(from, oneAhead, { isPromotion: oneAheadRank === lastRank }),
       );
       const twoAheadRank = rank + direction * 2;
-      if (rank === startRank && !pieceAt(board, square(file, twoAheadRank))) {
-        moves.push(makeMove(from, square(file, twoAheadRank), { isDoubleStep: true }));
+      if (
+        rank === startRank &&
+        !pieceAt(board, square(file, twoAheadRank, size))
+      ) {
+        moves.push(
+          makeMove(from, square(file, twoAheadRank, size), {
+            isDoubleStep: true,
+          }),
+        );
       }
     }
     for (const df of [-1, 1]) {
       const f = file + df;
-      if (!isInside(f, oneAheadRank)) continue;
-      const to = square(f, oneAheadRank);
+      if (!isInside(f, oneAheadRank, size)) continue;
+      const to = square(f, oneAheadRank, size);
       const occupant = pieceAt(board, to);
       if (occupant && occupant.color !== piece.color) {
         moves.push(
@@ -216,6 +241,9 @@ function pawnMoves(board: Board, from: Square, piece: Piece): Move[] {
 function castleMoves(board: Board, from: Square, piece: Piece): Move[] {
   const moves: Move[] = [];
   if (piece.hasMoved) return moves;
+  // Castling is an 8×8-specific rule (castleGeometry hard-codes ranks 0/7
+  // and files 0/4/7); larger boards never generate it.
+  if (boardSize(board) !== 8) return moves;
   for (const side of ['king', 'queen'] as CastleSide[]) {
     const geometry = castleGeometry(piece.color, side);
     if (from !== geometry.kingFrom) continue;
@@ -230,12 +258,16 @@ function castleMoves(board: Board, from: Square, piece: Piece): Move[] {
 }
 
 /** Pseudo-legal moves for the piece standing on `from`. Empty if no piece. */
-export function generateMoves(board: Board, from: Square): Move[] {
+export function generateMoves(
+  board: Board,
+  from: Square,
+  options?: MoveGenOptions,
+): Move[] {
   const piece = pieceAt(board, from);
   if (!piece) return [];
   switch (piece.type) {
     case 'pawn':
-      return pawnMoves(board, from, piece);
+      return pawnMoves(board, from, piece, options);
     case 'knight':
       return stepMoves(board, from, piece, KNIGHT_OFFSETS);
     case 'bishop':
@@ -255,12 +287,16 @@ export function generateMoves(board: Board, from: Square): Move[] {
   }
 }
 
-export function generateAllMoves(board: Board, color: PieceColor): Move[] {
+export function generateAllMoves(
+  board: Board,
+  color: PieceColor,
+  options?: MoveGenOptions,
+): Move[] {
   const moves: Move[] = [];
   for (let sq = 0; sq < board.length; sq++) {
     const piece = board[sq];
     if (piece && piece.color === color) {
-      moves.push(...generateMoves(board, sq));
+      moves.push(...generateMoves(board, sq, options));
     }
   }
   return moves;
@@ -272,15 +308,16 @@ export function isSquareAttacked(
   target: Square,
   byColor: PieceColor,
 ): boolean {
-  const targetFile = fileOf(target);
-  const targetRank = rankOf(target);
+  const size = boardSize(board);
+  const targetFile = fileOf(target, size);
+  const targetRank = rankOf(target, size);
 
   const pawnDirection = byColor === 'white' ? 1 : -1;
   for (const df of [-1, 1]) {
     const f = targetFile + df;
     const r = targetRank - pawnDirection;
-    if (isInside(f, r)) {
-      const piece = pieceAt(board, square(f, r));
+    if (isInside(f, r, size)) {
+      const piece = pieceAt(board, square(f, r, size));
       if (piece && piece.color === byColor && piece.type === 'pawn') return true;
     }
   }
@@ -288,8 +325,8 @@ export function isSquareAttacked(
   for (const [df, dr] of KNIGHT_OFFSETS) {
     const f = targetFile + df;
     const r = targetRank + dr;
-    if (isInside(f, r)) {
-      const piece = pieceAt(board, square(f, r));
+    if (isInside(f, r, size)) {
+      const piece = pieceAt(board, square(f, r, size));
       if (piece && piece.color === byColor && piece.type === 'knight') return true;
     }
   }
@@ -297,8 +334,8 @@ export function isSquareAttacked(
   for (const [df, dr] of KING_OFFSETS) {
     const f = targetFile + df;
     const r = targetRank + dr;
-    if (isInside(f, r)) {
-      const piece = pieceAt(board, square(f, r));
+    if (isInside(f, r, size)) {
+      const piece = pieceAt(board, square(f, r, size));
       if (piece && piece.color === byColor && piece.type === 'king') return true;
     }
   }
@@ -312,11 +349,11 @@ export function isSquareAttacked(
   ];
   for (const { directions, types } of slideChecks) {
     for (const [df, dr] of directions) {
-      for (let step = 1; step < BOARD_SIZE; step++) {
+      for (let step = 1; step < size; step++) {
         const f = targetFile + df * step;
         const r = targetRank + dr * step;
-        if (!isInside(f, r)) break;
-        const piece = pieceAt(board, square(f, r));
+        if (!isInside(f, r, size)) break;
+        const piece = pieceAt(board, square(f, r, size));
         if (!piece) continue;
         if (piece.color === byColor && types.includes(piece.type)) return true;
         break;

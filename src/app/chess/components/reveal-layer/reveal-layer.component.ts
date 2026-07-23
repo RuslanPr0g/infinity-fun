@@ -11,6 +11,7 @@ import {
   Piece,
   PieceColor,
   Square,
+  boardSize,
   fileOf,
   makePiece,
   opponentOf,
@@ -20,12 +21,13 @@ import { RoundResolution } from '../../engine/variant';
 import { ChessPieceComponent } from '../piece/chess-piece.component';
 
 interface AnimItem {
-  kind: 'slide' | 'bounce' | 'victim' | 'miss';
+  kind: 'slide' | 'bounce' | 'victim' | 'miss' | 'burned';
   piece: Piece | null;
   fx: string;
   fy: string;
   tx: string;
   ty: string;
+  size: string;
 }
 
 /**
@@ -47,6 +49,8 @@ interface AnimItem {
               class="miss"
               [style.left]="item.fx"
               [style.top]="item.fy"
+              [style.width]="item.size"
+              [style.height]="item.size"
               >✕</span
             >
           }
@@ -55,6 +59,19 @@ interface AnimItem {
               class="glyph victim"
               [style.left]="item.fx"
               [style.top]="item.fy"
+              [style.width]="item.size"
+              [style.height]="item.size"
+            >
+              <app-chess-piece [piece]="item.piece!" />
+            </span>
+          }
+          @case ('burned') {
+            <span
+              class="glyph burned"
+              [style.left]="item.fx"
+              [style.top]="item.fy"
+              [style.width]="item.size"
+              [style.height]="item.size"
             >
               <app-chess-piece [piece]="item.piece!" />
             </span>
@@ -64,6 +81,8 @@ interface AnimItem {
               class="glyph"
               [class.slide]="item.kind === 'slide'"
               [class.bounce]="item.kind === 'bounce'"
+              [style.width]="item.size"
+              [style.height]="item.size"
               [style.--fx]="item.fx"
               [style.--fy]="item.fy"
               [style.--tx]="item.tx"
@@ -111,6 +130,10 @@ export class RevealLayerComponent implements OnInit, OnDestroy {
     this.done.emit();
   }
 
+  private get size(): number {
+    return boardSize(this.resolution.positionBefore.board);
+  }
+
   private buildItems(): void {
     const items: AnimItem[] = [];
     const chips: string[] = [];
@@ -145,6 +168,7 @@ export class RevealLayerComponent implements OnInit, OnDestroy {
             fy: this.y(event.to!),
             tx: this.x(event.to!),
             ty: this.y(event.to!),
+            size: this.pct(),
           });
           break;
         case 'whiffed':
@@ -164,6 +188,18 @@ export class RevealLayerComponent implements OnInit, OnDestroy {
             fy: this.y(event.to!),
             tx: this.x(event.to!),
             ty: this.y(event.to!),
+            size: this.pct(),
+          });
+          break;
+        case 'burned':
+          items.push({
+            kind: 'burned',
+            piece: makePiece(event.piece!, color, true),
+            fx: this.x(event.from!),
+            fy: this.y(event.from!),
+            tx: this.x(event.from!),
+            ty: this.y(event.from!),
+            size: this.pct(),
           });
           break;
         case 'promoted':
@@ -189,18 +225,25 @@ export class RevealLayerComponent implements OnInit, OnDestroy {
       fy: this.y(from),
       tx: this.x(to),
       ty: this.y(to),
+      size: this.pct(),
     };
   }
 
+  private pct(): string {
+    return `${100 / this.size}%`;
+  }
+
   private x(sq: Square): string {
-    const file = fileOf(sq);
-    const col = this.perspective === 'white' ? file : 7 - file;
-    return `${col * 12.5}%`;
+    const size = this.size;
+    const file = fileOf(sq, size);
+    const col = this.perspective === 'white' ? file : size - 1 - file;
+    return `${(col * 100) / size}%`;
   }
 
   private y(sq: Square): string {
-    const rank = rankOf(sq);
-    const row = this.perspective === 'white' ? 7 - rank : rank;
-    return `${row * 12.5}%`;
+    const size = this.size;
+    const rank = rankOf(sq, size);
+    const row = this.perspective === 'white' ? size - 1 - rank : rank;
+    return `${(row * 100) / size}%`;
   }
 }

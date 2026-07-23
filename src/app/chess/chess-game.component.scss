@@ -39,6 +39,20 @@
     }
   }
 
+  .burn-chip {
+    padding: 0.25rem 0.6rem;
+    border: 1px solid rgba(249, 115, 22, 0.6);
+    border-radius: 999px;
+    background: rgba(249, 115, 22, 0.12);
+    color: #f97316;
+    font-size: 0.75rem;
+    white-space: nowrap;
+
+    @media (max-width: 480px) {
+      font-size: 0.7rem;
+    }
+  }
+
   .resign-button {
     padding: 0.35rem 0.8rem;
     border: 2px solid rgba(239, 68, 68, 0.6);

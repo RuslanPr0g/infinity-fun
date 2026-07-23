@@ -19,10 +19,16 @@ import {
   PieceType,
   PromotionPiece,
   Square,
+  boardSize,
   createInitialBoard,
   makePiece,
   opponentOf,
 } from './engine/core/board';
+import {
+  doomedRingSquares,
+  roundsUntilBurn,
+  voidSquares as voidSquaresOf,
+} from './engine/burn';
 import { MoveIntent, PASS_INTENT } from './engine/variant';
 import { ChessModeDescriptor } from './models/chess-modes';
 import { ChessSessionService } from './services/chess-session.service';
@@ -67,6 +73,9 @@ type ScreenState = 'mode-select' | 'opponent-select' | 'playing';
           <div class="playing">
             <div class="top-bar">
               <span class="status-text">{{ statusText() }}</span>
+              @if (burnCountdownText(); as burnText) {
+                <span class="burn-chip">🔥 {{ burnText }}</span>
+              }
               <button type="button" class="resign-button" (click)="onResign()">
                 Resign
               </button>
@@ -87,6 +96,8 @@ type ScreenState = 'mode-select' | 'opponent-select' | 'playing';
                 [pendingTo]="pendingTo()"
                 [highlightSquares]="lastRoundSquares()"
                 [hiddenSquares]="hiddenSquares()"
+                [voidSquares]="voidSquaresList()"
+                [dangerSquares]="dangerSquaresList()"
                 (squareTapped)="onSquareTapped($event)"
               >
                 @if (revealResolution(); as resolution) {
@@ -211,6 +222,39 @@ export class ChessGameComponent implements OnDestroy {
     return this.session.position()?.board ?? createInitialBoard();
   });
 
+  /** Rings burned so far, undefined when the mode has no burning. */
+  readonly activeBurnedRings = computed<number | undefined>(() => {
+    if (this.session.phase() === 'reveal') {
+      return this.session.lastResolution()?.positionBefore.burnedRings;
+    }
+    return this.session.position()?.burnedRings;
+  });
+
+  readonly voidSquaresList = computed<Square[]>(() => {
+    const burnedRings = this.activeBurnedRings();
+    if (burnedRings === undefined) return [];
+    return voidSquaresOf(burnedRings, boardSize(this.displayBoard()));
+  });
+
+  readonly dangerSquaresList = computed<Square[]>(() => {
+    if (this.session.phase() !== 'entry') return [];
+    const position = this.session.position();
+    const burnedRings = position?.burnedRings;
+    if (!position || burnedRings === undefined) return [];
+    const remaining = roundsUntilBurn(position.round, burnedRings);
+    if (remaining === null || remaining > 2) return [];
+    return doomedRingSquares(burnedRings, boardSize(position.board));
+  });
+
+  readonly burnCountdownText = computed<string | null>(() => {
+    const position = this.session.position();
+    const burnedRings = position?.burnedRings;
+    if (!position || burnedRings === undefined) return null;
+    const remaining = roundsUntilBurn(position.round, burnedRings);
+    if (remaining === null) return null;
+    return `ring burns in ${remaining} round${remaining === 1 ? '' : 's'}`;
+  });
+
   readonly targetSquares = computed<Square[]>(() => {
     const from = this.selectedSquare();
     if (from === null || this.session.phase() !== 'entry') return [];
@@ -255,6 +299,9 @@ export class ChessGameComponent implements OnDestroy {
         case 'bounced':
           if (event.from !== null) hidden.add(event.from);
           if (event.rookFrom !== null) hidden.add(event.rookFrom);
+          break;
+        case 'burned':
+          if (event.from !== null) hidden.add(event.from);
           break;
       }
     }

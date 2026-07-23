@@ -13,6 +13,8 @@ import {
   isSquareAttacked,
 } from './move-gen';
 
+const SIZE_15 = 15;
+
 function targets(moves: Move[]): string[] {
   return moves.map((move) => squareName(move.to)).sort();
 }
@@ -117,12 +119,12 @@ describe('Core move generation', () => {
 
   it('computes castle geometry paths including origin, transit, and destination', () => {
     const kingside = castleGeometry('white', 'king');
-    expect(kingside.kingPath.map(squareName)).toEqual(['e1', 'f1', 'g1']);
-    expect(kingside.rookPath.map(squareName)).toEqual(['h1', 'g1', 'f1']);
+    expect(kingside.kingPath.map((sq) => squareName(sq))).toEqual(['e1', 'f1', 'g1']);
+    expect(kingside.rookPath.map((sq) => squareName(sq))).toEqual(['h1', 'g1', 'f1']);
 
     const queenside = castleGeometry('black', 'queen');
-    expect(queenside.kingPath.map(squareName)).toEqual(['e8', 'd8', 'c8']);
-    expect(queenside.rookPath.map(squareName)).toEqual(['a8', 'b8', 'c8', 'd8']);
+    expect(queenside.kingPath.map((sq) => squareName(sq))).toEqual(['e8', 'd8', 'c8']);
+    expect(queenside.rookPath.map((sq) => squareName(sq))).toEqual(['a8', 'b8', 'c8', 'd8']);
   });
 
   it('detects attacks by pawns, knights, and sliders with correct blocking', () => {
@@ -149,5 +151,80 @@ describe('Core move generation', () => {
     generateAllMoves(board, 'black');
     expect(board).toEqual(snapshot);
     expect(pieceAt(board, parseSquare('e2'))!.type).toBe('pawn');
+  });
+});
+
+describe('Core move generation on large boards', () => {
+  it('lets a rook run the full ray on an empty 15×15 board from the center', () => {
+    // Center of a 15×15 board (file/rank index 7) sits 7 squares from every
+    // edge, so an unobstructed rook sees 7 squares in each of 4 directions.
+    const board = boardFrom({ h8: 'wR' }, SIZE_15);
+    const moves = generateMoves(board, parseSquare('h8', SIZE_15));
+    expect(moves.length).toBe(28);
+    expect(moves.every((move) => !move.isCapture)).toBeTrue();
+  });
+
+  it('generates a pawn double-step from rank 1, and from black start rank size-2, on a 15×15 board', () => {
+    const board = boardFrom({ a2: 'wP', a14: 'bP' }, SIZE_15);
+    const white = generateMoves(board, parseSquare('a2', SIZE_15));
+    expect(white.map((move) => squareName(move.to, SIZE_15)).sort()).toEqual([
+      'a3',
+      'a4',
+    ]);
+    expect(white.find((move) => squareName(move.to, SIZE_15) === 'a4')!.isDoubleStep).toBeTrue();
+
+    const black = generateMoves(board, parseSquare('a14', SIZE_15));
+    expect(black.map((move) => squareName(move.to, SIZE_15)).sort()).toEqual([
+      'a12',
+      'a13',
+    ]);
+    expect(black.find((move) => squareName(move.to, SIZE_15) === 'a12')!.isDoubleStep).toBeTrue();
+  });
+
+  it('flags promotion at the last rank (14) by default, and at a custom promotionRanks override', () => {
+    const board = boardFrom({ a14: 'wP*' }, SIZE_15);
+    const defaultMoves = generateMoves(board, parseSquare('a14', SIZE_15));
+    expect(defaultMoves.length).toBe(1);
+    expect(squareName(defaultMoves[0].to, SIZE_15)).toBe('a15');
+    expect(defaultMoves[0].isPromotion).toBeTrue();
+
+    const early = boardFrom({ a12: 'wP*' }, SIZE_15);
+    const overridden = generateMoves(early, parseSquare('a12', SIZE_15), {
+      promotionRanks: { white: 12, black: 0 },
+    });
+    const toA13 = overridden.find(
+      (move) => squareName(move.to, SIZE_15) === 'a13',
+    )!;
+    expect(toA13.isPromotion).toBeTrue();
+
+    // Without the override, the same move is not a promotion.
+    const notOverridden = generateMoves(early, parseSquare('a12', SIZE_15));
+    const toA13Default = notOverridden.find(
+      (move) => squareName(move.to, SIZE_15) === 'a13',
+    )!;
+    expect(toA13Default.isPromotion).toBeFalse();
+  });
+
+  it('never generates castling on a 15×15 board, even with king and rooks at 8×8-like squares', () => {
+    const board = boardFrom(
+      { e1: 'wK', a1: 'wR', h1: 'wR', e15: 'bK' },
+      SIZE_15,
+    );
+    const moves = generateMoves(board, parseSquare('e1', SIZE_15));
+    expect(moves.some((move) => move.castle !== null)).toBeFalse();
+  });
+
+  it('round-trips squareName/parseSquare for edge and interior squares at size 15', () => {
+    for (const name of ['a1', 'o15', 'i9']) {
+      const sq = parseSquare(name, SIZE_15);
+      expect(squareName(sq, SIZE_15)).toBe(name);
+    }
+  });
+
+  it('builds a 15×15 board with boardFrom', () => {
+    const board = boardFrom({ h8: 'wK', a1: 'bR' }, SIZE_15);
+    expect(board.length).toBe(SIZE_15 * SIZE_15);
+    expect(pieceAt(board, parseSquare('h8', SIZE_15))!.type).toBe('king');
+    expect(pieceAt(board, parseSquare('a1', SIZE_15))!.color).toBe('black');
   });
 });

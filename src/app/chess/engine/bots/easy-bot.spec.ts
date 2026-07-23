@@ -12,6 +12,7 @@ import {
   SimultaneousChessEngine,
   matchIntent,
 } from '../variants/simultaneous-engine';
+import { ShrinkingRoyaleEngine } from '../variants/shrinking-royale-engine';
 import { EasyBot, applySolo } from './easy-bot';
 
 function mulberry32(seed: number): () => number {
@@ -143,5 +144,33 @@ describe('EasyBot', () => {
       const choice = bot.chooseMove(position, 'white', engine);
       expect(isKingSafe(position, 'white', choice)).toBeTrue();
     }
+  });
+
+  describe('Shrinking Board Royale burn awareness', () => {
+    it('evacuates a king off the doomed outer ring when a safe inward move exists', () => {
+      const board = boardFrom(
+        { a1: 'wK*', g7: 'wR', h8: 'bK' },
+        15,
+      );
+      // Round 5 with no rings burned yet: roundsUntilBurn(5, 0) === 2, so the
+      // burn-awareness heuristic is active. a1 sits on the doomed ring 0; its
+      // only neighbor off that ring is b2.
+      const position: GamePosition = {
+        board,
+        round: 5,
+        consecutivePassRounds: 0,
+        burnedRings: 0,
+      };
+      const engine = new ShrinkingRoyaleEngine(position);
+      for (let seed = 0; seed < 10; seed++) {
+        const bot = new EasyBot(mulberry32(seed));
+        const choice = bot.chooseMove(position, 'white', engine);
+        expect(choice).toEqual({
+          kind: 'move',
+          from: parseSquare('a1', 15),
+          to: parseSquare('b2', 15),
+        });
+      }
+    });
   });
 });

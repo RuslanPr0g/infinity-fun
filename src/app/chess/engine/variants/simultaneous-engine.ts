@@ -34,6 +34,7 @@ import {
 import {
   CastleGeometry,
   Move,
+  MoveGenOptions,
   castleGeometry,
   generateMoves,
 } from '../core/move-gen';
@@ -88,11 +89,12 @@ export function matchIntent(
   position: GamePosition,
   color: PieceColor,
   intent: MoveIntent,
+  options?: MoveGenOptions,
 ): Move | null {
   if (intent.kind === 'pass') return null;
   const piece = pieceAt(position.board, intent.from);
   if (!piece || piece.color !== color) return null;
-  const move = generateMoves(position.board, intent.from).find(
+  const move = generateMoves(position.board, intent.from, options).find(
     (candidate) => candidate.to === intent.to,
   );
   if (!move) return null;
@@ -105,11 +107,12 @@ function planFor(
   color: PieceColor,
   intent: MoveIntent,
   validate: boolean,
+  options?: MoveGenOptions,
 ): MovePlan {
   if (intent.kind === 'pass') {
     return { color, intent, move: null, piece: null, geometry: null };
   }
-  let move = matchIntent(position, color, intent);
+  let move = matchIntent(position, color, intent, options);
   if (!move) {
     if (validate) {
       throw new Error(
@@ -274,12 +277,12 @@ export function resolveSimultaneousRound(
   position: GamePosition,
   whiteIntent: MoveIntent,
   blackIntent: MoveIntent,
-  options: { validate?: boolean } = {},
+  options: { validate?: boolean; moveGen?: MoveGenOptions } = {},
 ): RoundResolution {
   const validate = options.validate ?? true;
   const plans: Record<PieceColor, MovePlan> = {
-    white: planFor(position, 'white', whiteIntent, validate),
-    black: planFor(position, 'black', blackIntent, validate),
+    white: planFor(position, 'white', whiteIntent, validate, options.moveGen),
+    black: planFor(position, 'black', blackIntent, validate, options.moveGen),
   };
   const outcomes: Record<PieceColor, MoveOutcome> = {
     white: {
@@ -461,6 +464,7 @@ export function resolveSimultaneousRound(
     round: position.round,
     positionBefore: position,
     position: {
+      ...position,
       board: newBoard,
       round: position.round + 1,
       consecutivePassRounds: passStreak,

@@ -7,6 +7,7 @@
 
 import { ChessVariantEngine } from '../engine/variant';
 import { SimultaneousChessEngine } from '../engine/variants/simultaneous-engine';
+import { ShrinkingRoyaleEngine } from '../engine/variants/shrinking-royale-engine';
 
 export interface ChessModeDescriptor {
   readonly id: string;
@@ -31,6 +32,20 @@ export const CHESS_MODES: ReadonlyArray<ChessModeDescriptor> = [
       'Both kings falling together is a draw, as are three all-pass rounds in a row.',
     ],
     engineFactory: () => new SimultaneousChessEngine(),
+    enabled: true,
+  },
+  {
+    id: 'shrinking-royale',
+    name: 'Shrinking Royale',
+    tagline: 'A 15×15 battlefield that burns away — outlast the fire.',
+    rulesSummary: [
+      'A 15×15 board with pawns massed across the entire front line on both sides.',
+      'All Simultaneous Chess rules apply: secret moves reveal together, bounces and whiffs and all.',
+      'The outer ring burns away every 6 rounds, shrinking the battlefield down to a 5×5 core.',
+      'Any piece caught standing on a burning ring is destroyed with it — a burned king loses the game.',
+      'No castling in this mode; the board is too busy collapsing to stand still.',
+    ],
+    engineFactory: () => new ShrinkingRoyaleEngine(),
     enabled: true,
   },
 ];

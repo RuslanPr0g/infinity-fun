@@ -5,6 +5,7 @@ import {
   Piece,
   PieceColor,
   Square,
+  boardSize,
   fileOf,
   rankOf,
   squareName,
@@ -12,7 +13,7 @@ import {
 import { ChessPieceComponent } from '../piece/chess-piece.component';
 
 /**
- * The 8×8 board. Renders a CSS grid of squares in display order for the
+ * The N×N board. Renders a CSS grid of squares in display order for the
  * given perspective and emits taps; all game logic stays in the parent.
  */
 @Component({
@@ -20,7 +21,11 @@ import { ChessPieceComponent } from '../piece/chess-piece.component';
   standalone: true,
   imports: [CommonModule, ChessPieceComponent],
   template: `
-    <div class="board" [attr.aria-label]="'Chess board'">
+    <div
+      class="board"
+      [attr.aria-label]="'Chess board'"
+      [style.grid-template-columns]="'repeat(' + size + ', 1fr)'"
+    >
       @for (sq of displaySquares; track sq) {
         <button
           type="button"
@@ -32,13 +37,15 @@ import { ChessPieceComponent } from '../piece/chess-piece.component';
           [class.capture-target]="isTarget(sq) && board[sq] !== null"
           [class.pending]="sq === pendingFrom || sq === pendingTo"
           [class.last-round]="highlightSquares.includes(sq)"
+          [class.void]="voidSquares.includes(sq)"
+          [class.danger]="dangerSquares.includes(sq)"
           [attr.aria-label]="ariaFor(sq)"
           (click)="squareTapped.emit(sq)"
         >
           @if (board[sq] && !hiddenSquares.includes(sq)) {
             <app-chess-piece [piece]="board[sq]!" />
           }
-          @if (isTarget(sq) && !board[sq]) {
+          @if (isTarget(sq) && !board[sq] && !voidSquares.includes(sq)) {
             <span class="dot"></span>
           }
         </button>
@@ -58,22 +65,32 @@ export class ChessBoardComponent {
   @Input() highlightSquares: Square[] = [];
   /** Squares whose pieces are temporarily drawn by the reveal layer instead. */
   @Input() hiddenSquares: Square[] = [];
+  /** Burned-away squares (Shrinking Board Royale) — charred and inert. */
+  @Input() voidSquares: Square[] = [];
+  /** Squares in the ring about to burn — a warm warning tint. */
+  @Input() dangerSquares: Square[] = [];
   @Output() squareTapped = new EventEmitter<Square>();
 
+  get size(): number {
+    return boardSize(this.board);
+  }
+
   get displaySquares(): Square[] {
+    const size = this.size;
     const squares: Square[] = [];
-    for (let row = 0; row < 8; row++) {
-      for (let col = 0; col < 8; col++) {
-        const rank = this.perspective === 'white' ? 7 - row : row;
-        const file = this.perspective === 'white' ? col : 7 - col;
-        squares.push(rank * 8 + file);
+    for (let row = 0; row < size; row++) {
+      for (let col = 0; col < size; col++) {
+        const rank = this.perspective === 'white' ? size - 1 - row : row;
+        const file = this.perspective === 'white' ? col : size - 1 - col;
+        squares.push(rank * size + file);
       }
     }
     return squares;
   }
 
   isLight(sq: Square): boolean {
-    return (fileOf(sq) + rankOf(sq)) % 2 === 1;
+    const size = this.size;
+    return (fileOf(sq, size) + rankOf(sq, size)) % 2 === 1;
   }
 
   isTarget(sq: Square): boolean {
@@ -82,7 +99,8 @@ export class ChessBoardComponent {
 
   ariaFor(sq: Square): string {
     const piece: Piece | null = this.board[sq];
-    const name = squareName(sq);
-    return piece ? `${name}, ${piece.color} ${piece.type}` : name;
+    const name = squareName(sq, this.size);
+    const base = piece ? `${name}, ${piece.color} ${piece.type}` : name;
+    return this.voidSquares.includes(sq) ? `${base}, burned` : base;
   }
 }

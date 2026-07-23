@@ -7,8 +7,6 @@
 
 .glyph {
   position: absolute;
-  width: 12.5%;
-  height: 12.5%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -34,12 +32,15 @@
   &.victim {
     animation: fade-out 0.5s ease-in 0.85s forwards;
   }
+
+  &.burned {
+    border-radius: 50%;
+    animation: burn-away 0.9s ease-in 0.9s forwards;
+  }
 }
 
 .miss {
   position: absolute;
-  width: 12.5%;
-  height: 12.5%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -92,6 +93,24 @@
   to {
     opacity: 0;
     transform: scale(0.4);
+  }
+}
+
+@keyframes burn-away {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 0 rgba(249, 115, 22, 0);
+  }
+  35% {
+    opacity: 1;
+    transform: scale(1.08);
+    box-shadow: 0 0 1.2rem 0.4rem rgba(249, 115, 22, 0.85);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.15);
+    box-shadow: 0 0 0.2rem 0 rgba(249, 115, 22, 0);
   }
 }
 

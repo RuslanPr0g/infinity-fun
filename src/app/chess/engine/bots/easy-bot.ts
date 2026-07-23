@@ -15,6 +15,7 @@ import {
   PIECE_VALUES,
   PieceColor,
   Square,
+  boardSize,
   findKing,
   makePiece,
   opponentOf,
@@ -25,6 +26,7 @@ import { castleGeometry, generateMoves, isSquareAttacked } from '../core/move-ge
 import type { ChessBot } from '../bot';
 import type { ChessVariantEngine, GamePosition, MoveIntent } from '../variant';
 import { PASS_INTENT } from '../variant';
+import { doomedRingSquares, roundsUntilBurn } from '../burn';
 
 type MoveIntentOnly = Extract<MoveIntent, { kind: 'move' }>;
 
@@ -109,6 +111,24 @@ export class EasyBot implements ChessBot {
 
     if (!kingSafeAfter) {
       score -= PIECE_VALUES.king;
+    }
+
+    if (position.burnedRings !== undefined) {
+      const remaining = roundsUntilBurn(position.round, position.burnedRings);
+      if (remaining !== null && remaining <= 2) {
+        const doomed = doomedRingSquares(position.burnedRings, boardSize(board));
+        const destDoomed = doomed.includes(intent.to);
+        const originDoomed = doomed.includes(intent.from);
+        if (destDoomed) {
+          score -= PIECE_VALUES[mover.type];
+        }
+        if (originDoomed) {
+          score += PIECE_VALUES[mover.type] * 0.8; // evacuation bonus
+          if (mover.type === 'king' && !destDoomed) {
+            score += 50; // a safe king evacuation always outranks quiet moves
+          }
+        }
+      }
     }
 
     score += this.random() * 0.75; // stay unpredictable
