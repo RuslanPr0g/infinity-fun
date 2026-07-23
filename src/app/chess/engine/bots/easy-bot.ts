@@ -11,22 +11,19 @@
  */
 
 import {
-  Board,
   PIECE_VALUES,
   PieceColor,
-  Square,
   boardSize,
   findKing,
-  makePiece,
   opponentOf,
   pieceAt,
-  withChanges,
 } from '../core/board';
-import { castleGeometry, generateMoves, isSquareAttacked } from '../core/move-gen';
+import { isSquareAttacked } from '../core/move-gen';
 import type { ChessBot } from '../bot';
 import type { ChessVariantEngine, GamePosition, MoveIntent } from '../variant';
 import { PASS_INTENT } from '../variant';
 import { doomedRingSquares, roundsUntilBurn } from '../burn';
+import { applySolo } from './evaluation';
 
 type MoveIntentOnly = Extract<MoveIntent, { kind: 'move' }>;
 
@@ -141,33 +138,7 @@ export class EasyBot implements ChessBot {
   }
 }
 
-/**
- * Apply a single move to the board as if the opponent stood still — the
- * bot's stationary-world approximation for evaluating its own candidates.
- */
-export function applySolo(
-  board: Board,
-  color: PieceColor,
-  intent: MoveIntentOnly,
-): Board {
-  const move = generateMoves(board, intent.from).find(
-    (candidate) => candidate.to === intent.to,
-  );
-  if (!move) return board;
-  if (move.castle) {
-    const geometry = castleGeometry(color, move.castle);
-    return withChanges(board, [
-      { sq: geometry.kingFrom, piece: null },
-      { sq: geometry.rookFrom, piece: null },
-      { sq: geometry.kingTo, piece: makePiece('king', color, true) },
-      { sq: geometry.rookTo, piece: makePiece('rook', color, true) },
-    ]);
-  }
-  const mover = pieceAt(board, intent.from)!;
-  const landedType = move.isPromotion ? intent.promoteTo ?? 'queen' : mover.type;
-  const changes: { sq: Square; piece: ReturnType<typeof makePiece> | null }[] = [
-    { sq: intent.from, piece: null },
-    { sq: intent.to, piece: makePiece(landedType, color, true) },
-  ];
-  return withChanges(board, changes);
-}
+// Re-exported so existing callers (and this bot's own spec) can keep
+// importing `applySolo` from here — the implementation now lives in the
+// shared evaluation module so Medium/Hard can use it too.
+export { applySolo };

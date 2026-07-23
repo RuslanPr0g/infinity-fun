@@ -9,6 +9,8 @@
 import { PieceColor } from './core/board';
 import { ChessVariantEngine, GamePosition, MoveIntent } from './variant';
 import { EasyBot } from './bots/easy-bot';
+import { MediumBot } from './bots/medium-bot';
+import { HardBot } from './bots/hard-bot';
 
 export interface ChessBot {
   readonly id: string;
@@ -38,6 +40,18 @@ export const BOT_DIFFICULTIES: ReadonlyArray<BotDifficulty> = [
     name: 'Easy',
     description: 'Likes safe captures, keeps its king out of danger, and mixes things up.',
     create: () => new EasyBot(),
+  },
+  {
+    id: 'medium',
+    name: 'Medium',
+    description: 'Weighs hanging pieces and board position before committing to a move.',
+    create: () => new MediumBot(),
+  },
+  {
+    id: 'hard',
+    name: 'Hard',
+    description: 'Looks a move ahead, pricing in your most likely replies.',
+    create: () => new HardBot(),
   },
 ];
 
