@@ -74,6 +74,8 @@ export type GameOutcome = 'ongoing' | 'white-won' | 'black-won' | 'draw';
 export type GameEndReason =
   | 'king-captured'
   | 'both-kings-captured'
+  | 'king-trapped'
+  | 'both-kings-trapped'
   | 'triple-pass'
   | 'resignation'
   | 'king-burned'

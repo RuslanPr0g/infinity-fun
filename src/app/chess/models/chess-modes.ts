@@ -54,6 +54,7 @@ export const CHESS_MODES: ReadonlyArray<ChessModeDescriptor> = [
       'Two moves to the same square bounce back — a stationary piece there survives.',
       'Capturing a piece that just moved away whiffs: pawns bounce home, others land.',
       'No check or checkmate — capture the enemy king to win. Passing is a legal move.',
+      'Exception: a king with zero legal moves left, while under attack, loses immediately.',
       'Both kings falling together is a draw, as are three all-pass rounds in a row.',
     ],
     turnStyle: 'simultaneous',

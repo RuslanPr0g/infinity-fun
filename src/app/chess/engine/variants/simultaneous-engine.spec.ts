@@ -311,6 +311,49 @@ describe('SimultaneousChessEngine', () => {
     });
   });
 
+  describe('A fully boxed-in, attacked king loses immediately', () => {
+    // a1's only three neighbors (a2, b1, b2) are occupied by white's own
+    // pawns, so the king has zero legal moves — but a knight's attack isn't
+    // blocked by those pieces, so it can still be "attacked" despite being
+    // boxed in by its own side.
+    const boxedKingSquares = { a1: 'wK', a2: 'wP', b1: 'wP', b2: 'wP' };
+
+    it('ends the game when the boxed-in king is attacked (fixture "cornerMate")', () => {
+      const fixture = boardFrom({ ...boxedKingSquares, c2: 'bN', h8: 'bK' });
+      const resolution = resolveSimultaneousRound(
+        positionOf(fixture),
+        PASS_INTENT,
+        PASS_INTENT,
+      );
+      expect(resolution.status).toEqual({
+        outcome: 'black-won',
+        reason: 'king-trapped',
+      });
+    });
+
+    it('stays ongoing when the boxed-in king is not attacked by anything', () => {
+      const fixture = boardFrom({ ...boxedKingSquares, h8: 'bK' });
+      const resolution = resolveSimultaneousRound(
+        positionOf(fixture),
+        PASS_INTENT,
+        PASS_INTENT,
+      );
+      expect(resolution.status.outcome).toBe('ongoing');
+    });
+
+    it('stays ongoing when the attacked king still has a free square to escape to', () => {
+      // b2 left empty: the king has one legal move, so it is not "trapped" —
+      // it may still freely walk into the attacked square, unchanged.
+      const fixture = boardFrom({ a1: 'wK', a2: 'wP', b1: 'wP', c2: 'bN', h8: 'bK' });
+      const resolution = resolveSimultaneousRound(
+        positionOf(fixture),
+        PASS_INTENT,
+        PASS_INTENT,
+      );
+      expect(resolution.status.outcome).toBe('ongoing');
+    });
+  });
+
   describe('Rule 17 — three consecutive all-pass rounds draw the game', () => {
     it('draws after three straight all-pass rounds', () => {
       const engine = new SimultaneousChessEngine();

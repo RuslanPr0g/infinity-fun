@@ -47,6 +47,10 @@ export class GameOverOverlayComponent {
         return 'The king was captured.';
       case 'both-kings-captured':
         return 'Both kings fell in the same round.';
+      case 'king-trapped':
+        return 'The king had nowhere left to go.';
+      case 'both-kings-trapped':
+        return 'Both kings were trapped at once.';
       case 'triple-pass':
         return 'Both players passed three rounds in a row.';
       case 'resignation':

@@ -3,7 +3,12 @@
  *
  * Implements the exact v1 ruleset:
  *  - legality is judged against the start-of-round position only;
- *  - pass is legal; no check/checkmate/stalemate; no en passant;
+ *  - pass is legal; no check/checkmate/stalemate; no en passant — a king may
+ *    freely walk onto an attacked square whenever it has anywhere else to
+ *    go, exactly like any other piece;
+ *  - the one exception: a king with ZERO legal moves (fully boxed in) that
+ *    is currently attacked loses immediately — it was never "safe", just
+ *    never actually cornered before;
  *  - same-destination moves bounce (rules 9–10);
  *  - captures on vacated squares whiff, pawns bounce instead (rule 11);
  *  - swaps/pass-throughs succeed — only destination conflicts matter (rule 12);
@@ -37,6 +42,7 @@ import {
   MoveGenOptions,
   castleGeometry,
   generateMoves,
+  isSquareAttacked,
 } from '../core/move-gen';
 import {
   ChessVariantEngine,
@@ -59,6 +65,20 @@ export function initialPosition(): GamePosition {
 
 /** Rounds in which both players pass, in a row, that end the game in a draw. */
 export const PASS_ROUNDS_FOR_DRAW = 3;
+
+/**
+ * The one exception to "no check/checkmate": a king that is both attacked
+ * AND has zero legal moves (fully boxed in — not merely "every square is
+ * attacked", genuinely nowhere to go) is cornered for good and loses. A king
+ * with anywhere else to go is untouched by this and may still walk onto an
+ * attacked square exactly as before.
+ */
+function isKingTrapped(board: Board, color: PieceColor, kingSquare: Square): boolean {
+  return (
+    isSquareAttacked(board, kingSquare, opponentOf(color)) &&
+    generateMoves(board, kingSquare).length === 0
+  );
+}
 
 interface MovePlan {
   readonly color: PieceColor;
@@ -441,8 +461,14 @@ export function resolveSimultaneousRound(
   // Rules 15–17 — game end.
   const bothPassed = isPass(plans.white) && isPass(plans.black);
   const passStreak = bothPassed ? position.consecutivePassRounds + 1 : 0;
-  const whiteKingAlive = findKing(newBoard, 'white') !== null;
-  const blackKingAlive = findKing(newBoard, 'black') !== null;
+  const whiteKingSquare = findKing(newBoard, 'white');
+  const blackKingSquare = findKing(newBoard, 'black');
+  const whiteKingAlive = whiteKingSquare !== null;
+  const blackKingAlive = blackKingSquare !== null;
+  const whiteTrapped =
+    whiteKingSquare !== null && isKingTrapped(newBoard, 'white', whiteKingSquare);
+  const blackTrapped =
+    blackKingSquare !== null && isKingTrapped(newBoard, 'black', blackKingSquare);
 
   let status: GameStatus = ONGOING_STATUS;
   if (!whiteKingAlive && !blackKingAlive) {
@@ -451,6 +477,12 @@ export function resolveSimultaneousRound(
     status = { outcome: 'white-won', reason: 'king-captured' };
   } else if (!whiteKingAlive) {
     status = { outcome: 'black-won', reason: 'king-captured' };
+  } else if (whiteTrapped && blackTrapped) {
+    status = { outcome: 'draw', reason: 'both-kings-trapped' };
+  } else if (whiteTrapped) {
+    status = { outcome: 'black-won', reason: 'king-trapped' };
+  } else if (blackTrapped) {
+    status = { outcome: 'white-won', reason: 'king-trapped' };
   } else if (passStreak >= PASS_ROUNDS_FOR_DRAW) {
     status = { outcome: 'draw', reason: 'triple-pass' };
   }
