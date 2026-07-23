@@ -26,6 +26,7 @@ import {
 import { MoveIntent, PASS_INTENT } from './engine/variant';
 import { ChessModeDescriptor } from './models/chess-modes';
 import { ChessSessionService } from './services/chess-session.service';
+import { ChessSettingsService } from './services/chess-settings.service';
 
 /**
  * Root Unusual Chess component. One route (`/chess`); every screen
@@ -124,15 +125,25 @@ type ScreenState = 'mode-select' | 'opponent-select' | 'playing';
                   <button type="button" class="pass-button" (click)="onPass()">
                     Pass
                   </button>
-                  <button
-                    type="button"
-                    class="confirm-button"
-                    [disabled]="pendingIntent() === null"
-                    (click)="onConfirm()"
-                  >
-                    {{ confirmLabel() }}
-                  </button>
+                  @if (settings.confirmMoves() || pendingIsPromotion()) {
+                    <button
+                      type="button"
+                      class="confirm-button"
+                      [disabled]="pendingIntent() === null"
+                      (click)="onConfirm()"
+                    >
+                      {{ confirmLabel() }}
+                    </button>
+                  }
                 </div>
+                <label class="confirm-toggle">
+                  <input
+                    type="checkbox"
+                    [checked]="settings.confirmMoves()"
+                    (change)="onToggleConfirm($event)"
+                  />
+                  Ask to confirm moves
+                </label>
               </div>
             }
 
@@ -157,6 +168,7 @@ type ScreenState = 'mode-select' | 'opponent-select' | 'playing';
 })
 export class ChessGameComponent implements OnDestroy {
   readonly session = inject(ChessSessionService);
+  readonly settings = inject(ChessSettingsService);
 
   readonly screen = signal<ScreenState>('mode-select');
   readonly selectedMode = signal<ChessModeDescriptor | null>(null);
@@ -339,6 +351,13 @@ export class ChessGameComponent implements OnDestroy {
             intent.kind === 'move' && intent.to === sq,
         );
       const isPromotion = intents.some((intent) => intent.promoteTo !== undefined);
+      // Promotions always go through the picker + confirm — a piece must be
+      // chosen. Everything else submits instantly when confirmation is off.
+      if (!isPromotion && !this.settings.confirmMoves()) {
+        this.session.confirmIntent(intents[0]);
+        this.clearEntryState();
+        return;
+      }
       this.pendingIsPromotion.set(isPromotion);
       this.pendingIntent.set(
         isPromotion
@@ -360,6 +379,11 @@ export class ChessGameComponent implements OnDestroy {
   onPass(): void {
     this.selectedSquare.set(null);
     this.pendingIsPromotion.set(false);
+    if (!this.settings.confirmMoves()) {
+      this.session.confirmIntent(PASS_INTENT);
+      this.clearEntryState();
+      return;
+    }
     this.pendingIntent.set(PASS_INTENT);
   }
 
@@ -368,6 +392,18 @@ export class ChessGameComponent implements OnDestroy {
     if (!intent) return;
     this.session.confirmIntent(intent);
     this.clearEntryState();
+  }
+
+  onToggleConfirm(event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    this.settings.setConfirmMoves(checked);
+    if (!checked) {
+      // Drop any half-entered pending move so state stays consistent.
+      const intent = this.pendingIntent();
+      if (intent && !this.pendingIsPromotion()) {
+        this.pendingIntent.set(null);
+      }
+    }
   }
 
   onHandoffReady(): void {

@@ -86,6 +86,24 @@
     }
   }
 
+  .confirm-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    font-size: 0.8rem;
+    color: rgba(colors.$primary-text-color, 0.75);
+    cursor: pointer;
+    user-select: none;
+
+    input {
+      width: 1.05rem;
+      height: 1.05rem;
+      accent-color: colors.$color-unusual-chess;
+      cursor: pointer;
+    }
+  }
+
   .action-row {
     display: flex;
     gap: 0.6rem;
