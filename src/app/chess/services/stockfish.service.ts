@@ -97,7 +97,10 @@ export class StockfishService {
     this.isReady.set(false);
     this.uciReady = false;
     this.busy = false;
+    // Resolve any in-flight pending request with null so it doesn't hang.
+    const pending = this.pendingMove;
     this.pendingMove = null;
+    pending?.resolve(null);
     this.initResolve = null;
     this.initReject = null;
     // Drain remaining queue with null so callers don't hang.
