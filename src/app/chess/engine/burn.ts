@@ -8,15 +8,30 @@
 import { Square, fileOf, rankOf, square } from './core/board';
 
 export const ROYALE_BOARD_SIZE = 15;
+
 /**
- * A ring burns at the end of every BURN_INTERVAL-th round. Royale plays
- * alternating turns now, so a "round" is a single ply (one player's move),
- * not a pair of moves — 12 plies is ~6 moves per player, matching the old
- * simultaneous-round pacing of BURN_INTERVAL=6.
+ * Plies from the previous burn (or the start of the game) until each
+ * successive ring burns. Rounds are ply-based in alternating-turn Royale
+ * (one entry here is two players' worth of "a move each"). The schedule
+ * starts generous — a 15×15 opening needs room to develop — then tightens
+ * stage by stage as the arena shrinks, so the endgame accelerates toward
+ * the final single-square core instead of dragging at a constant pace.
  */
-export const BURN_INTERVAL = 12;
-/** Burning stops once the intact core is 5×5 (15 − 2·5). */
-export const MAX_BURNED_RINGS = 5;
+export const BURN_SCHEDULE: readonly number[] = [24, 20, 16, 14, 12, 10, 8];
+
+/** Burning stops once a single central square remains (15 − 2·7 = 1). */
+export const MAX_BURNED_RINGS = BURN_SCHEDULE.length;
+
+/** Cumulative round number at which each successive ring burns. */
+const BURN_CUMULATIVE_ROUNDS: readonly number[] = (() => {
+  const cumulative: number[] = [];
+  let total = 0;
+  for (const delta of BURN_SCHEDULE) {
+    total += delta;
+    cumulative.push(total);
+  }
+  return cumulative;
+})();
 
 export interface IntactBounds {
   readonly min: number;
@@ -80,12 +95,13 @@ export function roundsUntilBurn(
   burnedRings: number,
 ): number | null {
   if (burnedRings >= MAX_BURNED_RINGS) return null;
-  return BURN_INTERVAL - ((round - 1) % BURN_INTERVAL);
+  return BURN_CUMULATIVE_ROUNDS[burnedRings] - round + 1;
 }
 
 /** True when the round that was just played ends with a ring burning. */
 export function burnsAfterRound(round: number, burnedRings: number): boolean {
-  return burnedRings < MAX_BURNED_RINGS && round % BURN_INTERVAL === 0;
+  if (burnedRings >= MAX_BURNED_RINGS) return false;
+  return round === BURN_CUMULATIVE_ROUNDS[burnedRings];
 }
 
 /** Convenience for building the 15×15 royale start position's back rank. */

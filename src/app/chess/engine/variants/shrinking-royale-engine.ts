@@ -1,9 +1,9 @@
 /**
  * Shrinking Board Royale — regular alternating-turn chess on a 15×15
- * battlefield that burns away from the outside in. Every BURN_INTERVAL-th
- * ply (round = one move now, not a simultaneous pair) the outermost intact
- * ring is destroyed, and any piece standing on it burns with it, down to a
- * 5×5 core.
+ * battlefield that burns away from the outside in. On a schedule (see
+ * `BURN_SCHEDULE` in `../burn` — generous at first, tightening stage by
+ * stage) the outermost intact ring is destroyed, and any piece standing on
+ * it burns with it, all the way down to a single central square.
  *
  * Turn order is strict alternation: white moves, then black, then white...
  * There is no hidden entry and no simultaneous reveal — one player submits

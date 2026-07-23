@@ -190,9 +190,11 @@ describe('MediumBot', () => {
   describe('Shrinking Board Royale burn awareness', () => {
     it('evacuates a king off the doomed outer ring when a safe inward move exists', () => {
       const board = boardFrom({ a1: 'wK*', g7: 'wR', h8: 'bK' }, 15);
+      // Round 23, no rings burned yet: the first burn stage is 24 plies,
+      // so roundsUntilBurn(23, 0) === 2 and burn-awareness is active.
       const position: GamePosition = {
         board,
-        round: 11,
+        round: 23,
         consecutivePassRounds: 0,
         burnedRings: 0,
       };

@@ -9,6 +9,7 @@ import {
 } from '../core/board';
 import { GamePosition, MoveIntent, PASS_INTENT } from '../variant';
 import {
+  BURN_SCHEDULE,
   MAX_BURNED_RINGS,
   isVoidSquare,
   roundsUntilBurn,
@@ -270,7 +271,8 @@ describe('ShrinkingRoyaleEngine', () => {
   });
 
   describe('Burn timing', () => {
-    it('burns ring 0 only after round 12, destroying whatever stands on it', () => {
+    it('burns ring 0 only after the first schedule stage, destroying whatever stands on it', () => {
+      const firstStagePlies = BURN_SCHEDULE[0]; // 24 — the generous opening stage
       const board: Board = boardFrom(
         { h8: 'wK*', g8: 'bK*', a1: 'wP', o15: 'bP', d4: 'wR*' },
         SIZE,
@@ -294,7 +296,7 @@ describe('ShrinkingRoyaleEngine', () => {
         return blackToggle ? move('g8', 'g7') : move('g7', 'g8');
       }
 
-      for (let round = 1; round <= 11; round++) {
+      for (let round = 1; round <= firstStagePlies - 1; round++) {
         const mover = engine.activeColor;
         const intent = mover === 'white' ? nextWhiteMove() : nextBlackMove();
         engine.submitIntent(mover, intent);
@@ -306,7 +308,7 @@ describe('ShrinkingRoyaleEngine', () => {
       expect(pieceCode(engine.position.board, 'a1')).toBe('wP');
       expect(pieceCode(engine.position.board, 'o15')).toBe('bP');
 
-      // Round 12: black is on move (11 plies played, so round 12 is even).
+      // The last ply of the first stage is even, so black is on move.
       expect(engine.activeColor).toBe('black');
       engine.submitIntent('black', nextBlackMove());
       const resolution = engine.resolveRound();
@@ -318,6 +320,13 @@ describe('ShrinkingRoyaleEngine', () => {
       expect(burned.length).toBe(2);
       expect(resolution.status.outcome).toBe('ongoing');
     });
+
+    it('tightens the interval for each successive ring (slowly decreasing schedule)', () => {
+      expect(BURN_SCHEDULE.length).toBe(MAX_BURNED_RINGS);
+      for (let i = 1; i < BURN_SCHEDULE.length; i++) {
+        expect(BURN_SCHEDULE[i]).toBeLessThan(BURN_SCHEDULE[i - 1]);
+      }
+    });
   });
 
   describe('King burn end conditions', () => {
@@ -325,7 +334,7 @@ describe('ShrinkingRoyaleEngine', () => {
       const board: Board = boardFrom({ a1: 'wK*', h8: 'bK*' }, SIZE);
       const position: GamePosition = {
         board,
-        round: 12, // even — black on move
+        round: BURN_SCHEDULE[0], // 24, even — black on move
         consecutivePassRounds: 0,
         burnedRings: 0,
       };
@@ -343,7 +352,7 @@ describe('ShrinkingRoyaleEngine', () => {
       const board: Board = boardFrom({ a1: 'wK*', o15: 'bK*' }, SIZE);
       const position: GamePosition = {
         board,
-        round: 12, // even — black on move
+        round: BURN_SCHEDULE[0], // 24, even — black on move
         consecutivePassRounds: 0,
         burnedRings: 0,
       };
@@ -389,10 +398,12 @@ describe('ShrinkingRoyaleEngine', () => {
   });
 
   describe('Core floor', () => {
-    it('stops burning once burnedRings reaches the 5x5 core', () => {
+    it('stops burning once burnedRings reaches the single-square core', () => {
       expect(roundsUntilBurn(30, MAX_BURNED_RINGS)).toBeNull();
 
-      const board: Board = boardFrom({ h8: 'wK*', g8: 'bK*' }, SIZE);
+      // At MAX_BURNED_RINGS only h8 is intact — both kings are fully boxed
+      // in by void (same fixture as the stuck-pass tests above).
+      const board: Board = boardFrom({ h8: 'wK*', a1: 'bK*' }, SIZE);
       const position: GamePosition = {
         board,
         round: 30, // even — black on move
@@ -400,7 +411,7 @@ describe('ShrinkingRoyaleEngine', () => {
         burnedRings: MAX_BURNED_RINGS,
       };
       const engine = new ShrinkingRoyaleEngine(undefined, position);
-      engine.submitIntent('black', move('g8', 'g7'));
+      engine.submitIntent('black', PASS_INTENT);
       const resolution = engine.resolveRound();
 
       expect(resolution.events.some((event) => event.type === 'burned')).toBeFalse();

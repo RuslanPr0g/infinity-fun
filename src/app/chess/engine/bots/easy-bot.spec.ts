@@ -152,13 +152,13 @@ describe('EasyBot', () => {
         { a1: 'wK*', g7: 'wR', h8: 'bK' },
         15,
       );
-      // Round 11 (white to move) with no rings burned yet:
-      // roundsUntilBurn(11, 0) === 2, so the burn-awareness heuristic is
-      // active. a1 sits on the doomed ring 0; its only neighbor off that
-      // ring is b2.
+      // Round 23 (white to move) with no rings burned yet: the first burn
+      // stage is 24 plies, so roundsUntilBurn(23, 0) === 2 and the
+      // burn-awareness heuristic is active. a1 sits on the doomed ring 0;
+      // its only neighbor off that ring is b2.
       const position: GamePosition = {
         board,
-        round: 11,
+        round: 23,
         consecutivePassRounds: 0,
         burnedRings: 0,
       };

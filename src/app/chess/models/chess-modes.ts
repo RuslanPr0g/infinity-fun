@@ -68,7 +68,7 @@ export const CHESS_MODES: ReadonlyArray<ChessModeDescriptor> = [
       'Plays like regular chess — alternating turns, one visible move at a time.',
       'No check or checkmate — capture the enemy king to win.',
       'Pieces spawn back from the edge; harder bots spawn your army closer to the fire.',
-      'The outer ring burns away every 12 moves, shrinking the battlefield down to a 5×5 core — anything caught standing on it burns too.',
+      'The outer ring eventually burns away, and each further ring burns faster than the last, shrinking the battlefield down to one final square — anything caught standing on it burns too.',
       'No castling, and no passing — you may only pass when you have zero legal moves.',
     ],
     turnStyle: 'alternate',
