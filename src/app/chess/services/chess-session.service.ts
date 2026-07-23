@@ -1,11 +1,11 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import {
   PieceColor,
   PieceType,
   Square,
   opponentOf,
 } from '../engine/core/board';
-import { BOT_DIFFICULTIES, ChessBot, botDifficultyById } from '../engine/bot';
+import { BOT_DIFFICULTIES, ChessBot, botDifficultyById, isEngineBot } from '../engine/bot';
 import {
   ChessVariantEngine,
   GamePosition,
@@ -19,6 +19,8 @@ import {
   TurnStyle,
   chessModeById,
 } from '../models/chess-modes';
+import { StockfishService } from './stockfish.service';
+import { StockfishBot } from '../engine/bots/stockfish-bot';
 
 export type OpponentKind = 'hotseat' | 'bot';
 
@@ -52,6 +54,14 @@ export interface RoundLogEntry {
  * the bot when the opponent is a bot. The bot is always asked for its move
  * from the start-of-round position — never after peeking at the human's
  * pending intent.
+ *
+ * When the Engine (Stockfish) bot is selected:
+ *  - StockfishBot is constructed with the injected StockfishService.
+ *  - After the human confirms a move in Simultaneous mode, StockfishBot.prefetch()
+ *    is called immediately so Stockfish has maximum think time.
+ *  - chooseMove is replaced by awaitPrefetch() so we wait for the async result
+ *    before resolving the round.
+ *  - reset() calls StockfishService.destroy() to terminate the worker.
  */
 @Injectable({ providedIn: 'root' })
 export class ChessSessionService {
@@ -80,6 +90,8 @@ export class ChessSessionService {
       .some((intent) => intent.kind === 'pass');
   });
 
+  private readonly stockfishService = inject(StockfishService);
+
   private engine: ChessVariantEngine | null = null;
   private bot: ChessBot | null = null;
   private botColor: PieceColor = 'black';
@@ -95,9 +107,15 @@ export class ChessSessionService {
 
     this.bot = null;
     if (config.opponent === 'bot') {
-      const difficulty =
-        botDifficultyById(config.botId ?? '') ?? BOT_DIFFICULTIES[0];
-      this.bot = difficulty.create();
+      if (isEngineBot(config.botId)) {
+        // StockfishBot requires the service — the worker is already initialised
+        // by StockfishLoaderComponent before the game is started.
+        this.bot = new StockfishBot(this.stockfishService);
+      } else {
+        const difficulty =
+          botDifficultyById(config.botId ?? '') ?? BOT_DIFFICULTIES[0];
+        this.bot = difficulty.create();
+      }
       this.botColor = opponentOf(config.humanColor ?? 'white');
     }
 
@@ -155,11 +173,33 @@ export class ChessSessionService {
       return;
     }
 
-    // Bot round: the bot picks from the same start-of-round position the
-    // human did; the engine keeps pending intents private.
+    // Bot round (simultaneous): the bot picks from the same start-of-round
+    // position the human did; the engine keeps pending intents private.
+    if (this.bot instanceof StockfishBot) {
+      // Pre-fetch was fired when the human started entering (see prefetchForStockfish).
+      // Now await it asynchronously; fall back to HardBot if not ready.
+      this.bot.awaitPrefetch(engine.position, this.botColor, engine).then((botIntent) => {
+        engine.submitIntent(this.botColor, botIntent);
+        this.resolveRound();
+      });
+      return;
+    }
+
     const botIntent = this.bot!.chooseMove(engine.position, this.botColor, engine);
     engine.submitIntent(this.botColor, botIntent);
     this.resolveRound();
+  }
+
+  /**
+   * Kick off a Stockfish pre-fetch for the current position. Called by the
+   * UI (chess-game.component) immediately when the human taps their first
+   * piece so Stockfish has maximum think time while the human deliberates.
+   */
+  prefetchStockfishMove(): void {
+    if (!(this.bot instanceof StockfishBot)) return;
+    const position = this.position();
+    if (!position) return;
+    this.bot.prefetch(position, this.botColor);
   }
 
   /** Hotseat: the device has been passed — start Black's entry. */
@@ -192,6 +232,11 @@ export class ChessSessionService {
     this.entryColor.set(
       config?.opponent === 'bot' ? config.humanColor ?? 'white' : 'white',
     );
+    // Pre-fetch Stockfish move for the new round as soon as entry starts.
+    if (this.bot instanceof StockfishBot) {
+      const position = this.position();
+      if (position) this.bot.prefetch(position, this.botColor);
+    }
     this.phase.set('entry');
   }
 
@@ -204,6 +249,10 @@ export class ChessSessionService {
   }
 
   reset(): void {
+    // Terminate Stockfish worker if the engine bot was in use.
+    if (this.bot instanceof StockfishBot) {
+      this.stockfishService.destroy();
+    }
     this.engine = null;
     this.bot = null;
     this.turnStyle = 'simultaneous';
@@ -222,6 +271,8 @@ export class ChessSessionService {
    * Alternate mode only: if it's the bot's turn (per `entryColor`), submit
    * its move and resolve immediately, so the human sees it as its own
    * reveal step rather than an entry prompt. Returns true if the bot moved.
+   *
+   * For StockfishBot in alternate mode: pre-fetch, await, then resolve.
    */
   private playBotAlternateTurnIfDue(): boolean {
     const engine = this.engine;
@@ -229,6 +280,16 @@ export class ChessSessionService {
     if (!engine || !config || config.opponent !== 'bot' || !this.bot) return false;
     if (this.entryColor() !== this.botColor) return false;
     if (this.status().outcome !== 'ongoing') return false;
+
+    if (this.bot instanceof StockfishBot) {
+      this.bot.prefetch(engine.position, this.botColor);
+      this.bot.awaitPrefetch(engine.position, this.botColor, engine).then((botIntent) => {
+        engine.submitIntent(this.botColor, botIntent);
+        this.resolveRound();
+      });
+      return true;
+    }
+
     const botIntent = this.bot.chooseMove(engine.position, this.botColor, engine);
     engine.submitIntent(this.botColor, botIntent);
     this.resolveRound();

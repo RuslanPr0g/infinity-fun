@@ -4,6 +4,9 @@
  * the opponent-select UI renders from this list only.
  *
  * Pure TypeScript — no Angular imports.
+ * Note: The 'stockfish' entry has no `create` factory here because
+ * StockfishBot requires an injected StockfishService. ChessSessionService
+ * handles its construction directly when botId === 'stockfish'.
  */
 
 import { PieceColor } from './core/board';
@@ -53,8 +56,21 @@ export const BOT_DIFFICULTIES: ReadonlyArray<BotDifficulty> = [
     description: 'Looks a move ahead, pricing in your most likely replies.',
     create: () => new HardBot(),
   },
+  {
+    id: 'stockfish',
+    name: 'Engine',
+    description: 'Powered by Stockfish 18 — plays the strongest move every turn.',
+    // StockfishBot requires an injected StockfishService; ChessSessionService
+    // constructs it directly. This factory is a safe fallback only.
+    create: () => new HardBot(),
+  },
 ];
 
 export function botDifficultyById(id: string): BotDifficulty | undefined {
   return BOT_DIFFICULTIES.find((difficulty) => difficulty.id === id);
+}
+
+/** True for the Stockfish-powered engine difficulty. */
+export function isEngineBot(botId: string | undefined): boolean {
+  return botId === 'stockfish';
 }

@@ -1,9 +1,16 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  signal,
+} from '@angular/core';
 import { BOT_DIFFICULTIES, BotDifficulty } from '../../engine/bot';
 import { PieceColor } from '../../engine/core/board';
 import { ChessModeDescriptor } from '../../models/chess-modes';
 import { OpponentKind } from '../../services/chess-session.service';
+import { StockfishLoaderComponent } from '../stockfish-loader/stockfish-loader.component';
 
 export interface OpponentChoice {
   opponent: OpponentKind;
@@ -11,43 +18,89 @@ export interface OpponentChoice {
   humanColor?: PieceColor;
 }
 
+/** Icon + badge metadata per difficulty id. */
+interface BotMeta {
+  icon: string;
+  badge?: string;
+  badgeClass?: string;
+}
+
+const BOT_META: Record<string, BotMeta> = {
+  easy:      { icon: '🎯' },
+  medium:    { icon: '⚔️' },
+  hard:      { icon: '💀' },
+  stockfish: { icon: '🤖', badge: '⚡ Stockfish 18', badgeClass: 'badge-engine' },
+};
+
 /**
- * Opponent-selection screen: two players (hotseat) or a bot. Bot choices
- * render from the typed difficulty registry — future levels appear here
- * automatically. The player picks their color when playing the bot.
+ * Opponent-selection screen — tiered layout:
+ *   Section 1 — Hotseat
+ *   Section 2 — vs Bot  (2-column grid: Easy / Medium / Hard / Engine)
+ *
+ * When the Engine bot is selected and Start is clicked, the Stockfish loader
+ * appears inline. Once it emits (ready) the game starts. All other opponents
+ * start immediately.
  */
 @Component({
   selector: 'app-opponent-select',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, StockfishLoaderComponent],
   template: `
-    <div class="opponent-select">
-      <h2 class="heading">{{ mode?.name }} — choose your opponent</h2>
+    <!-- Stockfish loader overlay, shown inline before the game starts -->
+    @if (showLoader()) {
+      <app-stockfish-loader (ready)="onLoaderReady()" />
+    }
 
-      <div class="options">
+    <div class="opponent-select" [class.hidden]="showLoader()">
+      <h2 class="heading">{{ mode?.name ?? 'Chess' }} — choose opponent</h2>
+
+      <!-- ── Section 1: Hotseat ─────────────────────────────────────── -->
+      <section class="section">
+        <span class="section-label">Local multiplayer</span>
         <button
           type="button"
-          class="option"
+          class="hotseat-card"
           [class.active]="choice() === 'hotseat'"
           (click)="chooseHotseat()"
         >
-          <span class="option-name">Two players</span>
-          <span class="option-desc">Hotseat on this device with hidden move entry.</span>
+          <span class="hotseat-icon">👥</span>
+          <span class="hotseat-info">
+            <span class="option-name">Two players</span>
+            <span class="option-desc">Hotseat on this device with hidden move entry.</span>
+          </span>
         </button>
+      </section>
 
-        @for (bot of bots; track bot.id) {
-          <button
-            type="button"
-            class="option"
-            [class.active]="choice() === bot.id"
-            (click)="chooseBot(bot)"
-          >
-            <span class="option-name">vs Bot — {{ bot.name }}</span>
-            <span class="option-desc">{{ bot.description }}</span>
-          </button>
-        }
-      </div>
+      <!-- ── Section 2: vs Bot ──────────────────────────────────────── -->
+      <section class="section">
+        <span class="section-label">vs Bot</span>
+        <div class="bot-grid">
+          @for (bot of bots; track bot.id) {
+            <button
+              type="button"
+              class="bot-card"
+              [class.active]="choice() === bot.id"
+              [class.engine-card]="bot.id === 'stockfish'"
+              (click)="chooseBot(bot)"
+            >
+              <span class="bot-icon">{{ metaFor(bot.id).icon }}</span>
+              <span class="bot-info">
+                <span class="option-name">
+                  {{ bot.name }}
+                  @if (metaFor(bot.id).badge; as badge) {
+                    <span class="badge" [class]="metaFor(bot.id).badgeClass ?? ''">
+                      {{ badge }}
+                    </span>
+                  }
+                </span>
+                <span class="option-desc">{{ bot.description }}</span>
+              </span>
+            </button>
+          }
+        </div>
+      </section>
 
+      <!-- ── Color picker (bot games only) ─────────────────────────── -->
       @if (choice() !== null && choice() !== 'hotseat') {
         <div class="color-pick">
           <span class="color-label">Play as</span>
@@ -70,8 +123,11 @@ export interface OpponentChoice {
         </div>
       }
 
+      <!-- ── Actions ────────────────────────────────────────────────── -->
       <div class="actions">
-        <button type="button" class="back-button" (click)="back.emit()">Back</button>
+        <button type="button" class="back-button" (click)="back.emit()">
+          ← Back
+        </button>
         <button
           type="button"
           class="start-button"
@@ -91,9 +147,16 @@ export class OpponentSelectComponent {
   @Output() chosen = new EventEmitter<OpponentChoice>();
   @Output() back = new EventEmitter<void>();
 
-  /** 'hotseat' or a bot difficulty id. */
+  /** 'hotseat' | bot difficulty id | null */
   readonly choice = signal<string | null>(null);
   readonly humanColor = signal<PieceColor>('white');
+  readonly showLoader = signal(false);
+
+  private pendingChoice: OpponentChoice | null = null;
+
+  metaFor(id: string): BotMeta {
+    return BOT_META[id] ?? { icon: '🤖' };
+  }
 
   chooseHotseat(): void {
     this.choice.set('hotseat');
@@ -106,14 +169,33 @@ export class OpponentSelectComponent {
   confirm(): void {
     const choice = this.choice();
     if (choice === null) return;
+
     if (choice === 'hotseat') {
       this.chosen.emit({ opponent: 'hotseat' });
-    } else {
-      this.chosen.emit({
-        opponent: 'bot',
-        botId: choice,
-        humanColor: this.humanColor(),
-      });
+      return;
+    }
+
+    const opponentChoice: OpponentChoice = {
+      opponent: 'bot',
+      botId: choice,
+      humanColor: this.humanColor(),
+    };
+
+    if (choice === 'stockfish') {
+      // Show the loader; emit chosen only after it signals ready.
+      this.pendingChoice = opponentChoice;
+      this.showLoader.set(true);
+      return;
+    }
+
+    this.chosen.emit(opponentChoice);
+  }
+
+  onLoaderReady(): void {
+    this.showLoader.set(false);
+    if (this.pendingChoice) {
+      this.chosen.emit(this.pendingChoice);
+      this.pendingChoice = null;
     }
   }
 }

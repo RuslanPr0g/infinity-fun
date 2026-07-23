@@ -1,0 +1,103 @@
+@use '../../../../../_colors' as colors;
+
+.loader-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.loader-card {
+  background: #1a1a1a;
+  border: 1px solid rgba(colors.$color-unusual-chess, 0.3);
+  border-radius: 20px;
+  padding: 2.5rem 3rem;
+  text-align: center;
+  max-width: 380px;
+  width: 90%;
+  box-shadow: 0 0 60px rgba(colors.$color-unusual-chess, 0.12);
+}
+
+// ── Cycling pieces row ────────────────────────────────────────────────────────
+
+.pieces-row {
+  display: flex;
+  justify-content: center;
+  gap: 0.3rem;
+  margin-bottom: 1.75rem;
+}
+
+.piece {
+  font-size: 1.6rem;
+  opacity: 0.2;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+
+  &.active {
+    opacity: 1;
+    transform: translateY(-4px);
+    color: colors.$color-unusual-chess;
+    filter: drop-shadow(0 0 6px colors.$color-unusual-chess);
+  }
+}
+
+// ── Status text ───────────────────────────────────────────────────────────────
+
+.status-line {
+  color: colors.$primary-text-color;
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 0 0 1rem;
+  letter-spacing: 0.01em;
+}
+
+.sub-line {
+  color: rgba(colors.$primary-text-color, 0.5);
+  font-size: 0.8rem;
+  margin: 0.75rem 0 0;
+}
+
+// ── Progress bar ──────────────────────────────────────────────────────────────
+
+.progress-bar {
+  height: 4px;
+  background: rgba(colors.$primary-text-color, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    colors.$color-unusual-chess,
+    lighten(colors.$color-unusual-chess, 15%)
+  );
+  border-radius: 2px;
+  transition: width 0.3s ease;
+
+  // Shimmer effect.
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.25) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+  }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}

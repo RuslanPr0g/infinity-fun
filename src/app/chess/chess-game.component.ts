@@ -391,6 +391,9 @@ export class ChessGameComponent implements OnDestroy {
         this.selectedSquare.set(sq);
         this.pendingIntent.set(null);
         this.pendingIsPromotion.set(false);
+        // Fire Stockfish pre-fetch as soon as the human picks a piece so
+        // the engine has maximum think time while the human deliberates.
+        this.session.prefetchStockfishMove();
       }
       return;
     }
