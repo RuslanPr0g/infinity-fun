@@ -9,15 +9,18 @@ import {
   OpponentChoice,
   OpponentSelectComponent,
 } from './components/opponent-select/opponent-select.component';
+import { ChessPieceComponent } from './components/piece/chess-piece.component';
 import { PrivacyOverlayComponent } from './components/privacy-overlay/privacy-overlay.component';
 import { RevealLayerComponent } from './components/reveal-layer/reveal-layer.component';
 import {
   Board,
+  Piece,
   PieceColor,
   PieceType,
   PromotionPiece,
   Square,
   createInitialBoard,
+  makePiece,
   opponentOf,
 } from './engine/core/board';
 import { MoveIntent, PASS_INTENT } from './engine/variant';
@@ -39,6 +42,7 @@ type ScreenState = 'mode-select' | 'opponent-select' | 'playing';
     ChessModeSelectComponent,
     OpponentSelectComponent,
     ChessBoardComponent,
+    ChessPieceComponent,
     RevealLayerComponent,
     PrivacyOverlayComponent,
     MoveLogComponent,
@@ -104,14 +108,14 @@ type ScreenState = 'mode-select' | 'opponent-select' | 'playing';
                 @if (pendingIsPromotion()) {
                   <div class="promotion-pick">
                     <span class="promo-label">Promote to</span>
-                    @for (option of promotionOptions; track option.piece) {
+                    @for (option of promotionOptions; track option) {
                       <button
                         type="button"
                         class="promo-button"
-                        [class.active]="pendingPromotion() === option.piece"
-                        (click)="setPromotion(option.piece)"
+                        [class.active]="pendingPromotion() === option"
+                        (click)="setPromotion(option)"
                       >
-                        {{ option.glyph }}
+                        <app-chess-piece [piece]="promoPreview(option)" />
                       </button>
                     }
                   </div>
@@ -162,12 +166,16 @@ export class ChessGameComponent implements OnDestroy {
   readonly pendingIntent = signal<MoveIntent | null>(null);
   readonly pendingIsPromotion = signal(false);
 
-  readonly promotionOptions: { piece: PromotionPiece; glyph: string }[] = [
-    { piece: 'queen', glyph: '♛' },
-    { piece: 'rook', glyph: '♜' },
-    { piece: 'bishop', glyph: '♝' },
-    { piece: 'knight', glyph: '♞' },
+  readonly promotionOptions: PromotionPiece[] = [
+    'queen',
+    'rook',
+    'bishop',
+    'knight',
   ];
+
+  promoPreview(piece: PromotionPiece): Piece {
+    return makePiece(piece, this.session.entryColor(), true);
+  }
 
   readonly perspective = computed<PieceColor>(() => {
     const config = this.session.config();

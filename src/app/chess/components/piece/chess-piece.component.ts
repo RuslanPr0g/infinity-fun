@@ -2,35 +2,40 @@ import { Component, Input } from '@angular/core';
 import { Piece, PieceType } from '../../engine/core/board';
 
 /**
- * Renders one chess piece as a Unicode glyph. Both colors use the filled
- * glyph set (consistent silhouettes) and are tinted via CSS.
+ * Renders one chess piece from the bundled SVG sprite
+ * (`public/chess-pieces/standard.svg` — the Wikimedia Commons "Standard"
+ * set by Cburnett/Rfc1394, CC BY-SA 3.0, packaged for cm-chessboard; the
+ * license header travels inside the sprite file itself).
+ *
+ * The host element is sized by the parent; the sprite tile is 40×40.
  */
 @Component({
   selector: 'app-chess-piece',
   standalone: true,
   template: `
-    <span
+    <svg
       class="piece"
-      [class.white]="piece.color === 'white'"
-      [class.black]="piece.color === 'black'"
-      >{{ glyph }}</span
+      viewBox="0 0 40 40"
+      role="img"
+      focusable="false"
+      [attr.aria-label]="piece.color + ' ' + piece.type"
     >
+      <use [attr.href]="spriteHref" />
+    </svg>
   `,
   styles: [
     `
+      :host {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
       .piece {
-        display: inline-block;
-        line-height: 1;
-        font-size: inherit;
-        user-select: none;
-      }
-      .piece.white {
-        color: #f4f7f6;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
-      }
-      .piece.black {
-        color: #1a2222;
-        text-shadow: 0 1px 1px rgba(255, 255, 255, 0.25);
+        display: block;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
       }
     `,
   ],
@@ -38,16 +43,18 @@ import { Piece, PieceType } from '../../engine/core/board';
 export class ChessPieceComponent {
   @Input({ required: true }) piece!: Piece;
 
-  private static readonly FILLED_GLYPHS: Record<PieceType, string> = {
-    king: '♚',
-    queen: '♛',
-    rook: '♜',
-    bishop: '♝',
-    knight: '♞',
-    pawn: '♟',
+  private static readonly SPRITE_LETTERS: Record<PieceType, string> = {
+    king: 'k',
+    queen: 'q',
+    rook: 'r',
+    bishop: 'b',
+    knight: 'n',
+    pawn: 'p',
   };
 
-  get glyph(): string {
-    return ChessPieceComponent.FILLED_GLYPHS[this.piece.type];
+  get spriteHref(): string {
+    const colorLetter = this.piece.color === 'white' ? 'w' : 'b';
+    const pieceLetter = ChessPieceComponent.SPRITE_LETTERS[this.piece.type];
+    return `chess-pieces/standard.svg#${colorLetter}${pieceLetter}`;
   }
 }

@@ -17,10 +17,15 @@
   }
 
   .pieces {
-    font-size: 1.1rem;
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     gap: 0.1rem;
+
+    app-chess-piece {
+      width: 1.4rem;
+      height: 1.4rem;
+    }
   }
 
   .none {

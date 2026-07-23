@@ -20,7 +20,13 @@
   border: none;
   padding: 0;
   cursor: pointer;
-  font-size: clamp(1.4rem, 6.5vw, 2.4rem);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+
+  app-chess-piece {
+    width: 88%;
+    height: 88%;
+  }
 
   &.light {
     background: #93a8a3;

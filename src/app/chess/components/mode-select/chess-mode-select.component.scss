@@ -22,11 +22,19 @@
   gap: 0.5rem;
   overflow-x: auto;
   padding-bottom: 0.5rem;
-  justify-content: safe center;
 }
 
 .tab {
   flex: 0 0 auto;
+
+  // Center the tab row when it fits, scroll safely when it overflows.
+  &:first-child {
+    margin-left: auto;
+  }
+
+  &:last-child {
+    margin-right: auto;
+  }
   padding: 0.55rem 1.2rem;
   border-radius: 999px 999px 0 0;
   border: 2px solid rgba(colors.$primary-text-color, 0.15);

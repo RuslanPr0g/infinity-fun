@@ -12,8 +12,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(1.4rem, 6.5vw, 2.4rem);
   pointer-events: none;
+
+  app-chess-piece {
+    width: 88%;
+    height: 88%;
+  }
 
   &.slide {
     left: var(--fx);
