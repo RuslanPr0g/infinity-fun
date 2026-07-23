@@ -12,8 +12,8 @@
  *   score is the mean evaluation over those replies.
  * - Royale mode: a 2-ply lookahead — apply the candidate solo, let the
  *   opponent pick their Medium-style best reply on the resulting board, then
- *   score the final board for me. Burn-hazard terms are added for both
- *   plies.
+ *   score the final board for me. Burn-hazard and centralization terms are
+ *   added for both plies.
  *
  * Winning king captures are always taken immediately, and — like Medium — a
  * safe move is always preferred over one that hangs the king whenever a safe
@@ -37,6 +37,7 @@ import {
   evaluateBoard,
   rankByHeuristic,
   royaleBurnAdjustment,
+  royaleCentralizationAdjustment,
 } from './evaluation';
 
 /** My candidate pool size, ranked by Medium-style static score. */
@@ -171,19 +172,27 @@ export class HardBot implements ChessBot {
         finalBoard = applySolo(boardAfterMine, enemy, bestReply);
         const replyMover = pieceAt(boardAfterMine, bestReply.from);
         if (replyMover) {
-          replyAdjustment = royaleBurnAdjustment(
-            midPosition,
-            enemy,
-            replyMover.type,
-            bestReply.from,
-            bestReply.to,
-          );
+          replyAdjustment =
+            royaleBurnAdjustment(
+              midPosition,
+              enemy,
+              replyMover.type,
+              bestReply.from,
+              bestReply.to,
+            ) +
+            royaleCentralizationAdjustment(
+              midPosition,
+              replyMover.type,
+              bestReply.from,
+              bestReply.to,
+            );
         }
       }
 
       const mover = pieceAt(position.board, intent.from);
       const myAdjustment = mover
-        ? royaleBurnAdjustment(position, color, mover.type, intent.from, intent.to)
+        ? royaleBurnAdjustment(position, color, mover.type, intent.from, intent.to) +
+          royaleCentralizationAdjustment(position, mover.type, intent.from, intent.to)
         : 0;
 
       const score = evaluateBoard(finalBoard, color) + myAdjustment + replyAdjustment;

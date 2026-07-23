@@ -15,7 +15,7 @@ import { isSquareAttacked } from '../core/move-gen';
 import type { ChessBot } from '../bot';
 import type { ChessVariantEngine, GamePosition, MoveIntent } from '../variant';
 import { PASS_INTENT } from '../variant';
-import { applySolo, royaleBurnAdjustment } from './evaluation';
+import { applySolo, royaleBurnAdjustment, royaleCentralizationAdjustment } from './evaluation';
 
 type MoveIntentOnly = Extract<MoveIntent, { kind: 'move' }>;
 
@@ -103,6 +103,7 @@ export class EasyBot implements ChessBot {
     }
 
     score += royaleBurnAdjustment(position, color, mover.type, intent.from, intent.to);
+    score += royaleCentralizationAdjustment(position, mover.type, intent.from, intent.to);
 
     score += this.random() * 0.75; // stay unpredictable
 

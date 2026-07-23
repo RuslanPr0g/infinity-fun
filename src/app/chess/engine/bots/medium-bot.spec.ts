@@ -12,6 +12,7 @@ import {
   SimultaneousChessEngine,
   matchIntent,
 } from '../variants/simultaneous-engine';
+import { ringIndex } from '../burn';
 import { ShrinkingRoyaleEngine } from '../variants/shrinking-royale-engine';
 import { applySolo } from './evaluation';
 import { MediumBot } from './medium-bot';
@@ -233,6 +234,38 @@ describe('MediumBot', () => {
         expect(choice.kind).toBe('move');
         if (choice.kind === 'move') {
           expect(choice.from).toBe(parseSquare('a5', 15));
+        }
+      }
+    });
+  });
+
+  describe('Shrinking Board Royale centralization', () => {
+    it('drifts a valuable piece toward the center on its own, with no ring imminent', () => {
+      // Round 1, no burn anywhere near (roundsUntilBurn(1, 0) === 24): the
+      // reactive burn-evacuation term is inactive, isolating the ongoing
+      // centralization pull. The queen on a1 is boxed onto the a1-h8
+      // diagonal by its own pawns (a2, b1) and its own knight beyond the
+      // center (i9) — every legal queen move gets strictly more central,
+      // so a bot with any centralizing tendency should move it rather than
+      // shuffle the knight or king in place.
+      const board = boardFrom(
+        { a1: 'wQ*', a2: 'wP', b1: 'wP', i9: 'wN', o15: 'wK*', o1: 'bK*' },
+        15,
+      );
+      const position: GamePosition = {
+        board,
+        round: 1,
+        consecutivePassRounds: 0,
+        burnedRings: 0,
+      };
+      const engine = new ShrinkingRoyaleEngine(undefined, position);
+      for (let seed = 0; seed < 10; seed++) {
+        const bot = new MediumBot(mulberry32(seed));
+        const choice = bot.chooseMove(position, 'white', engine);
+        expect(choice.kind).toBe('move');
+        if (choice.kind === 'move') {
+          expect(choice.from).toBe(parseSquare('a1', 15));
+          expect(ringIndex(choice.to, 15)).toBeGreaterThanOrEqual(3);
         }
       }
     });

@@ -8,7 +8,10 @@
  * lookahead. `burnHazard`/`royaleBurnAdjustment` are the Shrinking Board
  * Royale burn-awareness terms Easy/Medium/Hard all share — including
  * penalizing every OTHER own piece left stranded on the doomed ring, not
- * just the piece being moved. `heuristicScore` /
+ * just the piece being moved. `royaleCentralizationAdjustment` is a separate,
+ * always-on term (no imminent burn required) that keeps nudging valuable
+ * material toward the center all game long, not just when a ring is about
+ * to burn. `heuristicScore` /
  * `rankByHeuristic` are the "Medium-style" single-move scorer: Medium uses it
  * directly (plus randomization), Hard reuses it to rank its own candidates
  * and the opponent's plausible replies before its lookahead.
@@ -35,7 +38,7 @@ import {
 } from '../core/board';
 import { castleGeometry, generateMoves, isSquareAttacked } from '../core/move-gen';
 import type { GamePosition, MoveIntent } from '../variant';
-import { doomedRingSquares, roundsUntilBurn } from '../burn';
+import { doomedRingSquares, ringIndex, roundsUntilBurn } from '../burn';
 
 export type MoveIntentOnly = Extract<MoveIntent, { kind: 'move' }>;
 
@@ -304,6 +307,34 @@ export function royaleBurnAdjustment(
   return adjustment;
 }
 
+/** Scale of the ongoing, burn-independent pull toward the center in Royale, per point of piece value per ring step gained. */
+const CENTRALIZATION_SCALE = 0.05;
+
+/**
+ * Royale-only: a persistent pull for valuable material toward the board's
+ * center that applies on every move, regardless of whether any ring is
+ * currently imminent (contrast `royaleBurnAdjustment`, which only reacts
+ * once a specific ring is about to burn). The arena only ever shrinks
+ * inward, so the safest long-term home for the pieces a side actually
+ * intends to win with is the center — this rewards moving a piece to a
+ * higher `ringIndex` (closer to the middle), scaled by `PIECE_VALUES`, so a
+ * queen or rook is pulled far harder than a pawn. The king is excluded: its
+ * centralization is handled entirely by the reactive evacuation term above,
+ * since marching it inward before forced to is bad king safety, not good
+ * strategy.
+ */
+export function royaleCentralizationAdjustment(
+  position: GamePosition,
+  mover: PieceType,
+  from: Square,
+  to: Square,
+): number {
+  if (position.burnedRings === undefined || mover === 'king') return 0;
+  const size = boardSize(position.board);
+  const delta = ringIndex(to, size) - ringIndex(from, size);
+  return delta * PIECE_VALUES[mover] * CENTRALIZATION_SCALE;
+}
+
 export interface HeuristicScore {
   readonly intent: MoveIntentOnly;
   readonly score: number;
@@ -387,6 +418,7 @@ export function heuristicScore(
   }
 
   score += royaleBurnAdjustment(position, color, mover.type, intent.from, intent.to);
+  score += royaleCentralizationAdjustment(position, mover.type, intent.from, intent.to);
   score += positionalScore(boardAfter, color) - positionalScore(board, color);
 
   return { intent, score, capturesKing, kingSafeAfter };
