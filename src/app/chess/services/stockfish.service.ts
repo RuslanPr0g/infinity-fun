@@ -7,8 +7,7 @@
  * Per-move flow:  position fen <fen> → go movetime <ms> → bestmove <move>
  */
 
-import { Injectable, signal, inject } from '@angular/core';
-import { APP_BASE_HREF } from '@angular/common';
+import { Injectable, signal } from '@angular/core';
 
 const DEFAULT_THINK_MS = 400;
 const DEBUG = (globalThis as any).STOCKFISH_DEBUG ?? false;
@@ -31,11 +30,13 @@ export class StockfishService {
   private queue: Array<{ fen: string; thinkMs: number; resolve: (m: string | null) => void }> = [];
   private busy = false;
   private uciReady = false;
-  private readonly baseHref = inject(APP_BASE_HREF, { optional: true }) || '/';
 
   private getWorkerPath(): string {
+    // Get baseHref from <base> tag in HTML or use document.baseURI
+    const baseElement = document.querySelector('base');
+    const baseHref = baseElement?.getAttribute('href') || '/';
     // Remove trailing slash to avoid double slashes when appending /stockfish/
-    const base = this.baseHref === '/' ? '' : this.baseHref.replace(/\/$/, '');
+    const base = baseHref === '/' ? '' : baseHref.replace(/\/$/, '');
     return `${base}/stockfish/stockfish-18-lite-single.js`;
   }
 
