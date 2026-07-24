@@ -89,19 +89,29 @@ export function doomedRingSquares(
 /**
  * Rounds left (including the round currently being played) until the next
  * burn resolves, or null when no further burns will happen.
+ *
+ * `startBurnedRings` is the `burnedRings` value the game started at (nonzero
+ * for a pre-voided margin around a 'centered' army — see `GamePosition`):
+ * the schedule's timing always counts fresh from stage 0 relative to that
+ * start, not from the absolute ring index.
  */
 export function roundsUntilBurn(
   round: number,
   burnedRings: number,
+  startBurnedRings = 0,
 ): number | null {
   if (burnedRings >= MAX_BURNED_RINGS) return null;
-  return BURN_CUMULATIVE_ROUNDS[burnedRings] - round + 1;
+  return BURN_CUMULATIVE_ROUNDS[burnedRings - startBurnedRings] - round + 1;
 }
 
 /** True when the round that was just played ends with a ring burning. */
-export function burnsAfterRound(round: number, burnedRings: number): boolean {
+export function burnsAfterRound(
+  round: number,
+  burnedRings: number,
+  startBurnedRings = 0,
+): boolean {
   if (burnedRings >= MAX_BURNED_RINGS) return false;
-  return round === BURN_CUMULATIVE_ROUNDS[burnedRings];
+  return round === BURN_CUMULATIVE_ROUNDS[burnedRings - startBurnedRings];
 }
 
 /** Convenience for building the 15×15 royale start position's back rank. */

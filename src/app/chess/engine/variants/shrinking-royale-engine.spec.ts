@@ -129,6 +129,48 @@ describe('ShrinkingRoyaleEngine', () => {
       expect(targets).toContain(parseSquare('d6', SIZE));
       expect(targets).toContain(parseSquare('d7', SIZE)); // double-step
     });
+
+    it('by default (hotseat) leaves the full 15×15 walkable — burnedRings starts at 0', () => {
+      const position = royaleInitialPosition(0, 'centered');
+      expect(position.burnedRings).toBe(0);
+      expect(position.startBurnedRings).toBe(0);
+    });
+  });
+
+  describe('preVoidMargin (bot hardening — walls off the true 15×15 border)', () => {
+    it('starts with the margin around the army already void — burnedRings begins at 3', () => {
+      const position = royaleInitialPosition(0, 'centered', true);
+      expect(position.burnedRings).toBe(3);
+      expect(position.startBurnedRings).toBe(3);
+    });
+
+    it('confines a piece at the army edge — it cannot slide into the void margin to go around the back', () => {
+      const board = boardFrom({ d8: 'wR', h4: 'wK', h11: 'bK' }, SIZE);
+      const position: GamePosition = {
+        board, round: 1, consecutivePassRounds: 0, burnedRings: 3, startBurnedRings: 3,
+      };
+      const engine = new ShrinkingRoyaleEngine({ armyLayout: 'centered', preVoidMargin: true }, position);
+      const intents = engine
+        .legalIntentsFrom(position, 'white', parseSquare('d8', SIZE))
+        .filter((intent) => intent.kind === 'move') as Extract<MoveIntent, { kind: 'move' }>[];
+      const targets = intents.map((intent) => intent.to);
+      expect(targets).not.toContain(parseSquare('c8', SIZE)); // one step into the void margin
+      expect(targets).not.toContain(parseSquare('a8', SIZE)); // deep into the true border
+      expect(targets).toContain(parseSquare('e8', SIZE)); // still free to move within the core
+    });
+
+    it('does not affect a hotseat-style engine without preVoidMargin — the same edge square can walk into the margin', () => {
+      const board = boardFrom({ d8: 'wR', h4: 'wK', h11: 'bK' }, SIZE);
+      const position: GamePosition = {
+        board, round: 1, consecutivePassRounds: 0, burnedRings: 0, startBurnedRings: 0,
+      };
+      const engine = new ShrinkingRoyaleEngine({ armyLayout: 'centered' }, position);
+      const intents = engine
+        .legalIntentsFrom(position, 'white', parseSquare('d8', SIZE))
+        .filter((intent) => intent.kind === 'move') as Extract<MoveIntent, { kind: 'move' }>[];
+      const targets = intents.map((intent) => intent.to);
+      expect(targets).toContain(parseSquare('a8', SIZE));
+    });
   });
 
   describe('Alternating turns', () => {

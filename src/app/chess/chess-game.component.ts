@@ -247,7 +247,7 @@ export class ChessGameComponent implements OnDestroy {
     const position = this.session.position();
     const burnedRings = position?.burnedRings;
     if (!position || burnedRings === undefined) return [];
-    const remaining = roundsUntilBurn(position.round, burnedRings);
+    const remaining = roundsUntilBurn(position.round, burnedRings, position.startBurnedRings);
     if (remaining === null || remaining > 3) return [];
     return doomedRingSquares(burnedRings, boardSize(position.board));
   });
@@ -256,7 +256,7 @@ export class ChessGameComponent implements OnDestroy {
     const position = this.session.position();
     const burnedRings = position?.burnedRings;
     if (!position || burnedRings === undefined) return null;
-    const remaining = roundsUntilBurn(position.round, burnedRings);
+    const remaining = roundsUntilBurn(position.round, burnedRings, position.startBurnedRings);
     if (remaining === null) return null;
     return `ring burns in ${remaining} move${remaining === 1 ? '' : 's'}`;
   });

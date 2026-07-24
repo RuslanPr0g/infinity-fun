@@ -21,6 +21,13 @@ export interface GamePosition {
   readonly consecutivePassRounds: number;
   /** Number of outer rings burned away so far (Shrinking Board Royale only). */
   readonly burnedRings?: number;
+  /**
+   * `burnedRings` value the game started at (Shrinking Board Royale only).
+   * Nonzero for a 'centered' army — the margin around the compact starting
+   * army is void from move one, not actually burned by the fire, so the
+   * burn schedule's timing counts from here rather than from ring 0.
+   */
+  readonly startBurnedRings?: number;
 }
 
 export type MoveIntent =

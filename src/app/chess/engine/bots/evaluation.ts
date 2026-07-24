@@ -237,7 +237,7 @@ export function burnHazard(
   withinRounds = 3,
 ): BurnHazard | null {
   if (position.burnedRings === undefined) return null;
-  const remaining = roundsUntilBurn(position.round, position.burnedRings);
+  const remaining = roundsUntilBurn(position.round, position.burnedRings, position.startBurnedRings);
   if (remaining === null || remaining > withinRounds) return null;
   const doomed = doomedRingSquares(position.burnedRings, boardSize(position.board));
   return { remainingRounds: remaining, doomedSquares: new Set(doomed) };

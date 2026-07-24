@@ -91,12 +91,16 @@ export const CHESS_MODES: ReadonlyArray<ChessModeDescriptor> = [
     ],
     turnStyle: 'alternate',
     engineFactory: (setup) => {
-      const armyLayout: RoyaleArmyLayout = setup?.opponent === 'bot'
-        ? 'centered'
-        : setup?.royaleArmyLayout ?? 'expanded';
+      const isBot = setup?.opponent === 'bot';
+      const armyLayout: RoyaleArmyLayout = isBot ? 'centered' : setup?.royaleArmyLayout ?? 'expanded';
       return new ShrinkingRoyaleEngine({
         spawnOffset: royaleSpawnOffset(setup, armyLayout),
         armyLayout,
+        // Bot-only: wall off the true 15×15 border so the bot's smaller
+        // effective search area can't be exploited by walking around the
+        // back through the wide-open margin. Hotseat's 'centered' option
+        // stays a fully walkable 15×15 board, unchanged.
+        preVoidMargin: isBot,
       });
     },
     enabled: true,

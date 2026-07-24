@@ -89,6 +89,15 @@ export interface RoyaleSetup {
   readonly spawnOffset?: number;
   /** Starting army layout — see `RoyaleArmyLayout`. Defaults to 'expanded'. */
   readonly armyLayout?: RoyaleArmyLayout;
+  /**
+   * Bot-only hardening: permanently void the margin around a 'centered'
+   * army from move one (instead of it being open, ordinary board that just
+   * hasn't burned yet), so neither side can walk around the back of the
+   * compact 8×8 core through the wide-open 15×15 border. Defaults to
+   * false — hotseat's 'centered' option stays exactly as it already is,
+   * a fully walkable 15×15 board that only starts shrinking over time.
+   */
+  readonly preVoidMargin?: boolean;
 }
 
 /** Files/ranks offset that centers an 8-wide block on an N-wide board. */
@@ -153,7 +162,15 @@ export function createCenteredRoyaleInitialBoard(size = ROYALE_BOARD_SIZE): Boar
 export function royaleInitialPosition(
   spawnOffset = DEFAULT_SPAWN_OFFSET,
   armyLayout: RoyaleArmyLayout = 'expanded',
+  preVoidMargin = false,
 ): GamePosition {
+  // preVoidMargin makes the margin around a 'centered' army void from move
+  // one — not actually burned by the fire, just never in play — so neither
+  // side can walk around the back through the true 15×15 border. burnedRings
+  // starts at that margin's width; startBurnedRings records it so the burn
+  // schedule's timing still counts fresh from stage 0 (see
+  // `roundsUntilBurn`/`burnsAfterRound`).
+  const startBurnedRings = preVoidMargin ? centeredOffset(ROYALE_BOARD_SIZE) : 0;
   const board = armyLayout === 'centered'
     ? createCenteredRoyaleInitialBoard()
     : createRoyaleInitialBoard(spawnOffset);
@@ -161,7 +178,8 @@ export function royaleInitialPosition(
     board,
     round: 1,
     consecutivePassRounds: 0,
-    burnedRings: 0,
+    burnedRings: startBurnedRings,
+    startBurnedRings,
   };
 }
 
@@ -241,7 +259,7 @@ export class ShrinkingRoyaleEngine implements ChessVariantEngine {
     this.spawnOffset = setup?.spawnOffset ?? DEFAULT_SPAWN_OFFSET;
     this.armyLayout = setup?.armyLayout ?? 'expanded';
     this.currentPosition = startPosition
-      ?? royaleInitialPosition(this.spawnOffset, this.armyLayout);
+      ?? royaleInitialPosition(this.spawnOffset, this.armyLayout, setup?.preVoidMargin ?? false);
     this.toMove = moverFor(this.currentPosition.round);
   }
 
@@ -363,6 +381,7 @@ export class ShrinkingRoyaleEngine implements ChessVariantEngine {
       throw new Error('An intent must be submitted before resolving.');
     }
     const burnedRings = this.currentPosition.burnedRings ?? 0;
+    const startBurnedRings = this.currentPosition.startBurnedRings ?? 0;
     const roundJustPlayed = this.currentPosition.round;
     const mover = this.toMove;
     const moverIntent = this.pendingIntent!;
@@ -387,7 +406,7 @@ export class ShrinkingRoyaleEngine implements ChessVariantEngine {
       (event) => !(event.type === 'passed' && event.color === opponentOf(mover)),
     );
 
-    if (status.outcome === 'ongoing' && burnsAfterRound(roundJustPlayed, burnedRings)) {
+    if (status.outcome === 'ongoing' && burnsAfterRound(roundJustPlayed, burnedRings, startBurnedRings)) {
       const burn = applyBurn(position);
       position = { ...position, board: burn.board, burnedRings: burnedRings + 1 };
       events = [...events, ...burn.events];
