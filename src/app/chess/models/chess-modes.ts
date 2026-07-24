@@ -5,6 +5,7 @@
  * selection UI.
  */
 
+import { ROYALE_BOARD_SIZE } from '../engine/burn';
 import { ChessVariantEngine } from '../engine/variant';
 import { SimultaneousChessEngine } from '../engine/variants/simultaneous-engine';
 import { ShrinkingRoyaleEngine } from '../engine/variants/shrinking-royale-engine';
@@ -13,6 +14,12 @@ import { ShrinkingRoyaleEngine } from '../engine/variants/shrinking-royale-engin
 export interface ModeSetup {
   readonly opponent: 'hotseat' | 'bot';
   readonly botId?: string;
+  /**
+   * Shrinking Royale board size chosen on the hotseat setup screen (8 or
+   * 15). Ignored for bot games — bot difficulty spawn-offset tuning is
+   * calibrated for the full 15×15 board, so bots always get that size.
+   */
+  readonly royaleBoardSize?: number;
 }
 
 /**
@@ -40,7 +47,13 @@ const ROYALE_SPAWN_OFFSET_BY_BOT: Record<string, number> = {
 };
 
 function royaleSpawnOffset(setup?: ModeSetup): number {
-  if (!setup || setup.opponent !== 'bot') return 2; // hotseat
+  if (!setup || setup.opponent !== 'bot') {
+    // Hotseat. A spawnOffset of 2 leaves a comfortable buffer before the
+    // first burn on the 15×15 board, but on the smaller 8×8 board it would
+    // put the two pawn fronts flush against each other with zero empty
+    // ranks in between — so 8×8 gets a plain standard-chess start instead.
+    return setup?.royaleBoardSize === 8 ? 0 : 2;
+  }
   return ROYALE_SPAWN_OFFSET_BY_BOT[setup.botId ?? ''] ?? 2;
 }
 
@@ -74,7 +87,12 @@ export const CHESS_MODES: ReadonlyArray<ChessModeDescriptor> = [
     ],
     turnStyle: 'alternate',
     engineFactory: (setup) =>
-      new ShrinkingRoyaleEngine({ spawnOffset: royaleSpawnOffset(setup) }),
+      new ShrinkingRoyaleEngine({
+        spawnOffset: royaleSpawnOffset(setup),
+        boardSize: setup?.opponent === 'hotseat'
+          ? setup.royaleBoardSize ?? ROYALE_BOARD_SIZE
+          : ROYALE_BOARD_SIZE,
+      }),
     enabled: true,
   },
 ];

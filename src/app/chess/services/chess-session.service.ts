@@ -40,6 +40,8 @@ export interface ChessSessionConfig {
   botId?: string;
   /** The human's color in bot games. Defaults to white. */
   humanColor?: PieceColor;
+  /** Shrinking Royale board size chosen on the hotseat setup screen (8 or 15). */
+  royaleBoardSize?: number;
 }
 
 export interface RoundLogEntry {
@@ -103,6 +105,7 @@ export class ChessSessionService {
     this.engine = mode.engineFactory({
       opponent: config.opponent,
       botId: config.botId,
+      royaleBoardSize: config.royaleBoardSize,
     });
 
     this.bot = null;

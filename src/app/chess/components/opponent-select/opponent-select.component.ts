@@ -16,6 +16,8 @@ export interface OpponentChoice {
   opponent: OpponentKind;
   botId?: string;
   humanColor?: PieceColor;
+  /** Shrinking Royale board size chosen for a hotseat game (8 or 15). */
+  royaleBoardSize?: number;
 }
 
 /** Icon + badge metadata per difficulty id. */
@@ -100,6 +102,29 @@ const BOT_META: Record<string, BotMeta> = {
         </div>
       </section>
 
+      <!-- ── Royale board size (hotseat only) ──────────────────────── -->
+      @if (choice() === 'hotseat' && mode?.id === 'shrinking-royale') {
+        <div class="color-pick">
+          <span class="color-label">Battlefield size</span>
+          <button
+            type="button"
+            class="color-button"
+            [class.active]="royaleBoardSize() === 8"
+            (click)="royaleBoardSize.set(8)"
+          >
+            8×8
+          </button>
+          <button
+            type="button"
+            class="color-button"
+            [class.active]="royaleBoardSize() === 15"
+            (click)="royaleBoardSize.set(15)"
+          >
+            15×15
+          </button>
+        </div>
+      }
+
       <!-- ── Color picker (bot games only) ─────────────────────────── -->
       @if (choice() !== null && choice() !== 'hotseat') {
         <div class="color-pick">
@@ -150,6 +175,7 @@ export class OpponentSelectComponent {
   /** 'hotseat' | bot difficulty id | null */
   readonly choice = signal<string | null>(null);
   readonly humanColor = signal<PieceColor>('white');
+  readonly royaleBoardSize = signal<8 | 15>(15);
   readonly showLoader = signal(false);
 
   private pendingChoice: OpponentChoice | null = null;
@@ -171,7 +197,10 @@ export class OpponentSelectComponent {
     if (choice === null) return;
 
     if (choice === 'hotseat') {
-      this.chosen.emit({ opponent: 'hotseat' });
+      this.chosen.emit({
+        opponent: 'hotseat',
+        royaleBoardSize: this.mode?.id === 'shrinking-royale' ? this.royaleBoardSize() : undefined,
+      });
       return;
     }
 

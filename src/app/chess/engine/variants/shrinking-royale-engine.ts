@@ -78,18 +78,25 @@ const DEFAULT_SPAWN_OFFSET = 2;
 export interface RoyaleSetup {
   /** Rings kept clear of the border when placing the starting armies. */
   readonly spawnOffset?: number;
+  /**
+   * Board dimension (N of an N×N battlefield). Bot games are always
+   * `ROYALE_BOARD_SIZE` (15); hotseat players may pick a smaller 8×8 board
+   * instead. Defaults to `ROYALE_BOARD_SIZE`.
+   */
+  readonly boardSize?: number;
 }
 
 /**
- * Builds the 15×15 Shrinking Board Royale starting board. Armies spawn
- * `spawnOffset` rings in from the border so the first few burns don't eat
- * them: white's back rank sits on rank index `spawnOffset`, its pawns on
- * `spawnOffset + 1`; black is mirrored from the far edge.
+ * Builds the Shrinking Board Royale starting board at the given size.
+ * Armies spawn `spawnOffset` rings in from the border so the first few
+ * burns don't eat them: white's back rank sits on rank index `spawnOffset`,
+ * its pawns on `spawnOffset + 1`; black is mirrored from the far edge.
  */
 export function createRoyaleInitialBoard(
   spawnOffset = DEFAULT_SPAWN_OFFSET,
+  boardSize = ROYALE_BOARD_SIZE,
 ): Board {
-  const size = ROYALE_BOARD_SIZE;
+  const size = boardSize;
   const cells = new Array<Piece | null>(size * size).fill(null);
   const backRankFiles = centeredBackRankFiles(size);
   const whiteBackRank = spawnOffset;
@@ -110,9 +117,10 @@ export function createRoyaleInitialBoard(
 
 export function royaleInitialPosition(
   spawnOffset = DEFAULT_SPAWN_OFFSET,
+  boardSize = ROYALE_BOARD_SIZE,
 ): GamePosition {
   return {
-    board: createRoyaleInitialBoard(spawnOffset),
+    board: createRoyaleInitialBoard(spawnOffset, boardSize),
     round: 1,
     consecutivePassRounds: 0,
     burnedRings: 0,
@@ -127,7 +135,7 @@ function glyph(color: PieceColor, type: PieceType): string {
   return PIECE_GLYPHS[color][type];
 }
 
-function burnEvent(color: PieceColor, type: PieceType, from: Square): ResolutionEvent {
+function burnEvent(color: PieceColor, type: PieceType, from: Square, size: number): ResolutionEvent {
   return {
     type: 'burned',
     color,
@@ -138,7 +146,7 @@ function burnEvent(color: PieceColor, type: PieceType, from: Square): Resolution
     landed: false,
     rookFrom: null,
     rookTo: null,
-    description: `${label(color)} ${glyph(color, type)} on ${squareName(from, ROYALE_BOARD_SIZE)} burned with the board.`,
+    description: `${label(color)} ${glyph(color, type)} on ${squareName(from, size)} burned with the board.`,
   };
 }
 
@@ -163,7 +171,7 @@ function applyBurn(
     if (!piece) continue;
     if (ringIndex(sq, size) !== burnedRings) continue;
     changes.push({ sq, piece: null });
-    events.push(burnEvent(piece.color, piece.type, sq));
+    events.push(burnEvent(piece.color, piece.type, sq, size));
     if (piece.type === 'king') {
       if (piece.color === 'white') whiteKingBurned = true;
       else blackKingBurned = true;
@@ -189,10 +197,13 @@ export class ShrinkingRoyaleEngine implements ChessVariantEngine {
   private pendingIntent: MoveIntent | null = null;
   private toMove: PieceColor;
   private readonly spawnOffset: number;
+  private readonly boardSize: number;
 
   constructor(setup?: RoyaleSetup, startPosition?: GamePosition) {
     this.spawnOffset = setup?.spawnOffset ?? DEFAULT_SPAWN_OFFSET;
-    this.currentPosition = startPosition ?? royaleInitialPosition(this.spawnOffset);
+    this.boardSize = setup?.boardSize ?? ROYALE_BOARD_SIZE;
+    this.currentPosition = startPosition
+      ?? royaleInitialPosition(this.spawnOffset, this.boardSize);
     this.toMove = moverFor(this.currentPosition.round);
   }
 
@@ -210,12 +221,12 @@ export class ShrinkingRoyaleEngine implements ChessVariantEngine {
   }
 
   private moveGenOptions(burnedRings: number): MoveGenOptions {
-    const bounds = intactBounds(burnedRings, ROYALE_BOARD_SIZE);
+    const bounds = intactBounds(burnedRings, this.boardSize);
     return {
       promotionRanks: { white: bounds.max, black: bounds.min },
       pawnStartRanks: {
         white: this.spawnOffset + 1,
-        black: ROYALE_BOARD_SIZE - 2 - this.spawnOffset,
+        black: this.boardSize - 2 - this.spawnOffset,
       },
     };
   }
@@ -246,6 +257,11 @@ export class ShrinkingRoyaleEngine implements ChessVariantEngine {
     const options = this.moveGenOptions(burnedRings);
     const intents: MoveIntent[] = [];
     for (const move of generateMoves(position.board, from, options)) {
+      // Royale never allows castling (see class docs) — move-gen only skips
+      // it by board-size coincidence (its 8×8-specific geometry never fires
+      // on the 15×15 board), which stops holding now that Royale itself can
+      // be played on an 8×8 board too.
+      if (move.castle !== null) continue;
       if (isVoidSquare(move.to, burnedRings, size)) continue;
       if (move.isPromotion) {
         for (const promoteTo of PROMOTION_PIECES) {
@@ -327,7 +343,7 @@ export class ShrinkingRoyaleEngine implements ChessVariantEngine {
       (event) => !(event.type === 'passed' && event.color === opponentOf(mover)),
     );
 
-    if (status.outcome === 'ongoing' && burnsAfterRound(roundJustPlayed, burnedRings)) {
+    if (status.outcome === 'ongoing' && burnsAfterRound(roundJustPlayed, burnedRings, this.boardSize)) {
       const burn = applyBurn(position);
       position = { ...position, board: burn.board, burnedRings: burnedRings + 1 };
       events = [...events, ...burn.events];

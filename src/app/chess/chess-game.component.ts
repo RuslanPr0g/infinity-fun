@@ -373,6 +373,7 @@ export class ChessGameComponent implements OnDestroy {
       opponent: choice.opponent,
       botId: choice.botId,
       humanColor: choice.humanColor,
+      royaleBoardSize: choice.royaleBoardSize,
     });
     this.clearEntryState();
     this.screen.set('playing');
@@ -492,6 +493,7 @@ export class ChessGameComponent implements OnDestroy {
       opponent: choice.opponent,
       botId: choice.botId,
       humanColor: choice.humanColor,
+      royaleBoardSize: choice.royaleBoardSize,
     });
     this.clearEntryState();
   }
