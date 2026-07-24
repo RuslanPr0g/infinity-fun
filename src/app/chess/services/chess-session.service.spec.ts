@@ -8,14 +8,9 @@ function move(from: string, to: string): MoveIntent {
   return { kind: 'move', from: parseSquare(from), to: parseSquare(to) };
 }
 
-/** Hotseat Royale defaults to the 15×15 board. */
+/** Royale always plays on the 15×15 board (bot and hotseat alike). */
 function royaleMove(from: string, to: string): MoveIntent {
   return { kind: 'move', from: parseSquare(from, 15), to: parseSquare(to, 15) };
-}
-
-/** Bot Royale games always play on the 8×8 board. */
-function botRoyaleMove(from: string, to: string): MoveIntent {
-  return { kind: 'move', from: parseSquare(from, 8), to: parseSquare(to, 8) };
 }
 
 describe('ChessSessionService', () => {
@@ -221,8 +216,8 @@ describe('ChessSessionService', () => {
       expect(service.phase()).toBe('entry');
       expect(service.entryColor()).toBe('white');
 
-      // Bots always play the 8×8 board at spawnOffset 0: a classic-chess start.
-      service.confirmIntent(botRoyaleMove('a2', 'a3'));
+      // Bots always use the centered 8×8 army on the 15×15 board: white pawns start on file d-k, rank 5.
+      service.confirmIntent(royaleMove('d5', 'd6'));
       expect(service.phase()).toBe('reveal');
       const humanResolution = service.lastResolution();
       expect(humanResolution?.events.some((event) => event.color === 'white')).toBeTrue();

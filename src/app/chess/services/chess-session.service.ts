@@ -19,6 +19,7 @@ import {
   TurnStyle,
   chessModeById,
 } from '../models/chess-modes';
+import { RoyaleArmyLayout } from '../engine/variants/shrinking-royale-engine';
 import { StockfishService } from './stockfish.service';
 import { StockfishBot } from '../engine/bots/stockfish-bot';
 
@@ -40,8 +41,8 @@ export interface ChessSessionConfig {
   botId?: string;
   /** The human's color in bot games. Defaults to white. */
   humanColor?: PieceColor;
-  /** Shrinking Royale board size chosen on the hotseat setup screen (8 or 15). */
-  royaleBoardSize?: number;
+  /** Shrinking Royale army layout chosen on the hotseat setup screen. */
+  royaleArmyLayout?: RoyaleArmyLayout;
 }
 
 export interface RoundLogEntry {
@@ -105,7 +106,7 @@ export class ChessSessionService {
     this.engine = mode.engineFactory({
       opponent: config.opponent,
       botId: config.botId,
-      royaleBoardSize: config.royaleBoardSize,
+      royaleArmyLayout: config.royaleArmyLayout,
     });
 
     this.bot = null;

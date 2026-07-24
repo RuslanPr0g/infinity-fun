@@ -75,28 +75,38 @@ const PROMOTION_PIECES: PromotionPiece[] = ['queen', 'rook', 'bishop', 'knight']
 /** Rings kept clear of the border when no explicit spawnOffset is given. */
 const DEFAULT_SPAWN_OFFSET = 2;
 
+/**
+ * 'expanded': the original layout — back rank centered across 8 files but
+ * pawns spanning the full board width, spawnOffset rings in from the edge.
+ * 'centered': a plain 32-piece standard-chess army, confined to the
+ * centered 8×8 square in the middle of the battlefield (the board itself
+ * is still the full 15×15 — only the starting army is compact).
+ */
+export type RoyaleArmyLayout = 'expanded' | 'centered';
+
 export interface RoyaleSetup {
-  /** Rings kept clear of the border when placing the starting armies. */
+  /** Rings kept clear of the border when placing the starting armies ('expanded' layout only). */
   readonly spawnOffset?: number;
-  /**
-   * Board dimension (N of an N×N battlefield). Bot games are always
-   * `ROYALE_BOARD_SIZE` (15); hotseat players may pick a smaller 8×8 board
-   * instead. Defaults to `ROYALE_BOARD_SIZE`.
-   */
-  readonly boardSize?: number;
+  /** Starting army layout — see `RoyaleArmyLayout`. Defaults to 'expanded'. */
+  readonly armyLayout?: RoyaleArmyLayout;
+}
+
+/** Files/ranks offset that centers an 8-wide block on an N-wide board. */
+function centeredOffset(size: number): number {
+  return Math.floor((size - 8) / 2);
 }
 
 /**
- * Builds the Shrinking Board Royale starting board at the given size.
- * Armies spawn `spawnOffset` rings in from the border so the first few
- * burns don't eat them: white's back rank sits on rank index `spawnOffset`,
- * its pawns on `spawnOffset + 1`; black is mirrored from the far edge.
+ * Builds the 'expanded' Shrinking Board Royale starting board. Armies spawn
+ * `spawnOffset` rings in from the border so the first few burns don't eat
+ * them: white's back rank sits on rank index `spawnOffset`, its pawns on
+ * `spawnOffset + 1`; black is mirrored from the far edge. Pawns span every
+ * file — only the non-pawn back rank is confined to the centered 8 files.
  */
 export function createRoyaleInitialBoard(
   spawnOffset = DEFAULT_SPAWN_OFFSET,
-  boardSize = ROYALE_BOARD_SIZE,
+  size = ROYALE_BOARD_SIZE,
 ): Board {
-  const size = boardSize;
   const cells = new Array<Piece | null>(size * size).fill(null);
   const backRankFiles = centeredBackRankFiles(size);
   const whiteBackRank = spawnOffset;
@@ -115,12 +125,40 @@ export function createRoyaleInitialBoard(
   return cells;
 }
 
+/**
+ * Builds the 'centered' starting board: a plain 32-piece standard-chess
+ * army (both back ranks and both pawn ranks confined to the same centered
+ * 8 files) placed in the middle of the full-size battlefield, leaving an
+ * even ring of empty squares — and several early burn stages — before any
+ * piece is at risk.
+ */
+export function createCenteredRoyaleInitialBoard(size = ROYALE_BOARD_SIZE): Board {
+  const cells = new Array<Piece | null>(size * size).fill(null);
+  const files = centeredBackRankFiles(size);
+  const offset = centeredOffset(size);
+  const whiteBackRank = offset;
+  const whitePawnRank = offset + 1;
+  const blackPawnRank = offset + 6;
+  const blackBackRank = offset + 7;
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    cells[square(file, whiteBackRank, size)] = makePiece(BACK_RANK_ORDER[i], 'white');
+    cells[square(file, blackBackRank, size)] = makePiece(BACK_RANK_ORDER[i], 'black');
+    cells[square(file, whitePawnRank, size)] = makePiece('pawn', 'white');
+    cells[square(file, blackPawnRank, size)] = makePiece('pawn', 'black');
+  }
+  return cells;
+}
+
 export function royaleInitialPosition(
   spawnOffset = DEFAULT_SPAWN_OFFSET,
-  boardSize = ROYALE_BOARD_SIZE,
+  armyLayout: RoyaleArmyLayout = 'expanded',
 ): GamePosition {
+  const board = armyLayout === 'centered'
+    ? createCenteredRoyaleInitialBoard()
+    : createRoyaleInitialBoard(spawnOffset);
   return {
-    board: createRoyaleInitialBoard(spawnOffset, boardSize),
+    board,
     round: 1,
     consecutivePassRounds: 0,
     burnedRings: 0,
@@ -197,13 +235,13 @@ export class ShrinkingRoyaleEngine implements ChessVariantEngine {
   private pendingIntent: MoveIntent | null = null;
   private toMove: PieceColor;
   private readonly spawnOffset: number;
-  private readonly boardSize: number;
+  private readonly armyLayout: RoyaleArmyLayout;
 
   constructor(setup?: RoyaleSetup, startPosition?: GamePosition) {
     this.spawnOffset = setup?.spawnOffset ?? DEFAULT_SPAWN_OFFSET;
-    this.boardSize = setup?.boardSize ?? ROYALE_BOARD_SIZE;
+    this.armyLayout = setup?.armyLayout ?? 'expanded';
     this.currentPosition = startPosition
-      ?? royaleInitialPosition(this.spawnOffset, this.boardSize);
+      ?? royaleInitialPosition(this.spawnOffset, this.armyLayout);
     this.toMove = moverFor(this.currentPosition.round);
   }
 
@@ -221,13 +259,22 @@ export class ShrinkingRoyaleEngine implements ChessVariantEngine {
   }
 
   private moveGenOptions(burnedRings: number): MoveGenOptions {
-    const bounds = intactBounds(burnedRings, this.boardSize);
+    const bounds = intactBounds(burnedRings, ROYALE_BOARD_SIZE);
     return {
       promotionRanks: { white: bounds.max, black: bounds.min },
-      pawnStartRanks: {
-        white: this.spawnOffset + 1,
-        black: this.boardSize - 2 - this.spawnOffset,
-      },
+      pawnStartRanks: this.pawnStartRanks(),
+    };
+  }
+
+  /** Double-step start rank per color, matching whichever army layout this game uses. */
+  private pawnStartRanks(): Record<PieceColor, number> {
+    if (this.armyLayout === 'centered') {
+      const offset = centeredOffset(ROYALE_BOARD_SIZE);
+      return { white: offset + 1, black: offset + 6 };
+    }
+    return {
+      white: this.spawnOffset + 1,
+      black: ROYALE_BOARD_SIZE - 2 - this.spawnOffset,
     };
   }
 
@@ -257,10 +304,7 @@ export class ShrinkingRoyaleEngine implements ChessVariantEngine {
     const options = this.moveGenOptions(burnedRings);
     const intents: MoveIntent[] = [];
     for (const move of generateMoves(position.board, from, options)) {
-      // Royale never allows castling (see class docs) — move-gen only skips
-      // it by board-size coincidence (its 8×8-specific geometry never fires
-      // on the 15×15 board), which stops holding now that Royale itself can
-      // be played on an 8×8 board too.
+      // Royale never allows castling (see class docs).
       if (move.castle !== null) continue;
       if (isVoidSquare(move.to, burnedRings, size)) continue;
       if (move.isPromotion) {
@@ -343,7 +387,7 @@ export class ShrinkingRoyaleEngine implements ChessVariantEngine {
       (event) => !(event.type === 'passed' && event.color === opponentOf(mover)),
     );
 
-    if (status.outcome === 'ongoing' && burnsAfterRound(roundJustPlayed, burnedRings, this.boardSize)) {
+    if (status.outcome === 'ongoing' && burnsAfterRound(roundJustPlayed, burnedRings)) {
       const burn = applyBurn(position);
       position = { ...position, board: burn.board, burnedRings: burnedRings + 1 };
       events = [...events, ...burn.events];

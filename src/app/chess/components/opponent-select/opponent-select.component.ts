@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { BOT_DIFFICULTIES, BotDifficulty } from '../../engine/bot';
 import { PieceColor } from '../../engine/core/board';
+import { RoyaleArmyLayout } from '../../engine/variants/shrinking-royale-engine';
 import { ChessModeDescriptor } from '../../models/chess-modes';
 import { OpponentKind } from '../../services/chess-session.service';
 import { StockfishLoaderComponent } from '../stockfish-loader/stockfish-loader.component';
@@ -16,8 +17,8 @@ export interface OpponentChoice {
   opponent: OpponentKind;
   botId?: string;
   humanColor?: PieceColor;
-  /** Shrinking Royale board size chosen for a hotseat game (8 or 15). */
-  royaleBoardSize?: number;
+  /** Shrinking Royale army layout chosen for a hotseat game. */
+  royaleArmyLayout?: RoyaleArmyLayout;
 }
 
 /** Icon + badge metadata per difficulty id. */
@@ -102,25 +103,25 @@ const BOT_META: Record<string, BotMeta> = {
         </div>
       </section>
 
-      <!-- ── Royale board size (hotseat only) ──────────────────────── -->
+      <!-- ── Royale army layout (hotseat only) ─────────────────────── -->
       @if (choice() === 'hotseat' && mode?.id === 'shrinking-royale') {
         <div class="color-pick">
-          <span class="color-label">Battlefield size</span>
+          <span class="color-label">Starting army</span>
           <button
             type="button"
             class="color-button"
-            [class.active]="royaleBoardSize() === 8"
-            (click)="royaleBoardSize.set(8)"
+            [class.active]="royaleArmyLayout() === 'centered'"
+            (click)="royaleArmyLayout.set('centered')"
           >
-            8×8
+            8×8 centered
           </button>
           <button
             type="button"
             class="color-button"
-            [class.active]="royaleBoardSize() === 15"
-            (click)="royaleBoardSize.set(15)"
+            [class.active]="royaleArmyLayout() === 'expanded'"
+            (click)="royaleArmyLayout.set('expanded')"
           >
-            15×15
+            15×15 expanded
           </button>
         </div>
       }
@@ -175,7 +176,7 @@ export class OpponentSelectComponent {
   /** 'hotseat' | bot difficulty id | null */
   readonly choice = signal<string | null>(null);
   readonly humanColor = signal<PieceColor>('white');
-  readonly royaleBoardSize = signal<8 | 15>(15);
+  readonly royaleArmyLayout = signal<RoyaleArmyLayout>('expanded');
   readonly showLoader = signal(false);
 
   private pendingChoice: OpponentChoice | null = null;
@@ -199,7 +200,7 @@ export class OpponentSelectComponent {
     if (choice === 'hotseat') {
       this.chosen.emit({
         opponent: 'hotseat',
-        royaleBoardSize: this.mode?.id === 'shrinking-royale' ? this.royaleBoardSize() : undefined,
+        royaleArmyLayout: this.mode?.id === 'shrinking-royale' ? this.royaleArmyLayout() : undefined,
       });
       return;
     }

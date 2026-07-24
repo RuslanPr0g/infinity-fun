@@ -12,11 +12,11 @@ import {
   BURN_SCHEDULE,
   MAX_BURNED_RINGS,
   isVoidSquare,
-  maxBurnedRingsFor,
   roundsUntilBurn,
 } from '../burn';
 import {
   ShrinkingRoyaleEngine,
+  createCenteredRoyaleInitialBoard,
   createRoyaleInitialBoard,
   royaleInitialPosition,
 } from './shrinking-royale-engine';
@@ -39,15 +39,6 @@ function pieceCode(board: Board, name: string): string | null {
     bishop: 'B',
     knight: 'N',
     pawn: 'P',
-  };
-  return `${piece.color === 'white' ? 'w' : 'b'}${letters[piece.type]}`;
-}
-
-function pieceCodeAt(board: Board, name: string, size: number): string | null {
-  const piece = pieceAt(board, parseSquare(name, size));
-  if (!piece) return null;
-  const letters: Record<string, string> = {
-    king: 'K', queen: 'Q', rook: 'R', bishop: 'B', knight: 'N', pawn: 'P',
   };
   return `${piece.color === 'white' ? 'w' : 'b'}${letters[piece.type]}`;
 }
@@ -113,48 +104,30 @@ describe('ShrinkingRoyaleEngine', () => {
     });
   });
 
-  describe('8×8 hotseat board size', () => {
-    // The 15×15 hotseat spawnOffset (2) would leave the two pawn fronts
-    // touching on an 8-wide board with zero empty ranks between them, so
-    // the 8×8 option uses spawnOffset 0 — an exact classic-chess start.
-    it('places a full standard chess complement at spawnOffset 0', () => {
-      const board = createRoyaleInitialBoard(0, 8);
+  describe('Centered 8×8 army layout (board stays 15×15)', () => {
+    it('places a full standard chess complement in the middle of the 15×15 board', () => {
+      const board = createCenteredRoyaleInitialBoard();
       expect(countPieces(board)).toBe(32);
-      expect(pieceCodeAt(board, 'e1', 8)).toBe('wK');
-      expect(pieceCodeAt(board, 'd1', 8)).toBe('wQ');
-      expect(pieceCodeAt(board, 'e8', 8)).toBe('bK');
-      expect(pieceCodeAt(board, 'd8', 8)).toBe('bQ');
-      expect(pieceCodeAt(board, 'a2', 8)).toBe('wP');
-      expect(pieceCodeAt(board, 'a7', 8)).toBe('bP');
+      expect(pieceCode(board, 'h4')).toBe('wK');
+      expect(pieceCode(board, 'g4')).toBe('wQ');
+      expect(pieceCode(board, 'h11')).toBe('bK');
+      expect(pieceCode(board, 'g11')).toBe('bQ');
+      expect(pieceCode(board, 'd5')).toBe('wP');
+      expect(pieceCode(board, 'd10')).toBe('bP');
+      // Outside the centered 8×8 block, the (still 15×15) board stays empty.
+      expect(pieceCode(board, 'a1')).toBeNull();
+      expect(pieceCode(board, 'h15')).toBeNull();
     });
 
-    it('caps burning at 3 rings — the innermost 2×2 core never burns', () => {
-      expect(maxBurnedRingsFor(8)).toBe(3);
-    });
-
-    it('plays moves and burns on an 8×8 engine instance', () => {
-      const position = royaleInitialPosition(0, 8);
-      const engine = new ShrinkingRoyaleEngine({ spawnOffset: 0, boardSize: 8 }, position);
+    it('plays moves and burns on a centered-layout engine instance', () => {
+      const position = royaleInitialPosition(0, 'centered');
+      const engine = new ShrinkingRoyaleEngine({ armyLayout: 'centered' }, position);
       const intents = engine
-        .legalIntentsFrom(position, 'white', parseSquare('a2', 8))
+        .legalIntentsFrom(position, 'white', parseSquare('d5', SIZE))
         .filter((intent) => intent.kind === 'move') as Extract<MoveIntent, { kind: 'move' }>[];
       const targets = intents.map((intent) => intent.to);
-      expect(targets).toContain(parseSquare('a3', 8));
-      expect(targets).toContain(parseSquare('a4', 8)); // double-step
-    });
-
-    it('never generates castling, even though 8×8 move-gen normally allows it', () => {
-      // King and rook unmoved with a clear kingside path — legal castling
-      // in plain chess move-gen, but Royale must never allow it, any size.
-      const board = boardFrom({ e1: 'wK', h1: 'wR', e8: 'bK' }, 8);
-      const position: GamePosition = {
-        board, round: 1, consecutivePassRounds: 0, burnedRings: 0,
-      };
-      const engine = new ShrinkingRoyaleEngine({ spawnOffset: 0, boardSize: 8 }, position);
-      const intents = engine.legalIntentsFrom(position, 'white', parseSquare('e1', 8));
-      const targets = (intents.filter((i) => i.kind === 'move') as Extract<MoveIntent, { kind: 'move' }>[])
-        .map((i) => i.to);
-      expect(targets).not.toContain(parseSquare('g1', 8));
+      expect(targets).toContain(parseSquare('d6', SIZE));
+      expect(targets).toContain(parseSquare('d7', SIZE)); // double-step
     });
   });
 
