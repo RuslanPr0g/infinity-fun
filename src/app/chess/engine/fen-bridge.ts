@@ -3,16 +3,25 @@
  * interface. Pure TypeScript — no Angular imports.
  *
  * Standard 8×8 boards are converted verbatim.
- * Royale 15×15 boards are projected to a virtual 8×8 grid so Stockfish can
- * reason about piece positions and relationships, even though it doesn't
- * know the variant rules. The projection is lossy (collisions drop one
- * piece), which is intentional — the caller always validates the resulting
- * MoveIntent against the real variant engine and falls back to HardBot on
- * any mismatch.
+ * Royale 15×15 boards need to fit through Stockfish's 8×8 window somehow —
+ * two strategies, tried in order:
+ *  1. Window crop: if both kings sit within any 8×8 square, crop that region
+ *     1:1 (exact squares, no distortion) so Stockfish sees the actual local
+ *     tactics at full resolution. Pieces outside the window are simply
+ *     absent from the FEN.
+ *  2. Whole-board scale: if the kings are farther apart than 8×8 can span
+ *     (typical early game, before any rings have burned), fall back to
+ *     linearly scaling every piece's coordinates down to 8×8. Lossy —
+ *     collisions keep the higher-value piece so a king is never dropped in
+ *     favor of a pawn — but it's the only way to give Stockfish *a* legal
+ *     position when the real board is simply too spread out to window.
+ * Either way the caller always validates the resulting MoveIntent against
+ * the real variant engine and falls back to HardBot on any mismatch.
  */
 
 import {
   Board,
+  Piece,
   PieceColor,
   PieceType,
   PromotionPiece,
@@ -64,9 +73,7 @@ const PIECE_VALUE: Record<PieceType, number> = {
  */
 export function boardToFen(board: Board, sideToMove: PieceColor): string {
   const size = boardSize(board);
-  const fenBoard = size === 8
-    ? board
-    : royaleBoardTo8x8(board);
+  const fenBoard = size === 8 ? board : projectRoyaleBoard(board, size);
 
   const rows: string[] = [];
   // FEN ranks go from 8 (top) down to 1 (bottom), i.e. rank index 7 → 0.
@@ -92,6 +99,65 @@ export function boardToFen(board: Board, sideToMove: PieceColor): string {
 }
 
 // ─── 15×15 → 8×8 projection ──────────────────────────────────────────────────
+
+interface Window {
+  readonly fileOrigin: number;
+  readonly rankOrigin: number;
+}
+
+/** Pick either the window-crop or whole-board-scale projection for this board. */
+function projectRoyaleBoard(board: Board, size: number): Board {
+  const window = royaleWindow(board, size);
+  return window ? royaleBoardToWindow(board, size, window) : royaleBoardTo8x8(board);
+}
+
+/**
+ * Find an 8×8 window (in the board's own coordinates) that contains both
+ * kings, if one exists. Returns null when the kings are farther apart than
+ * 8 squares on either axis — no window can hold them both, so the caller
+ * must fall back to whole-board scaling instead.
+ */
+function royaleWindow(board: Board, size: number): Window | null {
+  let whiteKing = -1;
+  let blackKing = -1;
+  for (let sq = 0; sq < board.length; sq++) {
+    const piece = board[sq];
+    if (piece?.type !== 'king') continue;
+    if (piece.color === 'white') whiteKing = sq;
+    else blackKing = sq;
+  }
+  if (whiteKing < 0 || blackKing < 0) return null;
+
+  const minFile = Math.min(fileOf(whiteKing, size), fileOf(blackKing, size));
+  const maxFile = Math.max(fileOf(whiteKing, size), fileOf(blackKing, size));
+  const minRank = Math.min(rankOf(whiteKing, size), rankOf(blackKing, size));
+  const maxRank = Math.max(rankOf(whiteKing, size), rankOf(blackKing, size));
+  if (maxFile - minFile > 7 || maxRank - minRank > 7) return null;
+
+  const maxOrigin = size - 8;
+  return {
+    fileOrigin: pickOrigin(minFile, maxFile, maxOrigin),
+    rankOrigin: pickOrigin(minRank, maxRank, maxOrigin),
+  };
+}
+
+/** Any origin in [max(0, maxC-7), min(maxOrigin, minC)] keeps both coords in-window; center it. */
+function pickOrigin(minC: number, maxC: number, maxOrigin: number): number {
+  const lower = Math.max(0, maxC - 7);
+  const upper = Math.min(maxOrigin, minC);
+  return Math.round((lower + upper) / 2);
+}
+
+/** Crop an 8×8 window out of a larger board 1:1 — no scaling, exact squares. */
+function royaleBoardToWindow(board: Board, size: number, window: Window): Board {
+  const dst = new Array<Piece | null>(64).fill(null);
+  for (let r = 0; r < 8; r++) {
+    for (let f = 0; f < 8; f++) {
+      dst[r * 8 + f] = board[square(window.fileOrigin + f, window.rankOrigin + r, size)];
+    }
+  }
+  return dst;
+}
 
 /**
  * Project a Royale 15×15 board onto a virtual 8×8 grid by linearly scaling
@@ -152,8 +218,8 @@ export function uciBestMoveToIntent(
 
   const [, fileFrom, rankFrom, fileTo, rankTo, promoChar] = match;
 
-  const fromSq = uciSquareToBoard(fileFrom, rankFrom, size);
-  const toSq   = uciSquareToBoard(fileTo,   rankTo,   size);
+  const fromSq = uciSquareToBoard(fileFrom, rankFrom, size, board);
+  const toSq   = uciSquareToBoard(fileTo,   rankTo,   size, board);
 
   if (fromSq === null || toSq === null) return null;
   if (!pieceAt(board, fromSq)) return null;
@@ -172,12 +238,15 @@ export function uciBestMoveToIntent(
  * own coordinate system.
  *
  * For 8×8 boards: direct algebraic mapping (a1 = 0, h8 = 63).
- * For 15×15 boards: reverse-project from the virtual 8×8 back to 15×15.
+ * For 15×15 boards: mirrors whichever projection `boardToFen` used for this
+ * same board — a window-crop offset if both kings fit an 8×8 window, or the
+ * whole-board scale reversed (nearest integer) otherwise.
  */
 function uciSquareToBoard(
   fileChar: string,
   rankChar: string,
   boardSz: number,
+  board: Board,
 ): Square | null {
   const file8 = FILES_8.indexOf(fileChar);
   const rank8 = Number(rankChar) - 1;
@@ -187,7 +256,14 @@ function uciSquareToBoard(
     return rank8 * 8 + file8;
   }
 
-  // Reverse-project 8×8 → boardSz coords (nearest integer).
+  const window = royaleWindow(board, boardSz);
+  if (window) {
+    const file = window.fileOrigin + file8;
+    const rank = window.rankOrigin + rank8;
+    return file < boardSz && rank < boardSz ? square(file, rank, boardSz) : null;
+  }
+
+  // Reverse the whole-board scale projection (nearest integer).
   const file = Math.round((file8 / 7) * (boardSz - 1));
   const rank = Math.round((rank8 / 7) * (boardSz - 1));
   return square(file, rank, boardSz);

@@ -12,6 +12,22 @@ import {
 } from './core/board';
 import { boardToFen, royaleBoardTo8x8, uciBestMoveToIntent } from './fen-bridge';
 
+/** Reads the FEN board field at [file, rank] (0-indexed, rank 0 = rank 1 / bottom). */
+function fenPieceAt(fen: string, file: number, rank: number): string | null {
+  const rows = fen.split(' ')[0].split('/'); // rows[0] = rank 8 (top) ... rows[7] = rank 1
+  const row = rows[7 - rank];
+  let f = 0;
+  for (const ch of row) {
+    if (/[1-8]/.test(ch)) {
+      f += Number(ch);
+    } else {
+      if (f === file) return ch;
+      f++;
+    }
+  }
+  return null;
+}
+
 // ─── boardToFen ───────────────────────────────────────────────────────────────
 
 describe('boardToFen', () => {
@@ -63,6 +79,20 @@ describe('boardToFen', () => {
     const fen = boardToFen(mutable, 'white');
     expect(fen).toMatch(/^[rnbqkpRNBQKP1-8\/]+ [wb] - - 0 1$/);
     expect(fen).not.toBe('8/8/8/8/8/8/8/8 w - - 0 1'); // not empty
+  });
+
+  it('crops an exact 8×8 window (no scaling) once both kings are close enough to fit one', () => {
+    // Kings 5 apart on each axis fit an 8×8 window: origin picked is (4,4),
+    // so (5,5)→(1,1), (7,7)→(3,3), (10,10)→(6,6) — exact offsets, not scaled.
+    const board = emptyBoardOf(15);
+    const mutable = board.slice();
+    mutable[square(5, 5, 15)] = makePiece('king', 'white');
+    mutable[square(10, 10, 15)] = makePiece('king', 'black');
+    mutable[square(7, 7, 15)] = makePiece('knight', 'white');
+    const fen = boardToFen(mutable, 'white');
+    expect(fenPieceAt(fen, 1, 1)).toBe('K');
+    expect(fenPieceAt(fen, 3, 3)).toBe('N');
+    expect(fenPieceAt(fen, 6, 6)).toBe('k');
   });
 });
 
@@ -177,6 +207,21 @@ describe('uciBestMoveToIntent', () => {
     expect(intent?.kind).toBe('move');
     if (intent?.kind === 'move') {
       expect(intent.from).toBe(square(0, 0, 15));
+    }
+  });
+
+  it('round-trips a UCI move through the window crop back to real 15×15 coords', () => {
+    // Same setup as the window-crop FEN test: origin (4,4), white king at
+    // windowed (1,1) = "b2". Move it to windowed (2,1) = "c2".
+    const board = emptyBoardOf(15);
+    const mutable = board.slice();
+    mutable[square(5, 5, 15)] = makePiece('king', 'white');
+    mutable[square(10, 10, 15)] = makePiece('king', 'black');
+    const intent = uciBestMoveToIntent('b2c2', mutable, 15);
+    expect(intent?.kind).toBe('move');
+    if (intent?.kind === 'move') {
+      expect(intent.from).toBe(square(5, 5, 15));
+      expect(intent.to).toBe(square(6, 5, 15));
     }
   });
 });
