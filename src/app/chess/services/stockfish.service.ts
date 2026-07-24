@@ -8,9 +8,26 @@
  */
 
 import { Injectable, signal } from '@angular/core';
+import { environment } from '../../../environments/environment';
 
 const DEFAULT_THINK_MS = 400;
-const DEBUG = (globalThis as any).STOCKFISH_DEBUG ?? false;
+
+/**
+ * Resolves the debug logging flag on every call (not cached at module load)
+ * so a console-set `globalThis.STOCKFISH_DEBUG` or a `?stockfishDebug=` query
+ * param takes effect immediately, without requiring a page reload timed just
+ * right. Priority: query param > runtime global override > environment default.
+ */
+function isDebugEnabled(): boolean {
+  if (typeof location !== 'undefined') {
+    const param = new URLSearchParams(location.search).get('stockfishDebug');
+    if (param === 'true') return true;
+    if (param === 'false') return false;
+  }
+  const globalOverride = (globalThis as any).STOCKFISH_DEBUG;
+  if (globalOverride !== undefined) return !!globalOverride;
+  return environment.stockfishDebug;
+}
 
 interface PendingRequest {
   resolve: (move: string | null) => void;
@@ -60,7 +77,7 @@ export class StockfishService {
 
       this.worker.onmessage = (event: MessageEvent<string>) => {
         // Log only non-move responses to avoid revealing the bot's move
-        if (DEBUG && !event.data.startsWith('bestmove')) {
+        if (isDebugEnabled() && !event.data.startsWith('bestmove')) {
           console.log('[Stockfish ←]', event.data);
         }
         this.handleMessage(event.data);
@@ -68,14 +85,14 @@ export class StockfishService {
 
       this.worker.onerror = (event) => {
         const err = new Error(`Stockfish worker error: ${event.message}`);
-        if (DEBUG) console.error('[Stockfish ERROR]', err.message);
+        if (isDebugEnabled()) console.error('[Stockfish ERROR]', err.message);
         this.initReject?.(err);
         this.pendingMove?.reject(err);
         this.initReject = null;
         this.pendingMove = null;
       };
 
-      if (DEBUG) console.log('[Stockfish →] uci');
+      if (isDebugEnabled()) console.log('[Stockfish →] uci');
       this.send('uci');
     });
   }
@@ -144,7 +161,7 @@ export class StockfishService {
     }
 
     if (line.startsWith('bestmove')) {
-      if (DEBUG) console.log('[Stockfish] Move computed');
+      if (isDebugEnabled()) console.log('[Stockfish] Move computed');
       const parts = line.split(' ');
       // "bestmove (none)" or "bestmove 0000" means no move
       const move = parts[1] && parts[1] !== '(none)' && parts[1] !== '0000'
@@ -166,7 +183,7 @@ export class StockfishService {
       resolve: next.resolve,
       reject: () => { next.resolve(null); },
     };
-    if (DEBUG) console.log('[Stockfish] Computing best move...');
+    if (isDebugEnabled()) console.log('[Stockfish] Computing best move...');
     this.send(`position fen ${next.fen}`);
     this.send(`go movetime ${next.thinkMs}`);
   }

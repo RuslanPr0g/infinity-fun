@@ -42,6 +42,12 @@ Full detail — component/service/styling/testing/CI conventions and the step-by
 
 @.claude/rules/angular-conventions.md
 
+## Deploying (push to `master`)
+
+`cd-on-commit.yml` runs on every push to `master` and looks for a `vX.Y.Z` version string in the **latest commit message**. If found and greater than the latest existing tag, it tags the commit, creates a GitHub Release, and runs `npm run deploy` (publishes to `gh-pages`). No version string (or a version not greater than the latest tag) → push lands on `master` with no deploy.
+
+So: to deploy, include the next semver (check `git tag --list 'v*' | sort -V | tail -5` for the latest) somewhere in the commit message, e.g. `Add feature X (v4.10.0)`, then push directly to `master`.
+
 ## Specs
 
 Feature specs live under `.claude/specs/`. Current: [`math-quiz-game`](.claude/specs/math-quiz-game/README.md) (requirements, design, tasks).

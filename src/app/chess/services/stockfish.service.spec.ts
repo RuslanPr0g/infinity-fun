@@ -149,4 +149,23 @@ describe('StockfishService', () => {
     const result = await movePromise;
     expect(result).toBeNull();
   });
+
+  describe('debug logging', () => {
+    afterEach(() => {
+      delete (globalThis as any).STOCKFISH_DEBUG;
+    });
+
+    it('stays silent by default (no globalThis override, no query param)', async () => {
+      spyOn(console, 'log');
+      await service.init();
+      expect(console.log).not.toHaveBeenCalled();
+    });
+
+    it('logs once globalThis.STOCKFISH_DEBUG is set, without needing a fresh service instance', async () => {
+      spyOn(console, 'log');
+      (globalThis as any).STOCKFISH_DEBUG = true;
+      await service.init();
+      expect(console.log).toHaveBeenCalledWith('[Stockfish →] uci');
+    });
+  });
 });
