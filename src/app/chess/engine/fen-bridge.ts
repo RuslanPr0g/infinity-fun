@@ -45,6 +45,16 @@ const UCI_PROMO: Record<string, PromotionPiece> = {
 
 const FILES_8 = 'abcdefgh';
 
+/** Relative value used to resolve 15×15 → 8×8 projection collisions. */
+const PIECE_VALUE: Record<PieceType, number> = {
+  king: 100,
+  queen: 9,
+  rook: 5,
+  bishop: 3,
+  knight: 3,
+  pawn: 1,
+};
+
 // ─── 8×8 FEN ─────────────────────────────────────────────────────────────────
 
 /**
@@ -103,8 +113,10 @@ export function royaleBoardTo8x8(board: Board): Board {
     const rank8 = projectCoord(rankOf(sq, srcSize), srcSize);
     const dstSq = rank8 * 8 + file8;
     const existing = dst[dstSq];
-    // Keep higher-value piece on collision.
-    if (!existing) {
+    // Keep higher-value piece on collision — critical so a king is never
+    // dropped in favor of a colliding pawn, which would send Stockfish a
+    // FEN with a missing king (an invalid position it can't search at all).
+    if (!existing || PIECE_VALUE[piece.type] > PIECE_VALUE[existing.type]) {
       dst[dstSq] = piece;
     }
   }

@@ -99,6 +99,20 @@ describe('royaleBoardTo8x8', () => {
     const projected = royaleBoardTo8x8(mutable);
     expect(projected[7 * 8 + 7]?.type).toBe('rook');
   });
+
+  it('keeps the king when it collides with a pawn on the same projected square', () => {
+    // Royale's default spawn: rank 11 (pawn) and rank 12 (king) both project
+    // to row 6 — round(11/14*7)=6 and round(12/14*7)=6 — on the same file.
+    // Losing the king here means Stockfish gets a FEN with no black king,
+    // an invalid position it can't search (always "depth 0 score cp 0").
+    const board = emptyBoardOf(15);
+    const mutable = board.slice();
+    mutable[11 * 15 + 4] = makePiece('pawn', 'black');
+    mutable[12 * 15 + 4] = makePiece('king', 'black');
+    const projected = royaleBoardTo8x8(mutable);
+    const projectedFile = Math.round((4 / 14) * 7);
+    expect(projected[6 * 8 + projectedFile]?.type).toBe('king');
+  });
 });
 
 // ─── uciBestMoveToIntent ──────────────────────────────────────────────────────
