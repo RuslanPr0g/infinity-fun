@@ -1,0 +1,57 @@
+@use '../../../../colors' as colors;
+
+.resign-confirm {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(18, 18, 18, 0.88);
+  padding: 1.5rem;
+}
+
+.panel {
+  text-align: center;
+  color: colors.$primary-text-color;
+  border: 2px solid colors.$color-unusual-chess;
+  border-radius: 16px;
+  background: colors.$primary-bg-color;
+  padding: 2rem 2.5rem;
+  max-width: 380px;
+
+  .headline {
+    margin-bottom: 0.5rem;
+  }
+
+  .hint {
+    opacity: 0.8;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+  }
+
+  .actions {
+    display: flex;
+    gap: 0.75rem;
+
+    button {
+      flex: 1;
+      padding: 0.8rem 1rem;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .confirm {
+      border: none;
+      background: #e05a5a;
+      color: #2b0505;
+    }
+
+    .cancel {
+      border: 2px solid rgba(colors.$primary-text-color, 0.25);
+      background: transparent;
+      color: colors.$primary-text-color;
+    }
+  }
+}

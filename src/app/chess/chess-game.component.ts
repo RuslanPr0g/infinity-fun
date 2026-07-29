@@ -11,6 +11,7 @@ import {
 } from './components/opponent-select/opponent-select.component';
 import { ChessPieceComponent } from './components/piece/chess-piece.component';
 import { PrivacyOverlayComponent } from './components/privacy-overlay/privacy-overlay.component';
+import { ResignConfirmOverlayComponent } from './components/resign-confirm/resign-confirm-overlay.component';
 import { RevealLayerComponent } from './components/reveal-layer/reveal-layer.component';
 import {
   Board,
@@ -52,6 +53,7 @@ type ScreenState = 'mode-select' | 'opponent-select' | 'playing';
     ChessPieceComponent,
     RevealLayerComponent,
     PrivacyOverlayComponent,
+    ResignConfirmOverlayComponent,
     MoveLogComponent,
     CapturedTrayComponent,
     GameOverOverlayComponent,
@@ -177,6 +179,13 @@ type ScreenState = 'mode-select' | 'opponent-select' | 'playing';
               (changeMode)="onChangeMode()"
             />
           }
+          @if (resignColor(); as color) {
+            <app-resign-confirm-overlay
+              [color]="color"
+              (confirm)="onConfirmResign()"
+              (cancel)="onCancelResign()"
+            />
+          }
         }
       }
     </div>
@@ -190,6 +199,9 @@ export class ChessGameComponent implements OnDestroy {
   readonly screen = signal<ScreenState>('mode-select');
   readonly selectedMode = signal<ChessModeDescriptor | null>(null);
   private lastChoice: OpponentChoice | null = null;
+
+  /** Color pending resignation confirmation, or null when the overlay is hidden. */
+  readonly resignColor = signal<PieceColor | null>(null);
 
   readonly selectedSquare = signal<Square | null>(null);
   readonly pendingIntent = signal<MoveIntent | null>(null);
@@ -478,10 +490,17 @@ export class ChessGameComponent implements OnDestroy {
       config.opponent === 'bot'
         ? config.humanColor ?? 'white'
         : this.session.entryColor();
-    const who = resigning === 'white' ? 'White' : 'Black';
-    if (window.confirm(`${who} resigns — are you sure?`)) {
-      this.session.resign(resigning);
-    }
+    this.resignColor.set(resigning);
+  }
+
+  onConfirmResign(): void {
+    const resigning = this.resignColor();
+    if (resigning) this.session.resign(resigning);
+    this.resignColor.set(null);
+  }
+
+  onCancelResign(): void {
+    this.resignColor.set(null);
   }
 
   onRematch(): void {
@@ -515,5 +534,6 @@ export class ChessGameComponent implements OnDestroy {
     this.selectedSquare.set(null);
     this.pendingIntent.set(null);
     this.pendingIsPromotion.set(false);
+    this.resignColor.set(null);
   }
 }
