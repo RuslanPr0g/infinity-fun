@@ -21,7 +21,7 @@ import {
   royaleInitialPosition,
 } from './shrinking-royale-engine';
 
-const SIZE = 15;
+const SIZE = 16;
 
 function move(from: string, to: string, promoteTo?: PromotionPiece): MoveIntent {
   return promoteTo
@@ -56,21 +56,21 @@ function mulberry32(seed: number): () => number {
 
 describe('ShrinkingRoyaleEngine', () => {
   describe('Starting position (default spawnOffset = 2)', () => {
-    it('places 46 pieces with kings on file h and queens on file g, two rings in from the border', () => {
+    it('places 48 pieces with kings on file i and queens on file h, two rings in from the border', () => {
       const board = createRoyaleInitialBoard();
-      expect(countPieces(board)).toBe(46);
-      expect(pieceCode(board, 'h3')).toBe('wK');
-      expect(pieceCode(board, 'g3')).toBe('wQ');
-      expect(pieceCode(board, 'h13')).toBe('bK');
-      expect(pieceCode(board, 'g13')).toBe('bQ');
+      expect(countPieces(board)).toBe(48);
+      expect(pieceCode(board, 'i3')).toBe('wK');
+      expect(pieceCode(board, 'h3')).toBe('wQ');
+      expect(pieceCode(board, 'i14')).toBe('bK');
+      expect(pieceCode(board, 'h14')).toBe('bQ');
     });
 
     it('spans pawns across every file, one rank in front of each back rank', () => {
       const board = createRoyaleInitialBoard();
-      const files = 'abcdefghijklmno';
+      const files = 'abcdefghijklmnop';
       for (const file of files) {
         expect(pieceCode(board, `${file}4`)).toBe('wP');
-        expect(pieceCode(board, `${file}12`)).toBe('bP');
+        expect(pieceCode(board, `${file}13`)).toBe('bP');
       }
     });
   });
@@ -78,18 +78,18 @@ describe('ShrinkingRoyaleEngine', () => {
   describe('Spawn offset placement', () => {
     it('spawns hard (offset 1) armies one ring from the border', () => {
       const board = createRoyaleInitialBoard(1);
-      expect(pieceCode(board, 'h2')).toBe('wK');
-      expect(pieceCode(board, 'h14')).toBe('bK');
+      expect(pieceCode(board, 'i2')).toBe('wK');
+      expect(pieceCode(board, 'i15')).toBe('bK');
       expect(pieceCode(board, 'a3')).toBe('wP');
-      expect(pieceCode(board, 'a13')).toBe('bP');
+      expect(pieceCode(board, 'a14')).toBe('bP');
     });
 
     it('spawns easy (offset 3) armies three rings from the border', () => {
       const board = createRoyaleInitialBoard(3);
-      expect(pieceCode(board, 'h4')).toBe('wK');
-      expect(pieceCode(board, 'h12')).toBe('bK');
+      expect(pieceCode(board, 'i4')).toBe('wK');
+      expect(pieceCode(board, 'i13')).toBe('bK');
       expect(pieceCode(board, 'a5')).toBe('wP');
-      expect(pieceCode(board, 'a11')).toBe('bP');
+      expect(pieceCode(board, 'a12')).toBe('bP');
     });
 
     it('lets a pawn double-step from its spawn-offset start rank (offset 3)', () => {
@@ -104,69 +104,69 @@ describe('ShrinkingRoyaleEngine', () => {
     });
   });
 
-  describe('Centered 8×8 army layout (board stays 15×15)', () => {
-    it('places a full standard chess complement in the middle of the 15×15 board', () => {
+  describe('Centered 8×8 army layout (board stays 16×16)', () => {
+    it('places a full standard chess complement in the middle of the 16×16 board', () => {
       const board = createCenteredRoyaleInitialBoard();
       expect(countPieces(board)).toBe(32);
-      expect(pieceCode(board, 'h4')).toBe('wK');
-      expect(pieceCode(board, 'g4')).toBe('wQ');
-      expect(pieceCode(board, 'h11')).toBe('bK');
-      expect(pieceCode(board, 'g11')).toBe('bQ');
-      expect(pieceCode(board, 'd5')).toBe('wP');
-      expect(pieceCode(board, 'd10')).toBe('bP');
-      // Outside the centered 8×8 block, the (still 15×15) board stays empty.
+      expect(pieceCode(board, 'i5')).toBe('wK');
+      expect(pieceCode(board, 'h5')).toBe('wQ');
+      expect(pieceCode(board, 'i12')).toBe('bK');
+      expect(pieceCode(board, 'h12')).toBe('bQ');
+      expect(pieceCode(board, 'e6')).toBe('wP');
+      expect(pieceCode(board, 'e11')).toBe('bP');
+      // Outside the centered 8×8 block, the (still 16×16) board stays empty.
       expect(pieceCode(board, 'a1')).toBeNull();
-      expect(pieceCode(board, 'h15')).toBeNull();
+      expect(pieceCode(board, 'p16')).toBeNull();
     });
 
     it('plays moves and burns on a centered-layout engine instance', () => {
       const position = royaleInitialPosition(0, 'centered');
       const engine = new ShrinkingRoyaleEngine({ armyLayout: 'centered' }, position);
       const intents = engine
-        .legalIntentsFrom(position, 'white', parseSquare('d5', SIZE))
+        .legalIntentsFrom(position, 'white', parseSquare('e6', SIZE))
         .filter((intent) => intent.kind === 'move') as Extract<MoveIntent, { kind: 'move' }>[];
       const targets = intents.map((intent) => intent.to);
-      expect(targets).toContain(parseSquare('d6', SIZE));
-      expect(targets).toContain(parseSquare('d7', SIZE)); // double-step
+      expect(targets).toContain(parseSquare('e7', SIZE));
+      expect(targets).toContain(parseSquare('e8', SIZE)); // double-step
     });
 
-    it('by default (hotseat) leaves the full 15×15 walkable — burnedRings starts at 0', () => {
+    it('by default (hotseat) leaves the full 16×16 walkable — burnedRings starts at 0', () => {
       const position = royaleInitialPosition(0, 'centered');
       expect(position.burnedRings).toBe(0);
       expect(position.startBurnedRings).toBe(0);
     });
   });
 
-  describe('preVoidMargin (bot hardening — walls off the true 15×15 border)', () => {
-    it('starts with the margin around the army already void — burnedRings begins at 3', () => {
+  describe('preVoidMargin (bot hardening — walls off the true 16×16 border)', () => {
+    it('starts with the margin around the army already void — burnedRings begins at 4', () => {
       const position = royaleInitialPosition(0, 'centered', true);
-      expect(position.burnedRings).toBe(3);
-      expect(position.startBurnedRings).toBe(3);
+      expect(position.burnedRings).toBe(4);
+      expect(position.startBurnedRings).toBe(4);
     });
 
     it('confines a piece at the army edge — it cannot slide into the void margin to go around the back', () => {
-      const board = boardFrom({ d8: 'wR', h4: 'wK', h11: 'bK' }, SIZE);
+      const board = boardFrom({ e8: 'wR', i5: 'wK', i12: 'bK' }, SIZE);
       const position: GamePosition = {
-        board, round: 1, consecutivePassRounds: 0, burnedRings: 3, startBurnedRings: 3,
+        board, round: 1, consecutivePassRounds: 0, burnedRings: 4, startBurnedRings: 4,
       };
       const engine = new ShrinkingRoyaleEngine({ armyLayout: 'centered', preVoidMargin: true }, position);
       const intents = engine
-        .legalIntentsFrom(position, 'white', parseSquare('d8', SIZE))
+        .legalIntentsFrom(position, 'white', parseSquare('e8', SIZE))
         .filter((intent) => intent.kind === 'move') as Extract<MoveIntent, { kind: 'move' }>[];
       const targets = intents.map((intent) => intent.to);
-      expect(targets).not.toContain(parseSquare('c8', SIZE)); // one step into the void margin
+      expect(targets).not.toContain(parseSquare('d8', SIZE)); // one step into the void margin
       expect(targets).not.toContain(parseSquare('a8', SIZE)); // deep into the true border
-      expect(targets).toContain(parseSquare('e8', SIZE)); // still free to move within the core
+      expect(targets).toContain(parseSquare('f8', SIZE)); // still free to move within the core
     });
 
     it('does not affect a hotseat-style engine without preVoidMargin — the same edge square can walk into the margin', () => {
-      const board = boardFrom({ d8: 'wR', h4: 'wK', h11: 'bK' }, SIZE);
+      const board = boardFrom({ e8: 'wR', i5: 'wK', i12: 'bK' }, SIZE);
       const position: GamePosition = {
         board, round: 1, consecutivePassRounds: 0, burnedRings: 0, startBurnedRings: 0,
       };
       const engine = new ShrinkingRoyaleEngine({ armyLayout: 'centered' }, position);
       const intents = engine
-        .legalIntentsFrom(position, 'white', parseSquare('d8', SIZE))
+        .legalIntentsFrom(position, 'white', parseSquare('e8', SIZE))
         .filter((intent) => intent.kind === 'move') as Extract<MoveIntent, { kind: 'move' }>[];
       const targets = intents.map((intent) => intent.to);
       expect(targets).toContain(parseSquare('a8', SIZE));
@@ -180,7 +180,7 @@ describe('ShrinkingRoyaleEngine', () => {
       expect(engine.activeColor).toBe('white');
       expect(engine.legalIntents(position, 'black')).toEqual([]);
       expect(
-        engine.legalIntentsFrom(position, 'black', parseSquare('h13', SIZE)),
+        engine.legalIntentsFrom(position, 'black', parseSquare('i14', SIZE)),
       ).toEqual([]);
     });
 
@@ -189,7 +189,7 @@ describe('ShrinkingRoyaleEngine', () => {
       const engine = new ShrinkingRoyaleEngine(undefined, position);
       expect(() => engine.submitIntent('black', PASS_INTENT)).toThrow();
       expect(() =>
-        engine.submitIntent('black', move('h13', 'h12')),
+        engine.submitIntent('black', move('i14', 'i13')),
       ).toThrow();
     });
 
@@ -200,7 +200,7 @@ describe('ShrinkingRoyaleEngine', () => {
       engine.submitIntent('white', move('h4', 'h5'));
       engine.resolveRound();
       expect(engine.activeColor).toBe('black');
-      engine.submitIntent('black', move('h12', 'h11'));
+      engine.submitIntent('black', move('h13', 'h12'));
       engine.resolveRound();
       expect(engine.activeColor).toBe('white');
     });
@@ -251,12 +251,12 @@ describe('ShrinkingRoyaleEngine', () => {
     });
 
     it('allows pass only when the mover is completely stuck, and filters the opponent implicit pass too', () => {
-      // burnedRings 7 leaves only the single center square (h8) intact —
-      // every other square, including every neighbor of the corner square
-      // a1, is void. Both kings are fully boxed in with no blockers needed:
-      // the white king at h8 has void on all sides, and the black king at
-      // a1 has nothing but void neighbors too.
-      const board = boardFrom({ h8: 'wK*', a1: 'bK*' }, SIZE);
+      // burnedRings 7 leaves only the 2×2 core (h8/h9/i8/i9) intact — a
+      // 16×16 board is even, so the final surviving area is a small square,
+      // not a single square. White pawns block the other three core
+      // squares so the white king at h8 has zero legal moves; the black
+      // king at a1 is deep in void territory on every side regardless.
+      const board = boardFrom({ h8: 'wK*', h9: 'wP', i8: 'wP', i9: 'wP', a1: 'bK*' }, SIZE);
       const position: GamePosition = {
         board,
         round: 1,
@@ -282,9 +282,9 @@ describe('ShrinkingRoyaleEngine', () => {
 
   describe('Triple stuck-pass draw', () => {
     it('draws after three consecutive stuck-pass plies, regardless of color', () => {
-      // Both kings are fully boxed by void (see fixture above) so every
-      // ply on both sides is a legal, forced pass.
-      const board = boardFrom({ h8: 'wK*', a1: 'bK*' }, SIZE);
+      // Both kings are fully boxed (see fixture above) so every ply on both
+      // sides is a legal, forced pass.
+      const board = boardFrom({ h8: 'wK*', h9: 'wP', i8: 'wP', i9: 'wP', a1: 'bK*' }, SIZE);
       const position: GamePosition = {
         board,
         round: 1,
@@ -344,7 +344,7 @@ describe('ShrinkingRoyaleEngine', () => {
     it('burns ring 0 only after the first schedule stage, destroying whatever stands on it', () => {
       const firstStagePlies = BURN_SCHEDULE[0]; // 24 — the generous opening stage
       const board: Board = boardFrom(
-        { h8: 'wK*', g8: 'bK*', a1: 'wP', o15: 'bP', d4: 'wR*' },
+        { h8: 'wK*', g8: 'bK*', a1: 'wP', p16: 'bP', d4: 'wR*' },
         SIZE,
       );
       const position: GamePosition = {
@@ -376,7 +376,7 @@ describe('ShrinkingRoyaleEngine', () => {
       }
 
       expect(pieceCode(engine.position.board, 'a1')).toBe('wP');
-      expect(pieceCode(engine.position.board, 'o15')).toBe('bP');
+      expect(pieceCode(engine.position.board, 'p16')).toBe('bP');
 
       // The last ply of the first stage is even, so black is on move.
       expect(engine.activeColor).toBe('black');
@@ -385,7 +385,7 @@ describe('ShrinkingRoyaleEngine', () => {
 
       expect(engine.position.burnedRings).toBe(1);
       expect(pieceAt(engine.position.board, parseSquare('a1', SIZE))).toBeNull();
-      expect(pieceAt(engine.position.board, parseSquare('o15', SIZE))).toBeNull();
+      expect(pieceAt(engine.position.board, parseSquare('p16', SIZE))).toBeNull();
       const burned = resolution.events.filter((event) => event.type === 'burned');
       expect(burned.length).toBe(2);
       expect(resolution.status.outcome).toBe('ongoing');
@@ -419,7 +419,7 @@ describe('ShrinkingRoyaleEngine', () => {
     });
 
     it('draws the game when both kings burn together', () => {
-      const board: Board = boardFrom({ a1: 'wK*', o15: 'bK*' }, SIZE);
+      const board: Board = boardFrom({ a1: 'wK*', p16: 'bK*' }, SIZE);
       const position: GamePosition = {
         board,
         round: BURN_SCHEDULE[0], // 24, even — black on move
@@ -427,8 +427,8 @@ describe('ShrinkingRoyaleEngine', () => {
         burnedRings: 0,
       };
       const engine = new ShrinkingRoyaleEngine(undefined, position);
-      // o15 -> n15 stays on ring 0 (corner-adjacent along the top edge).
-      engine.submitIntent('black', move('o15', 'n15'));
+      // p16 -> o16 stays on ring 0 (corner-adjacent along the top edge).
+      engine.submitIntent('black', move('p16', 'o16'));
       const resolution = engine.resolveRound();
 
       expect(resolution.status).toEqual({ outcome: 'draw', reason: 'both-kings-burned' });
@@ -436,9 +436,9 @@ describe('ShrinkingRoyaleEngine', () => {
   });
 
   describe('Promotion on the outermost intact rank', () => {
-    it('promotes a pawn on rank (15 - burnedRings) rather than the literal last rank', () => {
+    it('promotes a pawn on the outermost intact rank rather than the literal last rank', () => {
       const board: Board = boardFrom(
-        { h8: 'wK*', g8: 'bK*', d13: 'wP*' },
+        { h8: 'wK*', g8: 'bK*', d14: 'wP*' },
         SIZE,
       );
       const position: GamePosition = {
@@ -450,17 +450,17 @@ describe('ShrinkingRoyaleEngine', () => {
       const engine = new ShrinkingRoyaleEngine(undefined, position);
 
       const intents = engine
-        .legalIntentsFrom(position, 'white', parseSquare('d13', SIZE))
+        .legalIntentsFrom(position, 'white', parseSquare('d14', SIZE))
         .filter((intent) => intent.kind === 'move');
       const promoTargets = intents.filter(
         (intent) => (intent as Extract<MoveIntent, { kind: 'move' }>).promoteTo,
       );
       expect(promoTargets.length).toBe(4); // queen/rook/bishop/knight
 
-      engine.submitIntent('white', move('d13', 'd14', 'queen'));
+      engine.submitIntent('white', move('d14', 'd15', 'queen'));
       const resolution = engine.resolveRound();
 
-      expect(pieceCode(resolution.position.board, 'd14')).toBe('wQ');
+      expect(pieceCode(resolution.position.board, 'd15')).toBe('wQ');
       expect(
         resolution.events.find((event) => event.type === 'promoted'),
       ).toBeDefined();
@@ -468,11 +468,12 @@ describe('ShrinkingRoyaleEngine', () => {
   });
 
   describe('Core floor', () => {
-    it('stops burning once burnedRings reaches the single-square core', () => {
+    it('stops burning once burnedRings reaches the final core', () => {
       expect(roundsUntilBurn(30, MAX_BURNED_RINGS)).toBeNull();
 
-      // At MAX_BURNED_RINGS only h8 is intact — both kings are fully boxed
-      // in by void (same fixture as the stuck-pass tests above).
+      // At MAX_BURNED_RINGS the black king at a1 is still deep in void
+      // territory on every side, so it's forced to pass regardless of the
+      // 2×2 core's contents.
       const board: Board = boardFrom({ h8: 'wK*', a1: 'bK*' }, SIZE);
       const position: GamePosition = {
         board,

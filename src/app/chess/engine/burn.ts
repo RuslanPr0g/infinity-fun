@@ -7,19 +7,25 @@
 
 import { Square, fileOf, rankOf, square } from './core/board';
 
-export const ROYALE_BOARD_SIZE = 15;
+/**
+ * 16 (not 15) so centering an 8×8 army — either the compact 'centered'
+ * Royale layout or the pre-void bot margin — splits the leftover margin
+ * evenly on both sides ((16-8)/2 = 4 exactly), instead of an odd 15-wide
+ * board's unavoidable 3-vs-4 lopsided margin.
+ */
+export const ROYALE_BOARD_SIZE = 16;
 
 /**
  * Plies from the previous burn (or the start of the game) until each
  * successive ring burns. Rounds are ply-based in alternating-turn Royale
  * (one entry here is two players' worth of "a move each"). The schedule
- * starts generous — a 15×15 opening needs room to develop — then tightens
+ * starts generous — a 16×16 opening needs room to develop — then tightens
  * stage by stage as the arena shrinks, so the endgame accelerates toward
- * the final single-square core instead of dragging at a constant pace.
+ * the final core instead of dragging at a constant pace.
  */
 export const BURN_SCHEDULE: readonly number[] = [24, 20, 16, 14, 12, 10, 8];
 
-/** Burning stops once a single central square remains (15 − 2·7 = 1). */
+/** Burning stops once a 2×2 central core remains (16 − 2·7 = 2). */
 export const MAX_BURNED_RINGS = BURN_SCHEDULE.length;
 
 /** Cumulative round number at which each successive ring burns. */
@@ -114,9 +120,9 @@ export function burnsAfterRound(
   return round === BURN_CUMULATIVE_ROUNDS[burnedRings - startBurnedRings];
 }
 
-/** Convenience for building the 15×15 royale start position's back rank. */
+/** Convenience for building the royale start position's back rank. */
 export function centeredBackRankFiles(size = ROYALE_BOARD_SIZE): number[] {
-  const start = Math.floor((size - 8) / 2); // files 3..10 on a 15-wide board
+  const start = Math.floor((size - 8) / 2); // files 4..11 on a 16-wide board
   return Array.from({ length: 8 }, (_, i) => start + i);
 }
 

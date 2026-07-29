@@ -19,7 +19,7 @@ export interface ModeSetup {
   /**
    * Shrinking Royale starting-army layout chosen on the hotseat setup
    * screen ('centered' 8×8 army or the full 'expanded' battlefield). The
-   * board itself is always 15×15 either way. Ignored for bot games — bots
+   * board itself is always 16×16 either way. Ignored for bot games — bots
    * always use the 'centered' layout.
    */
   readonly royaleArmyLayout?: RoyaleArmyLayout;
@@ -81,7 +81,7 @@ export const CHESS_MODES: ReadonlyArray<ChessModeDescriptor> = [
   {
     id: 'shrinking-royale',
     name: 'Shrinking Royale',
-    tagline: 'A 15×15 battlefield that burns away — outlast the fire.',
+    tagline: 'A 16×16 battlefield that burns away — outlast the fire.',
     rulesSummary: [
       'Plays like regular chess — alternating turns, one visible move at a time.',
       'No check or checkmate — capture the enemy king to win.',
@@ -96,10 +96,10 @@ export const CHESS_MODES: ReadonlyArray<ChessModeDescriptor> = [
       return new ShrinkingRoyaleEngine({
         spawnOffset: royaleSpawnOffset(setup, armyLayout),
         armyLayout,
-        // Bot-only: wall off the true 15×15 border so the bot's smaller
+        // Bot-only: wall off the true 16×16 border so the bot's smaller
         // effective search area can't be exploited by walking around the
         // back through the wide-open margin. Hotseat's 'centered' option
-        // stays a fully walkable 15×15 board, unchanged.
+        // stays a fully walkable 16×16 board, unchanged.
         preVoidMargin: isBot,
       });
     },

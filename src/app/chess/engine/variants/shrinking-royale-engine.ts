@@ -1,5 +1,5 @@
 /**
- * Shrinking Board Royale — regular alternating-turn chess on a 15×15
+ * Shrinking Board Royale — regular alternating-turn chess on a 16×16
  * battlefield that burns away from the outside in. On a schedule (see
  * `BURN_SCHEDULE` in `../burn` — generous at first, tightening stage by
  * stage) the outermost intact ring is destroyed, and any piece standing on
@@ -80,7 +80,7 @@ const DEFAULT_SPAWN_OFFSET = 2;
  * pawns spanning the full board width, spawnOffset rings in from the edge.
  * 'centered': a plain 32-piece standard-chess army, confined to the
  * centered 8×8 square in the middle of the battlefield (the board itself
- * is still the full 15×15 — only the starting army is compact).
+ * is still the full 16×16 — only the starting army is compact).
  */
 export type RoyaleArmyLayout = 'expanded' | 'centered';
 
@@ -93,9 +93,9 @@ export interface RoyaleSetup {
    * Bot-only hardening: permanently void the margin around a 'centered'
    * army from move one (instead of it being open, ordinary board that just
    * hasn't burned yet), so neither side can walk around the back of the
-   * compact 8×8 core through the wide-open 15×15 border. Defaults to
+   * compact 8×8 core through the wide-open 16×16 border. Defaults to
    * false — hotseat's 'centered' option stays exactly as it already is,
-   * a fully walkable 15×15 board that only starts shrinking over time.
+   * a fully walkable 16×16 board that only starts shrinking over time.
    */
   readonly preVoidMargin?: boolean;
 }
@@ -166,7 +166,7 @@ export function royaleInitialPosition(
 ): GamePosition {
   // preVoidMargin makes the margin around a 'centered' army void from move
   // one — not actually burned by the fire, just never in play — so neither
-  // side can walk around the back through the true 15×15 border. burnedRings
+  // side can walk around the back through the true 16×16 border. burnedRings
   // starts at that margin's width; startBurnedRings records it so the burn
   // schedule's timing still counts fresh from stage 0 (see
   // `roundsUntilBurn`/`burnsAfterRound`).

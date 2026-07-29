@@ -8,9 +8,9 @@ function move(from: string, to: string): MoveIntent {
   return { kind: 'move', from: parseSquare(from), to: parseSquare(to) };
 }
 
-/** Royale always plays on the 15×15 board (bot and hotseat alike). */
+/** Royale always plays on the 16×16 board (bot and hotseat alike). */
 function royaleMove(from: string, to: string): MoveIntent {
-  return { kind: 'move', from: parseSquare(from, 15), to: parseSquare(to, 15) };
+  return { kind: 'move', from: parseSquare(from, 16), to: parseSquare(to, 16) };
 }
 
 describe('ChessSessionService', () => {
@@ -216,8 +216,8 @@ describe('ChessSessionService', () => {
       expect(service.phase()).toBe('entry');
       expect(service.entryColor()).toBe('white');
 
-      // Bots always use the centered 8×8 army on the 15×15 board: white pawns start on file d-k, rank 5.
-      service.confirmIntent(royaleMove('d5', 'd6'));
+      // Bots always use the centered 8×8 army on the 16×16 board: white pawns start on file e-l, rank 6.
+      service.confirmIntent(royaleMove('e6', 'e7'));
       expect(service.phase()).toBe('reveal');
       const humanResolution = service.lastResolution();
       expect(humanResolution?.events.some((event) => event.color === 'white')).toBeTrue();

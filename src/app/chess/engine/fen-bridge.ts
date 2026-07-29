@@ -3,7 +3,7 @@
  * interface. Pure TypeScript — no Angular imports.
  *
  * Standard 8×8 boards are converted verbatim.
- * Royale 15×15 boards need to fit through Stockfish's 8×8 window somehow —
+ * Royale 16×16 boards need to fit through Stockfish's 8×8 window somehow —
  * two strategies, tried in order:
  *  1. Window crop: if both kings sit within any 8×8 square, crop that region
  *     1:1 (exact squares, no distortion) so Stockfish sees the actual local
@@ -54,7 +54,7 @@ const UCI_PROMO: Record<string, PromotionPiece> = {
 
 const FILES_8 = 'abcdefgh';
 
-/** Relative value used to resolve 15×15 → 8×8 projection collisions. */
+/** Relative value used to resolve 16×16 → 8×8 projection collisions. */
 const PIECE_VALUE: Record<PieceType, number> = {
   king: 100,
   queen: 9,
@@ -98,7 +98,7 @@ export function boardToFen(board: Board, sideToMove: PieceColor): string {
   return `${rows.join('/')} ${color} - - 0 1`;
 }
 
-// ─── 15×15 → 8×8 projection ──────────────────────────────────────────────────
+// ─── 16×16 → 8×8 projection ──────────────────────────────────────────────────
 
 interface Window {
   readonly fileOrigin: number;
@@ -160,7 +160,7 @@ function royaleBoardToWindow(board: Board, size: number, window: Window): Board 
 }
 
 /**
- * Project a Royale 15×15 board onto a virtual 8×8 grid by linearly scaling
+ * Project a Royale 16×16 board onto a virtual 8×8 grid by linearly scaling
  * each piece's file and rank from [0,14] → [0,7].
  *
  * When two pieces map to the same 8×8 square, we keep the higher-value piece
@@ -202,8 +202,8 @@ function projectCoord(coord: number, srcSize: number): number {
  * the board's own coordinate system.
  *
  * For standard 8×8 boards `boardSize` is 8 and the mapping is 1:1.
- * For Royale 15×15 boards the UCI square names come from the projected 8×8
- * grid, so we reverse-project them back to the nearest 15×15 square.
+ * For Royale 16×16 boards the UCI square names come from the projected 8×8
+ * grid, so we reverse-project them back to the nearest 16×16 square.
  *
  * Returns null on parse failure or if the from-square is empty.
  */
@@ -238,7 +238,7 @@ export function uciBestMoveToIntent(
  * own coordinate system.
  *
  * For 8×8 boards: direct algebraic mapping (a1 = 0, h8 = 63).
- * For 15×15 boards: mirrors whichever projection `boardToFen` used for this
+ * For 16×16 boards: mirrors whichever projection `boardToFen` used for this
  * same board — a window-crop offset if both kings fit an 8×8 window, or the
  * whole-board scale reversed (nearest integer) otherwise.
  */

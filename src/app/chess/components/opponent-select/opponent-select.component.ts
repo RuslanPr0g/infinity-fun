@@ -121,7 +121,7 @@ const BOT_META: Record<string, BotMeta> = {
             [class.active]="royaleArmyLayout() === 'expanded'"
             (click)="royaleArmyLayout.set('expanded')"
           >
-            15×15 expanded
+            16×16 expanded
           </button>
         </div>
       }

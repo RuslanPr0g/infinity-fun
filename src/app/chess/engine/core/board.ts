@@ -4,7 +4,7 @@
  * Squares are indices 0–(size*size-1): file = sq % size (0 = 'a'), rank =
  * floor(sq / size) (0 = rank 1, White's home rank). Boards are immutable
  * arrays of size*size cells. The classic 8×8 board remains the default
- * everywhere; larger boards (e.g. 15×15 Shrinking Board Royale) carry their
+ * everywhere; larger boards (e.g. 16×16 Shrinking Board Royale) carry their
  * size implicitly as board.length — see `boardSize`.
  */
 
@@ -35,7 +35,7 @@ export const SQUARE_COUNT = 64;
 /** Board dimension used when no explicit size is threaded through. */
 export const DEFAULT_BOARD_SIZE = 8;
 
-export const FILES = 'abcdefghijklmno';
+export const FILES = 'abcdefghijklmnop';
 
 /** Board dimension (N of an N×N board), derived from its cell count. */
 export function boardSize(board: Board): number {
@@ -68,7 +68,7 @@ export function isInside(
 
 /** 'e4' → square index. Throws on malformed input (test fixtures rely on it). */
 export function parseSquare(name: string, size = DEFAULT_BOARD_SIZE): Square {
-  const match = /^([a-o])(\d{1,2})$/.exec(name);
+  const match = /^([a-p])(\d{1,2})$/.exec(name);
   if (!match) {
     throw new Error(`Invalid square name: ${name}`);
   }
