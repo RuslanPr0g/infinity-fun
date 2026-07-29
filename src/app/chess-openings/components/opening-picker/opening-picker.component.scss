@@ -93,6 +93,7 @@
   border: 2px solid rgba(colors.$primary-text-color, 0.1);
   border-radius: 12px;
   position: relative;
+  overflow-x: visible;
 }
 
 .opening-item {
@@ -113,6 +114,7 @@
   transform: translateY(-50%);
   margin-left: 1rem;
   pointer-events: none;
+  z-index: 1000;
 
   @media (hover: hover) {
     display: flex;
