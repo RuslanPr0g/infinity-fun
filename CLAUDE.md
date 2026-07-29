@@ -48,6 +48,8 @@ Full detail — component/service/styling/testing/CI conventions and the step-by
 
 So: to deploy, include the next semver (check `git tag --list 'v*' | sort -V | tail -5` for the latest) somewhere in the commit message, e.g. `Add feature X (v4.10.0)`, then push directly to `master`.
 
+Bump rule: a **new game** is a MINOR bump (`vX.Y.0`, e.g. `v4.10.8` → `v4.11.0`), not a patch — even though it doesn't break anything, it's new user-facing functionality, not a fix. Reserve patch bumps (`vX.Y.Z`) for fixes/tweaks to existing games.
+
 ## Specs
 
 Feature specs live under `.claude/specs/`. Current: [`math-quiz-game`](.claude/specs/math-quiz-game/README.md) (requirements, design, tasks).
