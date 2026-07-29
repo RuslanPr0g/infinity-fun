@@ -10,6 +10,19 @@ import { OpeningPreviewComponent } from '../opening-preview/opening-preview.comp
 
 type Tab = 'popular' | 'search';
 
+/** A hovered opening plus the viewport coords its preview should render at. */
+interface PreviewAnchor {
+  readonly opening: Opening;
+  readonly top: number;
+  readonly left: number;
+}
+
+/** Must match the rendered size of app-opening-preview (see its SCSS). */
+const PREVIEW_WIDTH = 186;
+const PREVIEW_HEIGHT = 222;
+const PREVIEW_GAP = 12;
+const VIEWPORT_MARGIN = 8;
+
 /**
  * Practice-set picker: search across the full dataset or browse a curated
  * "Popular" shortlist, multi-select openings to practice, persisted so the
@@ -64,12 +77,12 @@ type Tab = 'popular' | 'search';
         }
       </div>
 
-      <ul class="opening-list">
+      <ul class="opening-list" (scroll)="hidePreview()">
         @for (opening of visibleOpenings(); track opening.id) {
           <li
             class="opening-item"
-            (mouseenter)="hoveredOpening.set(opening)"
-            (mouseleave)="hoveredOpening.set(null)"
+            (mouseenter)="showPreview(opening, $event)"
+            (mouseleave)="hidePreview()"
           >
             <label class="opening-row" [class.checked]="isSelected(opening.id)">
               <input
@@ -80,11 +93,6 @@ type Tab = 'popular' | 'search';
               <span class="eco">{{ opening.eco }}</span>
               <span class="name">{{ formatDisplayName(opening) }}</span>
             </label>
-            @if (hoveredOpening() === opening) {
-              <div class="preview-container">
-                <app-opening-preview [opening]="opening" />
-              </div>
-            }
           </li>
         } @empty {
           <li class="empty">
@@ -94,6 +102,18 @@ type Tab = 'popular' | 'search';
           </li>
         }
       </ul>
+
+      <!--
+        Rendered outside .opening-list on purpose: that list is a scroll
+        container, which clips both axes, so an absolutely positioned preview
+        inside it would be cut off. Fixed positioning against the hovered
+        row's viewport rect escapes the clip entirely.
+      -->
+      @if (preview(); as p) {
+        <div class="preview-container" [style.top.px]="p.top" [style.left.px]="p.left">
+          <app-opening-preview [opening]="p.opening" [name]="formatDisplayName(p.opening)" />
+        </div>
+      }
 
       <button
         type="button"
@@ -117,12 +137,42 @@ export class OpeningPickerComponent implements OnInit {
   readonly tab = signal<Tab>('popular');
   readonly searchTerm = signal('');
   readonly selectedIds = signal<Set<string>>(new Set());
-  readonly hoveredOpening = signal<Opening | null>(null);
+  readonly preview = signal<PreviewAnchor | null>(null);
 
   readonly visibleOpenings = computed<Opening[]>(() => {
     if (this.tab() === 'popular') return this.library.popular();
     return this.library.search(this.searchTerm()).slice(0, 100);
   });
+
+  /**
+   * Pointer-based preview is desktop-only for now: a tap on a touch screen
+   * still synthesises mouseenter, which would leave the box stuck on screen
+   * with no matching mouseleave.
+   */
+  private get isPointerDevice(): boolean {
+    return window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  }
+
+  showPreview(opening: Opening, event: MouseEvent): void {
+    if (!this.isPointerDevice) return;
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+
+    // Prefer the right of the row; flip left when that would overflow.
+    let left = rect.right + PREVIEW_GAP;
+    if (left + PREVIEW_WIDTH > window.innerWidth - VIEWPORT_MARGIN) {
+      left = rect.left - PREVIEW_WIDTH - PREVIEW_GAP;
+    }
+
+    const maxTop = window.innerHeight - PREVIEW_HEIGHT - VIEWPORT_MARGIN;
+    const centred = rect.top + rect.height / 2 - PREVIEW_HEIGHT / 2;
+    const top = Math.max(VIEWPORT_MARGIN, Math.min(centred, maxTop));
+
+    this.preview.set({ opening, left: Math.max(VIEWPORT_MARGIN, left), top });
+  }
+
+  hidePreview(): void {
+    this.preview.set(null);
+  }
 
   formatDisplayName(opening: Opening): string {
     return this.displayService.formatDisplayName(opening, this.library.openings());

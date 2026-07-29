@@ -92,33 +92,16 @@
   overflow-y: auto;
   border: 2px solid rgba(colors.$primary-text-color, 0.1);
   border-radius: 12px;
-  position: relative;
-  overflow-x: visible;
 }
 
-.opening-item {
-  position: relative;
-
-  @media (hover: hover) {
-    &:hover .preview-container {
-      display: flex;
-    }
-  }
-}
-
+// Anchored in JS to the hovered row's viewport rect, so it is free of the
+// scroll container's clipping. Never shown on touch — the component's
+// pointer check gates it before this ever renders.
 .preview-container {
-  display: none;
-  position: absolute;
-  left: 100%;
-  top: 50%;
-  transform: translateY(-50%);
-  margin-left: 1rem;
+  position: fixed;
+  display: flex;
   pointer-events: none;
   z-index: 1000;
-
-  @media (hover: hover) {
-    display: flex;
-  }
 }
 
 .opening-row {

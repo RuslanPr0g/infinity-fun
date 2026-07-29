@@ -1,5 +1,4 @@
-import { Component, Input, OnInit, computed, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Input, OnChanges, signal } from '@angular/core';
 import { Chess } from 'chess.js';
 import { Opening } from '../../models/opening.model';
 import { chessJsToBoard } from '../../board-adapter';
@@ -7,33 +6,50 @@ import { ChessBoardComponent } from '../../../chess/components/board/chess-board
 import { Board } from '../../../chess/engine/core/board';
 
 /**
- * Small board preview showing the position after an opening's moves.
- * Only displayed on hover on desktop via tooltip.
+ * Small, non-interactive board showing the position an opening reaches.
+ * Used as the desktop hover preview in the picker.
  */
 @Component({
   selector: 'app-opening-preview',
   standalone: true,
-  imports: [CommonModule, ChessBoardComponent],
+  imports: [ChessBoardComponent],
   template: `
     <div class="preview-popup">
-      <app-chess-board [board]="board()" [perspective]="'white'" />
-      <p class="moves-label">{{ opening.moves.length }} moves</p>
+      <div class="board-wrap">
+        <app-chess-board [board]="board()" perspective="white" />
+      </div>
+      <p class="preview-name">{{ name }}</p>
+      <p class="preview-moves">{{ movesLine() }}</p>
     </div>
   `,
   styleUrl: './opening-preview.component.scss',
 })
-export class OpeningPreviewComponent implements OnInit {
+export class OpeningPreviewComponent implements OnChanges {
   @Input({ required: true }) opening!: Opening;
+  /** Display name from the picker, already disambiguated by ECO where needed. */
+  @Input() name = '';
 
-  private readonly chess = signal<Chess>(new Chess());
-  readonly board = computed<Board>(() => chessJsToBoard(this.chess()));
+  readonly board = signal<Board>(chessJsToBoard(new Chess()));
+  readonly movesLine = signal('');
 
-  ngOnInit(): void {
-    if (!this.opening.moves || this.opening.moves.length === 0) return;
+  ngOnChanges(): void {
     const chess = new Chess();
-    for (const move of this.opening.moves) {
-      chess.move(move);
+    const played: string[] = [];
+
+    for (const san of this.opening.moves) {
+      try {
+        chess.move(san);
+        played.push(san);
+      } catch {
+        // Dataset SAN that chess.js rejects: show the position reached so far
+        // rather than letting one bad entry break the whole picker.
+        break;
+      }
     }
-    this.chess.set(chess);
+
+    this.board.set(chessJsToBoard(chess));
+    this.movesLine.set(
+      played.map((san, i) => (i % 2 === 0 ? `${i / 2 + 1}. ${san}` : san)).join(' '),
+    );
   }
 }
