@@ -1,7 +1,8 @@
 @use '../../../../colors' as colors;
 
-// Keep the rendered size in sync with PREVIEW_WIDTH / PREVIEW_HEIGHT in
-// opening-picker.component.ts — that's what positions this box on screen.
+// Keep this width in sync with PREVIEW_WIDTH in opening-picker.component.ts —
+// that's what decides which side of the row the box opens on. Height is free
+// to vary; the picker anchors to one viewport edge rather than assuming it.
 .preview-popup {
   box-sizing: border-box;
   width: 186px;

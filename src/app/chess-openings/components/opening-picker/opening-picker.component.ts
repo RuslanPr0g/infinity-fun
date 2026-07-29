@@ -13,13 +13,17 @@ type Tab = 'popular' | 'search';
 /** A hovered opening plus the viewport coords its preview should render at. */
 interface PreviewAnchor {
   readonly opening: Opening;
-  readonly top: number;
   readonly left: number;
+  /**
+   * Exactly one of these is set, the other null. Anchoring to a single edge
+   * lets the popup grow inward, which keeps it on screen at any height.
+   */
+  readonly top: number | null;
+  readonly bottom: number | null;
 }
 
-/** Must match the rendered size of app-opening-preview (see its SCSS). */
+/** Must match .preview-popup's width in opening-preview.component.scss. */
 const PREVIEW_WIDTH = 186;
-const PREVIEW_HEIGHT = 222;
 const PREVIEW_GAP = 12;
 const VIEWPORT_MARGIN = 8;
 
@@ -110,7 +114,12 @@ const VIEWPORT_MARGIN = 8;
         row's viewport rect escapes the clip entirely.
       -->
       @if (preview(); as p) {
-        <div class="preview-container" [style.top.px]="p.top" [style.left.px]="p.left">
+        <div
+          class="preview-container"
+          [style.left.px]="p.left"
+          [style.top.px]="p.top"
+          [style.bottom.px]="p.bottom"
+        >
           <app-opening-preview [opening]="p.opening" [name]="formatDisplayName(p.opening)" />
         </div>
       }
@@ -163,11 +172,19 @@ export class OpeningPickerComponent implements OnInit {
       left = rect.left - PREVIEW_WIDTH - PREVIEW_GAP;
     }
 
-    const maxTop = window.innerHeight - PREVIEW_HEIGHT - VIEWPORT_MARGIN;
-    const centred = rect.top + rect.height / 2 - PREVIEW_HEIGHT / 2;
-    const top = Math.max(VIEWPORT_MARGIN, Math.min(centred, maxTop));
+    // Height varies with the opening's name and move list, so centring on the
+    // row and clamping against an assumed height overflows the tall ones.
+    // Anchor to whichever edge the row is nearer and let it grow inward.
+    const inUpperHalf = rect.top + rect.height / 2 < window.innerHeight / 2;
 
-    this.preview.set({ opening, left: Math.max(VIEWPORT_MARGIN, left), top });
+    this.preview.set({
+      opening,
+      left: Math.max(VIEWPORT_MARGIN, left),
+      top: inUpperHalf ? Math.max(VIEWPORT_MARGIN, rect.top) : null,
+      bottom: inUpperHalf
+        ? null
+        : Math.max(VIEWPORT_MARGIN, window.innerHeight - rect.bottom),
+    });
   }
 
   hidePreview(): void {
