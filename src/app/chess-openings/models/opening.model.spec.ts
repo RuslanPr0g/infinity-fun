@@ -14,7 +14,18 @@ describe('Opening Model Utilities', () => {
       expect(getBaseOpeningName(opening)).toBe('Benoni Defense');
     });
 
-    it('should return full name when no colon', () => {
+    it('should extract base name before comma', () => {
+      const opening: Opening = {
+        id: 'a48-london-bd3',
+        eco: 'A48',
+        name: 'London System, with Bd3',
+        moves: [],
+      };
+
+      expect(getBaseOpeningName(opening)).toBe('London System');
+    });
+
+    it('should return full name when no colon or comma', () => {
       const opening: Opening = {
         id: 'a56-benoni',
         eco: 'A56',
@@ -35,6 +46,17 @@ describe('Opening Model Utilities', () => {
 
       expect(getBaseOpeningName(opening)).toBe('Opening Name');
     });
+
+    it('should use comma when it comes before colon', () => {
+      const opening: Opening = {
+        id: 'test',
+        eco: 'TEST',
+        name: 'Opening Name, Variation: Sub-variation',
+        moves: [],
+      };
+
+      expect(getBaseOpeningName(opening)).toBe('Opening Name');
+    });
   });
 
   describe('getVariationName', () => {
@@ -49,7 +71,18 @@ describe('Opening Model Utilities', () => {
       expect(getVariationName(opening)).toBe('Czech Benoni Defense');
     });
 
-    it('should return null when no colon', () => {
+    it('should extract variation after comma', () => {
+      const opening: Opening = {
+        id: 'a48-london-bd3',
+        eco: 'A48',
+        name: 'London System, with Bd3',
+        moves: [],
+      };
+
+      expect(getVariationName(opening)).toBe('with Bd3');
+    });
+
+    it('should return null when no colon or comma', () => {
       const opening: Opening = {
         id: 'a56-benoni',
         eco: 'A56',
@@ -69,6 +102,17 @@ describe('Opening Model Utilities', () => {
       };
 
       expect(getVariationName(opening)).toBe('Variation with spaces');
+    });
+
+    it('should use comma when it comes before colon', () => {
+      const opening: Opening = {
+        id: 'test',
+        eco: 'TEST',
+        name: 'Opening Name, Variation: Sub-variation',
+        moves: [],
+      };
+
+      expect(getVariationName(opening)).toBe('Variation: Sub-variation');
     });
   });
 
