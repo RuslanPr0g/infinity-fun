@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { LocalStorageConst } from '../../../core/constants/local-storage.const';
 import { LocalStorageService } from '../../../shared/services/local-storage/local-storage.service';
 import { Opening } from '../../models/opening.model';
+import { OpeningDisplayService } from '../../services/opening-display.service';
 import { OpeningLibraryService } from '../../services/opening-library.service';
 
 type Tab = 'popular' | 'search';
@@ -72,7 +73,7 @@ type Tab = 'popular' | 'search';
                 (change)="toggle(opening.id)"
               />
               <span class="eco">{{ opening.eco }}</span>
-              <span class="name">{{ opening.name }}</span>
+              <span class="name">{{ formatDisplayName(opening) }}</span>
             </label>
           </li>
         } @empty {
@@ -99,6 +100,7 @@ type Tab = 'popular' | 'search';
 export class OpeningPickerComponent implements OnInit {
   readonly library = inject(OpeningLibraryService);
   private readonly localStorage = inject(LocalStorageService);
+  private readonly displayService = inject(OpeningDisplayService);
 
   @Output() start = new EventEmitter<Opening[]>();
 
@@ -110,6 +112,10 @@ export class OpeningPickerComponent implements OnInit {
     if (this.tab() === 'popular') return this.library.popular();
     return this.library.search(this.searchTerm()).slice(0, 100);
   });
+
+  formatDisplayName(opening: Opening): string {
+    return this.displayService.formatDisplayName(opening, this.library.openings());
+  }
 
   async ngOnInit(): Promise<void> {
     await this.library.ensureLoaded();
