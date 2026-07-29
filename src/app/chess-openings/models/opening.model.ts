@@ -7,17 +7,41 @@ export interface Opening {
   readonly moves: ReadonlyArray<string>;
 }
 
-/** Extract the base opening name (before the first colon). */
+/** Extract the base opening name (before the first colon or comma). */
 export function getBaseOpeningName(opening: Opening): string {
   const colonIndex = opening.name.indexOf(':');
-  return colonIndex >= 0 ? opening.name.substring(0, colonIndex) : opening.name;
+  const commaIndex = opening.name.indexOf(',');
+
+  // Find the earliest separator (colon or comma)
+  let splitIndex = -1;
+  if (colonIndex >= 0 && commaIndex >= 0) {
+    splitIndex = Math.min(colonIndex, commaIndex);
+  } else if (colonIndex >= 0) {
+    splitIndex = colonIndex;
+  } else if (commaIndex >= 0) {
+    splitIndex = commaIndex;
+  }
+
+  return splitIndex >= 0 ? opening.name.substring(0, splitIndex) : opening.name;
 }
 
-/** Extract the variation part (after the first colon), or ECO code if no variation. */
+/** Extract the variation part (after the first colon or comma). */
 export function getVariationName(opening: Opening): string | null {
   const colonIndex = opening.name.indexOf(':');
-  if (colonIndex >= 0) {
-    return opening.name.substring(colonIndex + 1).trim();
+  const commaIndex = opening.name.indexOf(',');
+
+  // Find the earliest separator (colon or comma)
+  let splitIndex = -1;
+  if (colonIndex >= 0 && commaIndex >= 0) {
+    splitIndex = Math.min(colonIndex, commaIndex);
+  } else if (colonIndex >= 0) {
+    splitIndex = colonIndex;
+  } else if (commaIndex >= 0) {
+    splitIndex = commaIndex;
+  }
+
+  if (splitIndex >= 0) {
+    return opening.name.substring(splitIndex + 1).trim();
   }
   return null;
 }
