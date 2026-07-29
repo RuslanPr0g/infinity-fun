@@ -94,6 +94,16 @@
   border-radius: 12px;
 }
 
+// Anchored in JS to the hovered row's viewport rect, so it is free of the
+// scroll container's clipping. Never shown on touch — the component's
+// pointer check gates it before this ever renders.
+.preview-container {
+  position: fixed;
+  display: flex;
+  pointer-events: none;
+  z-index: 1000;
+}
+
 .opening-row {
   display: flex;
   align-items: center;
