@@ -1,17 +1,23 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, inject, signal } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Chess } from 'chess.js';
+import { ChessBoardComponent } from '../../../chess/components/board/chess-board.component';
+import { ChessPieceComponent } from '../../../chess/components/piece/chess-piece.component';
+import { Board } from '../../../chess/engine/core/board';
 import { Opening } from '../../models/opening.model';
 import { OpeningQuizService } from '../../services/opening-quiz.service';
+import { chessJsToBoard } from '../../board-adapter';
 
 /**
  * "Name it" screen: reveals an opening's moves (a few at a time) and lets
  * the user search/pick its name from a typeahead scoped to the practice set.
+ * Shows the opening on a visual board with step-by-step animation.
  */
 @Component({
   selector: 'app-opening-quiz-board',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ChessBoardComponent, ChessPieceComponent],
   template: `
     @if (quiz.finished()) {
       <div class="summary">
@@ -31,6 +37,16 @@ import { OpeningQuizService } from '../../services/opening-quiz.service';
 
         <p class="hint">What opening is this?</p>
 
+        <div class="board-wrap">
+          <app-chess-board
+            [board]="currentBoard()"
+            perspective="white"
+            [selectedSquare]="null"
+            [targetSquares]="[]"
+            (squareTapped)="noop()"
+          />
+        </div>
+
         <div class="move-log">
           @for (san of quiz.revealedMoves(); track $index) {
             <span class="move-token">
@@ -43,7 +59,7 @@ import { OpeningQuizService } from '../../services/opening-quiz.service';
         </div>
 
         @if (quiz.canRevealMore() && quiz.lastResult() === null) {
-          <button type="button" class="reveal-button" (click)="quiz.revealNextMove()">
+          <button type="button" class="reveal-button" (click)="onRevealNextMove()">
             Reveal next move
           </button>
         }
@@ -96,6 +112,15 @@ export class OpeningQuizBoardComponent implements OnInit, OnDestroy {
   readonly quiz = inject(OpeningQuizService);
   readonly searchTerm = signal('');
 
+  readonly currentBoard = computed<Board>(() => {
+    const moves = this.quiz.revealedMoves();
+    const chess = new Chess();
+    for (const san of moves) {
+      chess.move(san);
+    }
+    return chessJsToBoard(chess);
+  });
+
   ngOnInit(): void {
     this.quiz.start(this.openings);
   }
@@ -112,8 +137,16 @@ export class OpeningQuizBoardComponent implements OnInit, OnDestroy {
     this.quiz.submitGuess(openingId);
   }
 
+  onRevealNextMove(): void {
+    this.quiz.revealNextMove();
+  }
+
   onNext(): void {
     this.searchTerm.set('');
     this.quiz.next();
+  }
+
+  noop(): void {
+    // Board is read-only during quiz — no interaction allowed.
   }
 }
