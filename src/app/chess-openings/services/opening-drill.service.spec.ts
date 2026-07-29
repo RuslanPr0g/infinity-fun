@@ -2,13 +2,20 @@ import { TestBed } from '@angular/core/testing';
 import { parseSquare } from '../../chess/engine/core/board';
 import { StockfishService } from '../../chess/services/stockfish.service';
 import { Opening } from '../models/opening.model';
-import { OpeningDrillService } from './opening-drill.service';
+import { OpeningDrillService, playableColorFor } from './opening-drill.service';
 
 const ITALIAN: Opening = {
   id: 'c50-italian-game',
   eco: 'C50',
   name: 'Italian Game',
   moves: ['e4', 'e5', 'Nf3', 'Nc6', 'Bc4'],
+};
+
+const AMAR_OPENING: Opening = {
+  id: 'a00-amar-opening',
+  eco: 'A00',
+  name: 'Amar Opening',
+  moves: ['Nh3'],
 };
 
 describe('OpeningDrillService', () => {
@@ -108,5 +115,38 @@ describe('OpeningDrillService', () => {
     expect(service.currentOpening).toBeNull();
     expect(service.moveHistory()).toEqual([]);
     expect(service.phase()).toBe('book');
+  });
+
+  it('resets turnColor to white on start(), even if the previous session ended mid-line', async () => {
+    // End a session on White's move (Nf3), leaving turnColor at 'black'.
+    service.start(ITALIAN, 'white', 'predefined');
+    await service.playHumanMove(parseSquare('e2'), parseSquare('e4'));
+    expect(service.turnColor()).toBe('white');
+
+    // Starting a fresh opening as White must not inherit stale turn state.
+    service.start(ITALIAN, 'white', 'predefined');
+
+    expect(service.turnColor()).toBe('white');
+    expect(service.isHumanTurn).toBe(true);
+  });
+
+  it('playableColorFor keeps the preferred color when both sides have book moves', () => {
+    expect(playableColorFor(ITALIAN, 'white')).toBe('white');
+    expect(playableColorFor(ITALIAN, 'black')).toBe('black');
+  });
+
+  it('playableColorFor overrides to the only side with a book move', () => {
+    expect(playableColorFor(AMAR_OPENING, 'white')).toBe('white');
+    expect(playableColorFor(AMAR_OPENING, 'black')).toBe('white');
+  });
+
+  it('start() overrides a one-sided opening so the human always has a move to make', () => {
+    service.start(AMAR_OPENING, 'black', 'predefined');
+
+    // Only White has a book move here, so the human plays White instead.
+    expect(service.humanColorInUse()).toBe('white');
+    expect(service.turnColor()).toBe('white');
+    expect(service.isHumanTurn).toBe(true);
+    expect(stockfish.getBestMove).not.toHaveBeenCalled();
   });
 });

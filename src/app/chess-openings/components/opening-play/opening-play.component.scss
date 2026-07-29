@@ -40,6 +40,15 @@
   margin: 0.25rem 0 0;
 }
 
+.side-note {
+  text-align: center;
+  font-size: 0.72rem;
+  color: colors.$color-opening-trainer;
+  opacity: 0.85;
+  margin: 0 0 0.5rem;
+  text-transform: capitalize;
+}
+
 .opening-eco {
   text-align: center;
   font-size: 0.72rem;

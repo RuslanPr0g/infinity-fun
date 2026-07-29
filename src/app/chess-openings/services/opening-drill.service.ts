@@ -35,6 +35,20 @@ const PROMOTION_TO_CHESS_JS: Record<PromotionPiece, string> = {
 };
 
 /**
+ * Some openings (typically 1-move ones, e.g. "Amar Opening": just `Nh3`) only
+ * have book moves for one color — the other side never gets a turn within
+ * the known line. Picking that side would leave the human stuck with
+ * nothing to play, so we override the preference for just that opening and
+ * hand the human whichever color actually has a move.
+ */
+export function playableColorFor(opening: Opening, preferred: PieceColor): PieceColor {
+  const preferredHasBookMove = opening.moves.some(
+    (_, index) => (index % 2 === 0 ? 'white' : 'black') === preferred,
+  );
+  return preferredHasBookMove ? preferred : preferred === 'white' ? 'black' : 'white';
+}
+
+/**
  * Drives one "Play it" drill session: wraps a chess.js instance, tracks
  * progress through the opening's known line, detects deviation, plays the
  * bot's replies (predefined from the dataset, or free via StockfishService),
@@ -49,6 +63,8 @@ export class OpeningDrillService {
   readonly turnColor = signal<PieceColor>('white');
   readonly moveHistory = signal<string[]>([]);
   readonly thinking = signal(false);
+  /** The color actually assigned to the human this session — see playableColorFor(). */
+  readonly humanColorInUse = signal<PieceColor>('white');
 
   private chess = new Chess();
   private opening: Opening | null = null;
@@ -65,14 +81,17 @@ export class OpeningDrillService {
     return this.turnColor() === this.humanColor && this.phase() !== 'game-over';
   }
 
-  start(opening: Opening, humanColor: PieceColor, botReplyMode: BotReplyMode): void {
+  start(opening: Opening, preferredHumanColor: PieceColor, botReplyMode: BotReplyMode): void {
+    const humanColor = playableColorFor(opening, preferredHumanColor);
     this.opening = opening;
     this.humanColor = humanColor;
+    this.humanColorInUse.set(humanColor);
     this.botReplyMode = botReplyMode;
     this.bookIndex = 0;
     this.chess = new Chess();
     this.moveHistory.set([]);
     this.phase.set('book');
+    this.turnColor.set('white');
     this.syncBoard();
 
     if (humanColor === 'black') {
@@ -131,6 +150,8 @@ export class OpeningDrillService {
     this.bookIndex = 0;
     this.moveHistory.set([]);
     this.phase.set('book');
+    this.turnColor.set('white');
+    this.humanColorInUse.set('white');
     this.syncBoard();
   }
 

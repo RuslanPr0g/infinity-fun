@@ -30,11 +30,17 @@ import { PlayConfig } from '../drill-mode-select/drill-mode-select.component';
 
         <h2 class="opening-name">{{ currentOpening()?.name }}</h2>
         <p class="opening-eco">{{ currentOpening()?.eco }}</p>
+        @if (sideOverridden()) {
+          <p class="side-note">
+            This opening only has book moves for {{ drill.humanColorInUse() }} — you're playing
+            {{ drill.humanColorInUse() }} this time.
+          </p>
+        }
 
         <div class="board-wrap">
           <app-chess-board
             [board]="drill.board()"
-            [perspective]="playConfig.humanColor"
+            [perspective]="drill.humanColorInUse()"
             [selectedSquare]="selectedSquare()"
             [targetSquares]="targetSquares()"
             (squareTapped)="onSquareTapped($event)"
@@ -91,6 +97,7 @@ export class OpeningPlayComponent implements OnInit, OnDestroy {
 
   readonly currentOpening = computed<Opening | null>(() => this.openings[this.currentIndex()] ?? null);
   readonly isLastOpening = computed(() => this.currentIndex() >= this.openings.length - 1);
+  readonly sideOverridden = computed(() => this.drill.humanColorInUse() !== this.playConfig.humanColor);
 
   readonly targetSquares = computed<Square[]>(() => {
     const from = this.selectedSquare();
@@ -136,7 +143,7 @@ export class OpeningPlayComponent implements OnInit, OnDestroy {
     const board = this.drill.board();
 
     const piece = board[sq];
-    if (piece && piece.color === this.playConfig.humanColor) {
+    if (piece && piece.color === this.drill.humanColorInUse()) {
       this.selectedSquare.set(this.selectedSquare() === sq ? null : sq);
       return;
     }
