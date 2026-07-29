@@ -8,6 +8,16 @@ export class GameRouteService {
   // Please, make sure that the colors are matching the color scheme here: _colors.scss
   private games: GameRoute[] = [
     {
+      name: 'Unusual Chess',
+      route: '/chess',
+      color: '#14B8A6',
+    },
+    {
+      name: 'Opening Trainer',
+      route: '/chess-openings',
+      color: '#A855F7',
+    },
+    {
       name: 'Sea Battle Matrix',
       route: '/seabattle',
       color: '#0EA5E9',
@@ -56,16 +66,6 @@ export class GameRouteService {
       name: 'Math Quiz',
       route: '/math-quiz',
       color: '#f97316',
-    },
-    {
-      name: 'Unusual Chess',
-      route: '/chess',
-      color: '#14B8A6',
-    },
-    {
-      name: 'Opening Trainer',
-      route: '/chess-openings',
-      color: '#A855F7',
     },
     {
       name: 'Algorithms Graph',
