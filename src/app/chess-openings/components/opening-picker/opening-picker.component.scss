@@ -92,6 +92,31 @@
   overflow-y: auto;
   border: 2px solid rgba(colors.$primary-text-color, 0.1);
   border-radius: 12px;
+  position: relative;
+}
+
+.opening-item {
+  position: relative;
+
+  @media (hover: hover) {
+    &:hover .preview-container {
+      display: flex;
+    }
+  }
+}
+
+.preview-container {
+  display: none;
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 1rem;
+  pointer-events: none;
+
+  @media (hover: hover) {
+    display: flex;
+  }
 }
 
 .opening-row {

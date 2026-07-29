@@ -6,6 +6,7 @@ import { LocalStorageService } from '../../../shared/services/local-storage/loca
 import { Opening } from '../../models/opening.model';
 import { OpeningDisplayService } from '../../services/opening-display.service';
 import { OpeningLibraryService } from '../../services/opening-library.service';
+import { OpeningPreviewComponent } from '../opening-preview/opening-preview.component';
 
 type Tab = 'popular' | 'search';
 
@@ -19,7 +20,7 @@ type Tab = 'popular' | 'search';
 @Component({
   selector: 'app-opening-picker',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, OpeningPreviewComponent],
   template: `
     <div class="picker">
       <h1 class="title">Opening Trainer</h1>
@@ -65,7 +66,11 @@ type Tab = 'popular' | 'search';
 
       <ul class="opening-list">
         @for (opening of visibleOpenings(); track opening.id) {
-          <li>
+          <li
+            class="opening-item"
+            (mouseenter)="hoveredOpening.set(opening)"
+            (mouseleave)="hoveredOpening.set(null)"
+          >
             <label class="opening-row" [class.checked]="isSelected(opening.id)">
               <input
                 type="checkbox"
@@ -75,6 +80,11 @@ type Tab = 'popular' | 'search';
               <span class="eco">{{ opening.eco }}</span>
               <span class="name">{{ formatDisplayName(opening) }}</span>
             </label>
+            @if (hoveredOpening() === opening) {
+              <div class="preview-container">
+                <app-opening-preview [opening]="opening" />
+              </div>
+            }
           </li>
         } @empty {
           <li class="empty">
@@ -107,6 +117,7 @@ export class OpeningPickerComponent implements OnInit {
   readonly tab = signal<Tab>('popular');
   readonly searchTerm = signal('');
   readonly selectedIds = signal<Set<string>>(new Set());
+  readonly hoveredOpening = signal<Opening | null>(null);
 
   readonly visibleOpenings = computed<Opening[]>(() => {
     if (this.tab() === 'popular') return this.library.popular();
