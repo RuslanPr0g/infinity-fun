@@ -63,6 +63,11 @@ export class GameRouteService {
       color: '#14B8A6',
     },
     {
+      name: 'Opening Trainer',
+      route: '/chess-openings',
+      color: '#A855F7',
+    },
+    {
       name: 'Algorithms Graph',
       route: 'https://ruslanpr0g.github.io/algo-graph/',
       color: '#6B7280',

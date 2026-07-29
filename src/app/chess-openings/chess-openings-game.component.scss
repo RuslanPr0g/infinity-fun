@@ -1,0 +1,11 @@
+@use '../../colors' as colors;
+
+.chess-openings-container {
+  min-height: 100%;
+  color: colors.$primary-text-color;
+
+  button {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+}

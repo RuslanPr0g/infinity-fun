@@ -1,0 +1,128 @@
+@use '../../../../_colors' as colors;
+
+.mode-select {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 2rem;
+  color: colors.$primary-text-color;
+}
+
+.heading {
+  text-align: center;
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0 0 1.5rem;
+  opacity: 0.9;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.tab {
+  flex: 1;
+  padding: 0.7rem 0.75rem;
+  border: 2px solid rgba(colors.$primary-text-color, 0.12);
+  border-radius: 10px;
+  background: rgba(colors.$primary-text-color, 0.04);
+  color: colors.$primary-text-color;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+
+  &.active {
+    border-color: colors.$color-opening-trainer;
+    background: rgba(colors.$color-opening-trainer, 0.12);
+    color: colors.$color-opening-trainer;
+  }
+}
+
+.hint {
+  font-size: 0.85rem;
+  opacity: 0.65;
+  text-align: center;
+  margin: 0 0 1.25rem;
+  line-height: 1.5;
+}
+
+.option-group {
+  margin-bottom: 1.25rem;
+}
+
+.option-label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(colors.$primary-text-color, 0.4);
+  margin-bottom: 0.5rem;
+}
+
+.option-row {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.option-button {
+  flex: 1;
+  padding: 0.65rem 0.5rem;
+  border: 2px solid rgba(colors.$primary-text-color, 0.15);
+  border-radius: 10px;
+  background: rgba(colors.$primary-text-color, 0.04);
+  color: colors.$primary-text-color;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+
+  &.active {
+    border-color: colors.$color-opening-trainer;
+    background: rgba(colors.$color-opening-trainer, 0.1);
+    color: colors.$color-opening-trainer;
+  }
+}
+
+.option-desc {
+  font-size: 0.75rem;
+  opacity: 0.55;
+  margin: 0.5rem 0 0;
+  line-height: 1.4;
+}
+
+.start-button {
+  width: 100%;
+  padding: 0.9rem;
+  border: none;
+  border-radius: 10px;
+  background: colors.$color-opening-trainer;
+  color: #1c0a2e;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 0.25rem;
+  transition: opacity 0.15s, transform 0.1s;
+
+  &:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+}
+
+.back-button {
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  background: transparent;
+  color: colors.$primary-text-color;
+  opacity: 0.6;
+  font-size: 0.82rem;
+  cursor: pointer;
+  margin-top: 1rem;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}

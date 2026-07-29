@@ -4,4 +4,6 @@ export class LocalStorageConst {
   public static CountryGuesserCountry: string = 'CountryGuesserCountry';
 
   public static ColorGuessMaxScore: string = 'ColorGuessMaxScore';
+
+  public static OpeningTrainerPracticeSet: string = 'OpeningTrainerPracticeSet';
 }

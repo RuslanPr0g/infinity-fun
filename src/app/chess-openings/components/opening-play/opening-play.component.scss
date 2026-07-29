@@ -1,0 +1,146 @@
+@use '../../../../_colors' as colors;
+
+.play {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 1rem 1rem 2rem;
+  color: colors.$primary-text-color;
+}
+
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.progress {
+  font-size: 0.75rem;
+  opacity: 0.55;
+  font-weight: 600;
+}
+
+.exit-button {
+  border: none;
+  background: transparent;
+  color: colors.$primary-text-color;
+  opacity: 0.6;
+  font-size: 0.8rem;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+.opening-name {
+  text-align: center;
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0.25rem 0 0;
+}
+
+.opening-eco {
+  text-align: center;
+  font-size: 0.72rem;
+  opacity: 0.5;
+  margin: 0.15rem 0 0.85rem;
+}
+
+.board-wrap {
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.status-line {
+  text-align: center;
+  font-size: 0.85rem;
+  opacity: 0.7;
+  margin: 0.85rem 0 0.5rem;
+  min-height: 1.2em;
+}
+
+.move-log {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.5rem;
+  justify-content: center;
+  font-size: 0.78rem;
+  opacity: 0.6;
+  padding: 0.5rem;
+}
+
+.move-token {
+  padding: 0.1rem 0.4rem;
+  border-radius: 6px;
+  background: rgba(colors.$primary-text-color, 0.06);
+}
+
+// ── Prompt overlay ────────────────────────────────────────────────────────────
+
+.prompt-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 1.5rem;
+  z-index: 20;
+}
+
+.prompt-card {
+  max-width: 380px;
+  width: 100%;
+  background: colors.$primary-bg-color;
+  border: 2px solid rgba(colors.$color-opening-trainer, 0.4);
+  border-radius: 16px;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+.prompt-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+}
+
+.prompt-desc {
+  font-size: 0.85rem;
+  opacity: 0.7;
+  line-height: 1.5;
+  margin: 0 0 1.25rem;
+}
+
+.prompt-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.prompt-button {
+  padding: 0.8rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: opacity 0.15s, transform 0.1s;
+
+  &:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+
+  &.continue {
+    background: colors.$color-opening-trainer;
+    color: #1c0a2e;
+  }
+
+  &.next {
+    background: transparent;
+    border-color: rgba(colors.$primary-text-color, 0.2);
+    color: colors.$primary-text-color;
+  }
+}

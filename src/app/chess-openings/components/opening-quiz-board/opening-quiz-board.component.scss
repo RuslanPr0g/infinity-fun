@@ -1,0 +1,203 @@
+@use '../../../../_colors' as colors;
+
+.quiz,
+.summary {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 1rem 1rem 2rem;
+  color: colors.$primary-text-color;
+}
+
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.progress,
+.score {
+  font-size: 0.75rem;
+  opacity: 0.55;
+  font-weight: 600;
+}
+
+.exit-button {
+  border: none;
+  background: transparent;
+  color: colors.$primary-text-color;
+  opacity: 0.6;
+  font-size: 0.8rem;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+.hint {
+  text-align: center;
+  font-size: 0.85rem;
+  opacity: 0.6;
+  margin: 0 0 1rem;
+}
+
+.move-log {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.6rem;
+  justify-content: center;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border: 2px solid rgba(colors.$primary-text-color, 0.1);
+  border-radius: 12px;
+  min-height: 2.4rem;
+}
+
+.move-token {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.move-number {
+  opacity: 0.4;
+  margin-right: 0.15rem;
+}
+
+.reveal-button {
+  display: block;
+  width: 100%;
+  padding: 0.6rem;
+  margin-bottom: 1rem;
+  border: 2px dashed rgba(colors.$color-opening-trainer, 0.4);
+  border-radius: 10px;
+  background: transparent;
+  color: colors.$color-opening-trainer;
+  font-size: 0.82rem;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(colors.$color-opening-trainer, 0.08);
+  }
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid rgba(colors.$primary-text-color, 0.12);
+  border-radius: 10px;
+  background: rgba(colors.$primary-text-color, 0.04);
+  color: colors.$primary-text-color;
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+  box-sizing: border-box;
+
+  &:focus {
+    outline: none;
+    border-color: colors.$color-opening-trainer;
+  }
+}
+
+.candidate-list {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+}
+
+.candidate-button {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.6rem 0.85rem;
+  margin-bottom: 0.4rem;
+  border: 2px solid rgba(colors.$primary-text-color, 0.1);
+  border-radius: 10px;
+  background: rgba(colors.$primary-text-color, 0.03);
+  color: colors.$primary-text-color;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+
+  &:hover {
+    border-color: colors.$color-opening-trainer;
+    background: rgba(colors.$color-opening-trainer, 0.08);
+  }
+
+  .eco {
+    font-size: 0.7rem;
+    font-weight: 700;
+    opacity: 0.5;
+  }
+
+  .name {
+    font-size: 0.85rem;
+  }
+}
+
+.skip-button {
+  display: block;
+  width: 100%;
+  padding: 0.7rem;
+  border: none;
+  background: transparent;
+  color: colors.$primary-text-color;
+  opacity: 0.55;
+  font-size: 0.82rem;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.85;
+  }
+}
+
+.feedback {
+  text-align: center;
+  padding: 1rem;
+  border-radius: 12px;
+  background: rgba(#ef4444, 0.1);
+  margin-bottom: 1rem;
+
+  &.correct {
+    background: rgba(colors.$color-opening-trainer, 0.12);
+  }
+}
+
+.feedback-line {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.next-button {
+  width: 100%;
+  padding: 0.85rem;
+  border: none;
+  border-radius: 10px;
+  background: colors.$color-opening-trainer;
+  color: #1c0a2e;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+.summary {
+  text-align: center;
+  padding-top: 3rem;
+}
+
+.summary-title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  margin: 0 0 0.5rem;
+}
+
+.summary-score {
+  font-size: 1.1rem;
+  opacity: 0.75;
+  margin: 0 0 1.5rem;
+}

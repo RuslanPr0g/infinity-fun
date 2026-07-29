@@ -11,6 +11,7 @@ import { PeriodicGameComponent } from './periodic/periodic-game.component';
 import { DateCountdownComponent } from './date-countdown/date-countdown.component';
 import { MathQuizGameComponent } from './math-quiz/math-quiz-game.component';
 import { ChessGameComponent } from './chess/chess-game.component';
+import { ChessOpeningsGameComponent } from './chess-openings/chess-openings-game.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -26,5 +27,6 @@ export const routes: Routes = [
   { path: 'date-countdown', component: DateCountdownComponent },
   { path: 'math-quiz', component: MathQuizGameComponent },
   { path: 'chess', component: ChessGameComponent },
+  { path: 'chess-openings', component: ChessOpeningsGameComponent },
   { path: '**', redirectTo: '' },
 ];
