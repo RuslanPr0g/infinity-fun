@@ -14,8 +14,8 @@ describe('OpeningDisplayService', () => {
     expect(service).toBeTruthy();
   });
 
-  describe('formatDisplayName', () => {
-    it('should display name with variation when variation exists', () => {
+  describe('describe', () => {
+    it('should split family from its named variation', () => {
       const opening: Opening = {
         id: 'a56-benoni-czech',
         eco: 'A56',
@@ -23,78 +23,90 @@ describe('OpeningDisplayService', () => {
         moves: [],
       };
 
-      const result = service.formatDisplayName(opening, [opening]);
-
-      expect(result).toBe('Benoni Defense: Czech Benoni Defense');
+      expect(service.describe(opening, [opening])).toEqual({
+        title: 'Benoni Defense',
+        variation: 'Czech Benoni Defense',
+        moveLine: null,
+      });
     });
 
-    it('should display base name when no variation and no duplicates', () => {
+    it('should keep a comma-subdivided variation whole', () => {
       const opening: Opening = {
-        id: 'e4-kings-pawn',
-        eco: 'E4',
-        name: 'Kings Pawn Opening',
+        id: 'b35-accelerated-dragon',
+        eco: 'B35',
+        name: 'Sicilian Defense: Accelerated Dragon, Maróczy Bind, Breyer Variation',
         moves: [],
       };
 
-      const result = service.formatDisplayName(opening, [opening]);
+      const result = service.describe(opening, [opening]);
 
-      expect(result).toBe('Kings Pawn Opening');
+      expect(result.title).toBe('Sicilian Defense');
+      expect(result.variation).toBe('Accelerated Dragon, Maróczy Bind, Breyer Variation');
     });
 
-    it('should append ECO code when multiple openings have same base name', () => {
-      const opening1: Opening = {
-        id: 'a56-benoni',
-        eco: 'A56',
-        name: 'Benoni Defense',
-        moves: ['d4', 'Nf6', 'c4', 'c5'],
-      };
-      const opening2: Opening = {
-        id: 'a61-benoni',
-        eco: 'A61',
-        name: 'Benoni Defense',
-        moves: ['d4', 'Nf6', 'c4', 'e6'],
-      };
-
-      const allOpenings = [opening1, opening2];
-
-      const result1 = service.formatDisplayName(opening1, allOpenings);
-      const result2 = service.formatDisplayName(opening2, allOpenings);
-
-      expect(result1).toBe('Benoni Defense: A56');
-      expect(result2).toBe('Benoni Defense: A61');
-    });
-
-    it('should handle mixed cases with and without variations', () => {
-      const baseOpening1: Opening = {
-        id: 'a56-benoni',
-        eco: 'A56',
-        name: 'Benoni Defense',
-        moves: ['d4', 'Nf6', 'c4', 'c5'],
-      };
-      const baseOpening2: Opening = {
-        id: 'a61-benoni',
-        eco: 'A61',
-        name: 'Benoni Defense',
-        moves: ['d4', 'Nf6', 'c4', 'e6'],
-      };
-      const variationOpening: Opening = {
-        id: 'a56-benoni-czech',
-        eco: 'A56',
-        name: 'Benoni Defense: Czech Benoni Defense',
+    it('should report no variation for a bare family name', () => {
+      const opening: Opening = {
+        id: 'c20-kings-pawn',
+        eco: 'C20',
+        name: "King's Pawn Game",
         moves: [],
       };
 
-      const allOpenings = [baseOpening1, baseOpening2, variationOpening];
+      expect(service.describe(opening, [opening])).toEqual({
+        title: "King's Pawn Game",
+        variation: null,
+        moveLine: null,
+      });
+    });
+  });
 
-      const result1 = service.formatDisplayName(baseOpening1, allOpenings);
-      const result2 = service.formatDisplayName(baseOpening2, allOpenings);
-      const result3 = service.formatDisplayName(variationOpening, allOpenings);
+  describe('disambiguating identical dataset names', () => {
+    // The real case from the dataset: three A48 rows all named "London System",
+    // the same line recorded at increasing depth.
+    const london1: Opening = {
+      id: 'a48-london-system',
+      eco: 'A48',
+      name: 'London System',
+      moves: ['d4', 'Nf6', 'Nf3', 'g6', 'Bf4'],
+    };
+    const london2: Opening = {
+      id: 'a48-london-system-2',
+      eco: 'A48',
+      name: 'London System',
+      moves: ['d4', 'Nf6', 'Nf3', 'g6', 'Bf4', 'Bg7', 'e3'],
+    };
+    const unique: Opening = {
+      id: 'a45-indian',
+      eco: 'A45',
+      name: 'Indian Defense',
+      moves: ['d4', 'Nf6'],
+    };
+    const all = [london1, london2, unique];
 
-      // Base names get ECO codes appended since there are duplicates
-      expect(result1).toBe('Benoni Defense: A56');
-      expect(result2).toBe('Benoni Defense: A61');
-      // Variations are displayed as-is
-      expect(result3).toBe('Benoni Defense: Czech Benoni Defense');
+    it('should distinguish same-named openings by move line, not ECO code', () => {
+      const first = service.formatDisplayName(london1, all);
+      const second = service.formatDisplayName(london2, all);
+
+      expect(first).not.toBe(second);
+      expect(first).toBe('London System (1.d4 Nf6 2.Nf3 g6 3.Bf4)');
+      expect(second).toBe('London System (1.d4 Nf6 2.Nf3 g6 3.Bf4 Bg7 4.e3)');
+    });
+
+    it('should never fall back to the ECO code, which is already its own column', () => {
+      for (const opening of all) {
+        expect(service.formatDisplayName(opening, all)).not.toContain(opening.eco);
+      }
+    });
+
+    it('should leave unambiguous openings without a move line', () => {
+      expect(service.describe(unique, all).moveLine).toBeNull();
+      expect(service.formatDisplayName(unique, all)).toBe('Indian Defense');
+    });
+
+    it('should give every entry of a same-named group a distinct label', () => {
+      const labels = new Set(all.map((o) => service.formatDisplayName(o, all)));
+
+      expect(labels.size).toBe(all.length);
     });
   });
 });

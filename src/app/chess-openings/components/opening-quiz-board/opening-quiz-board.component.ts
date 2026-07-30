@@ -6,8 +6,16 @@ import { ChessBoardComponent } from '../../../chess/components/board/chess-board
 import { ChessPieceComponent } from '../../../chess/components/piece/chess-piece.component';
 import { Board } from '../../../chess/engine/core/board';
 import { Opening } from '../../models/opening.model';
+import { OpeningDisplay, OpeningDisplayService } from '../../services/opening-display.service';
+import { OpeningLibraryService } from '../../services/opening-library.service';
 import { OpeningQuizService } from '../../services/opening-quiz.service';
 import { chessJsToBoard } from '../../board-adapter';
+
+/** A candidate answer plus its precomputed display parts. */
+interface CandidateRow {
+  readonly opening: Opening;
+  readonly display: OpeningDisplay;
+}
 
 /**
  * "Name it" screen: reveals an opening's moves (a few at a time) and lets
@@ -73,11 +81,19 @@ import { chessJsToBoard } from '../../board-adapter';
             (ngModelChange)="searchTerm.set($event)"
           />
           <ul class="candidate-list">
-            @for (candidate of candidates(); track candidate.id) {
+            @for (row of candidateRows(); track row.opening.id) {
               <li>
-                <button type="button" class="candidate-button" (click)="guess(candidate.id)">
-                  <span class="eco">{{ candidate.eco }}</span>
-                  <span class="name">{{ candidate.name }}</span>
+                <button type="button" class="candidate-button" (click)="guess(row.opening.id)">
+                  <span class="eco">{{ row.opening.eco }}</span>
+                  <span class="name-block">
+                    <span class="name">{{ row.display.title }}</span>
+                    @if (row.display.variation) {
+                      <span class="variation">{{ row.display.variation }}</span>
+                    }
+                    @if (row.display.moveLine) {
+                      <span class="move-line">{{ row.display.moveLine }}</span>
+                    }
+                  </span>
                 </button>
               </li>
             }
@@ -88,13 +104,13 @@ import { chessJsToBoard } from '../../board-adapter';
           <div class="feedback" [class.correct]="quiz.lastResult() === 'correct'">
             @switch (quiz.lastResult()) {
               @case ('correct') {
-                <p class="feedback-line">✅ Correct — {{ quiz.current()?.name }}</p>
+                <p class="feedback-line">✅ Correct — {{ currentName() }}</p>
               }
               @case ('incorrect') {
-                <p class="feedback-line">❌ It was {{ quiz.current()?.name }}</p>
+                <p class="feedback-line">❌ It was {{ currentName() }}</p>
               }
               @case ('skipped') {
-                <p class="feedback-line">⏭ Skipped — it was {{ quiz.current()?.name }}</p>
+                <p class="feedback-line">⏭ Skipped — it was {{ currentName() }}</p>
               }
             }
           </div>
@@ -110,6 +126,8 @@ export class OpeningQuizBoardComponent implements OnInit, OnDestroy {
   @Output() exit = new EventEmitter<void>();
 
   readonly quiz = inject(OpeningQuizService);
+  private readonly library = inject(OpeningLibraryService);
+  private readonly displayService = inject(OpeningDisplayService);
   readonly searchTerm = signal('');
 
   readonly currentBoard = computed<Board>(() => {
@@ -131,6 +149,21 @@ export class OpeningQuizBoardComponent implements OnInit, OnDestroy {
 
   candidates(): Opening[] {
     return this.quiz.searchCandidates(this.searchTerm()).slice(0, 8);
+  }
+
+  candidateRows(): CandidateRow[] {
+    const all = this.library.openings();
+    return this.candidates().map((opening) => ({
+      opening,
+      display: this.displayService.describe(opening, all),
+    }));
+  }
+
+  /** Full name of the current opening, disambiguated when the dataset repeats it. */
+  currentName(): string {
+    const current = this.quiz.current();
+    if (!current) return '';
+    return this.displayService.formatDisplayName(current, this.library.openings());
   }
 
   guess(openingId: string): void {
