@@ -4,11 +4,17 @@ import { FormsModule } from '@angular/forms';
 import { LocalStorageConst } from '../../../core/constants/local-storage.const';
 import { LocalStorageService } from '../../../shared/services/local-storage/local-storage.service';
 import { Opening } from '../../models/opening.model';
-import { OpeningDisplayService } from '../../services/opening-display.service';
+import { OpeningDisplay, OpeningDisplayService } from '../../services/opening-display.service';
 import { OpeningLibraryService } from '../../services/opening-library.service';
 import { OpeningPreviewComponent } from '../opening-preview/opening-preview.component';
 
 type Tab = 'popular' | 'search';
+
+/** A visible list row: the opening plus its precomputed display parts. */
+interface OpeningRow {
+  readonly opening: Opening;
+  readonly display: OpeningDisplay;
+}
 
 /** A hovered opening plus the viewport coords its preview should render at. */
 interface PreviewAnchor {
@@ -82,20 +88,28 @@ const VIEWPORT_MARGIN = 8;
       </div>
 
       <ul class="opening-list" (scroll)="hidePreview()">
-        @for (opening of visibleOpenings(); track opening.id) {
+        @for (row of visibleRows(); track row.opening.id) {
           <li
             class="opening-item"
-            (mouseenter)="showPreview(opening, $event)"
+            (mouseenter)="showPreview(row.opening, $event)"
             (mouseleave)="hidePreview()"
           >
-            <label class="opening-row" [class.checked]="isSelected(opening.id)">
+            <label class="opening-row" [class.checked]="isSelected(row.opening.id)">
               <input
                 type="checkbox"
-                [checked]="isSelected(opening.id)"
-                (change)="toggle(opening.id)"
+                [checked]="isSelected(row.opening.id)"
+                (change)="toggle(row.opening.id)"
               />
-              <span class="eco">{{ opening.eco }}</span>
-              <span class="name">{{ formatDisplayName(opening) }}</span>
+              <span class="eco">{{ row.opening.eco }}</span>
+              <span class="name-block">
+                <span class="name">{{ row.display.title }}</span>
+                @if (row.display.variation) {
+                  <span class="variation">{{ row.display.variation }}</span>
+                }
+                @if (row.display.moveLine) {
+                  <span class="move-line">{{ row.display.moveLine }}</span>
+                }
+              </span>
             </label>
           </li>
         } @empty {
@@ -151,6 +165,15 @@ export class OpeningPickerComponent implements OnInit {
   readonly visibleOpenings = computed<Opening[]>(() => {
     if (this.tab() === 'popular') return this.library.popular();
     return this.library.search(this.searchTerm()).slice(0, 100);
+  });
+
+  /** Visible openings with their display parts resolved once per change. */
+  readonly visibleRows = computed<OpeningRow[]>(() => {
+    const all = this.library.openings();
+    return this.visibleOpenings().map((opening) => ({
+      opening,
+      display: this.displayService.describe(opening, all),
+    }));
   });
 
   /**

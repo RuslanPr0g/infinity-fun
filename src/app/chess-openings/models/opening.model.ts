@@ -7,50 +7,51 @@ export interface Opening {
   readonly moves: ReadonlyArray<string>;
 }
 
-/** Extract the base opening name (before the first colon or comma). */
-export function getBaseOpeningName(opening: Opening): string {
-  const colonIndex = opening.name.indexOf(':');
-  const commaIndex = opening.name.indexOf(',');
-
-  // Find the earliest separator (colon or comma)
-  let splitIndex = -1;
-  if (colonIndex >= 0 && commaIndex >= 0) {
-    splitIndex = Math.min(colonIndex, commaIndex);
-  } else if (colonIndex >= 0) {
-    splitIndex = colonIndex;
-  } else if (commaIndex >= 0) {
-    splitIndex = commaIndex;
-  }
-
-  return splitIndex >= 0 ? opening.name.substring(0, splitIndex) : opening.name;
+/**
+ * The colon is the family/variation boundary in the dataset
+ * ("Sicilian Defense: Najdorf Variation"). Commas subdivide *within* a
+ * variation ("Accelerated Dragon, Maróczy Bind, Breyer Variation"), so they
+ * are deliberately not treated as a boundary — splitting on them would throw
+ * away the more specific half of the real variation name.
+ */
+function splitName(name: string): { base: string; variation: string | null } {
+  const colonIndex = name.indexOf(':');
+  if (colonIndex < 0) return { base: name, variation: null };
+  return {
+    base: name.substring(0, colonIndex).trim(),
+    variation: name.substring(colonIndex + 1).trim() || null,
+  };
 }
 
-/** Extract the variation part (after the first colon or comma). */
+/** Extract the base opening name (the family, before the first colon). */
+export function getBaseOpeningName(opening: Opening): string {
+  return splitName(opening.name).base;
+}
+
+/** Extract the named variation (after the first colon), or null if there is none. */
 export function getVariationName(opening: Opening): string | null {
-  const colonIndex = opening.name.indexOf(':');
-  const commaIndex = opening.name.indexOf(',');
-
-  // Find the earliest separator (colon or comma)
-  let splitIndex = -1;
-  if (colonIndex >= 0 && commaIndex >= 0) {
-    splitIndex = Math.min(colonIndex, commaIndex);
-  } else if (colonIndex >= 0) {
-    splitIndex = colonIndex;
-  } else if (commaIndex >= 0) {
-    splitIndex = commaIndex;
-  }
-
-  if (splitIndex >= 0) {
-    return opening.name.substring(splitIndex + 1).trim();
-  }
-  return null;
+  return splitName(opening.name).variation;
 }
 
 /** Format opening as "Name" or "Name: Variation" for display. */
 export function formatOpeningName(opening: Opening): string {
-  const variation = getVariationName(opening);
-  if (variation) {
-    return `${getBaseOpeningName(opening)}: ${variation}`;
+  const { base, variation } = splitName(opening.name);
+  return variation ? `${base}: ${variation}` : base;
+}
+
+/**
+ * Render SAN tokens as a numbered move line, e.g. "1.d4 Nf6 2.Nf3 g6 3.Bf4".
+ * Used to tell apart entries the dataset gives identical names to — they are
+ * usually the same line recorded at different depths.
+ */
+export function formatMoveLine(moves: ReadonlyArray<string>): string {
+  let line = '';
+  for (let i = 0; i < moves.length; i++) {
+    if (i % 2 === 0) {
+      line += `${i === 0 ? '' : ' '}${i / 2 + 1}.${moves[i]}`;
+    } else {
+      line += ` ${moves[i]}`;
+    }
   }
-  return opening.name;
+  return line;
 }

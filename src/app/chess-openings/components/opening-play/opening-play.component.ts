@@ -5,7 +5,9 @@ import { ChessPieceComponent } from '../../../chess/components/piece/chess-piece
 import { StockfishLoaderComponent } from '../../../chess/components/stockfish-loader/stockfish-loader.component';
 import { Square } from '../../../chess/engine/core/board';
 import { Opening } from '../../models/opening.model';
+import { OpeningDisplay, OpeningDisplayService } from '../../services/opening-display.service';
 import { OpeningDrillService } from '../../services/opening-drill.service';
+import { OpeningLibraryService } from '../../services/opening-library.service';
 import { PlayConfig } from '../drill-mode-select/drill-mode-select.component';
 
 /**
@@ -28,7 +30,10 @@ import { PlayConfig } from '../drill-mode-select/drill-mode-select.component';
           <button type="button" class="exit-button" (click)="exit.emit()">Exit</button>
         </div>
 
-        <h2 class="opening-name">{{ currentOpening()?.name }}</h2>
+        <h2 class="opening-name">{{ currentDisplay()?.title }}</h2>
+        @if (currentDisplay()?.variation) {
+          <p class="opening-variation">{{ currentDisplay()?.variation }}</p>
+        }
         <p class="opening-eco">{{ currentOpening()?.eco }}</p>
         @if (sideOverridden()) {
           <p class="side-note">
@@ -90,12 +95,20 @@ export class OpeningPlayComponent implements OnInit, OnDestroy {
   @Output() exit = new EventEmitter<void>();
 
   readonly drill = inject(OpeningDrillService);
+  private readonly library = inject(OpeningLibraryService);
+  private readonly displayService = inject(OpeningDisplayService);
 
   readonly showLoader = signal(true);
   readonly currentIndex = signal(0);
   readonly selectedSquare = signal<Square | null>(null);
 
   readonly currentOpening = computed<Opening | null>(() => this.openings[this.currentIndex()] ?? null);
+
+  readonly currentDisplay = computed<OpeningDisplay | null>(() => {
+    const opening = this.currentOpening();
+    return opening ? this.displayService.describe(opening, this.library.openings()) : null;
+  });
+
   readonly isLastOpening = computed(() => this.currentIndex() >= this.openings.length - 1);
   readonly sideOverridden = computed(() => this.drill.humanColorInUse() !== this.playConfig.humanColor);
 

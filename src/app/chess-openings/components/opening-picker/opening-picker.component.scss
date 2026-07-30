@@ -137,8 +137,26 @@
   flex-shrink: 0;
 }
 
+.name-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
 .name {
   font-size: 0.88rem;
+}
+
+.variation {
+  font-size: 0.76rem;
+  opacity: 0.72;
+}
+
+// Only rendered for entries the dataset names identically to another one.
+.move-line {
+  font-size: 0.68rem;
+  opacity: 0.45;
 }
 
 .empty {
