@@ -101,6 +101,15 @@ const VIEWPORT_MARGIN = 8;
                 (change)="toggle(row.opening.id)"
               />
               <span class="eco">{{ row.opening.eco }}</span>
+              <span
+                class="side"
+                [class.black]="row.display.side === 'black'"
+                [attr.aria-label]="
+                  row.display.side === 'white' ? 'White opening' : 'Black opening'
+                "
+                [title]="row.display.side === 'white' ? 'White opening' : 'Black opening'"
+                >{{ row.display.side === 'white' ? 'W' : 'B' }}</span
+              >
               <span class="name-block">
                 <span class="name">{{ row.display.title }}</span>
                 @if (row.display.variation) {

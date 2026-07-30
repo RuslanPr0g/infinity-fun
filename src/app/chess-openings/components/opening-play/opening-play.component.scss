@@ -20,7 +20,8 @@
   font-weight: 600;
 }
 
-.exit-button {
+.exit-button,
+.flip-button {
   border: none;
   background: transparent;
   color: colors.$primary-text-color;
@@ -31,6 +32,12 @@
   &:hover {
     opacity: 0.9;
   }
+}
+
+.flip-button {
+  color: colors.$color-opening-trainer;
+  font-size: 0.72rem;
+  text-decoration: underline;
 }
 
 .opening-name {
@@ -46,7 +53,6 @@
   color: colors.$color-opening-trainer;
   opacity: 0.85;
   margin: 0 0 0.5rem;
-  text-transform: capitalize;
 }
 
 .opening-variation {

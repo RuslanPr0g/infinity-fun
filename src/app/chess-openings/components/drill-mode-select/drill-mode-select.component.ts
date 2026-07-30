@@ -1,16 +1,17 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
-import { PieceColor } from '../../../chess/engine/core/board';
 import { BotReplyMode } from '../../services/opening-drill.service';
 
 export interface PlayConfig {
-  humanColor: PieceColor;
   botReplyMode: BotReplyMode;
 }
 
 /**
  * Choose between the two drill modes for the current practice set: "Play
- * it" (with side + bot-reply-style options) or "Name it".
+ * it" (with the bot-reply-style option) or "Name it".
+ *
+ * There is deliberately no side picker: an opening belongs to one side, so
+ * the play screen derives it per opening (see openingSide()).
  */
 @Component({
   selector: 'app-drill-mode-select',
@@ -42,29 +43,10 @@ export interface PlayConfig {
       </div>
 
       @if (tab() === 'play') {
-        <p class="hint">Play the opening out on the board against a bot.</p>
-
-        <div class="option-group">
-          <span class="option-label">Play as</span>
-          <div class="option-row">
-            <button
-              type="button"
-              class="option-button"
-              [class.active]="humanColor() === 'white'"
-              (click)="humanColor.set('white')"
-            >
-              ♙ White
-            </button>
-            <button
-              type="button"
-              class="option-button"
-              [class.active]="humanColor() === 'black'"
-              (click)="humanColor.set('black')"
-            >
-              ♟ Black
-            </button>
-          </div>
-        </div>
+        <p class="hint">
+          Play the opening out on the board against a bot. You'll play whichever side the
+          opening belongs to.
+        </p>
 
         <div class="option-group">
           <span class="option-label">Opponent replies</span>
@@ -120,10 +102,9 @@ export class DrillModeSelectComponent {
   @Output() back = new EventEmitter<void>();
 
   readonly tab = signal<'play' | 'quiz'>('play');
-  readonly humanColor = signal<PieceColor>('white');
   readonly botReplyMode = signal<BotReplyMode>('predefined');
 
   startPlay(): void {
-    this.playChosen.emit({ humanColor: this.humanColor(), botReplyMode: this.botReplyMode() });
+    this.playChosen.emit({ botReplyMode: this.botReplyMode() });
   }
 }
