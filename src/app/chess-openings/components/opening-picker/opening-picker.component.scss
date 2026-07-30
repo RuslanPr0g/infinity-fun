@@ -7,15 +7,19 @@
   color: colors.$primary-text-color;
 }
 
-.title {
+.title,
+.subtitle,
+.empty {
   text-align: center;
+}
+
+.title {
   font-size: 1.5rem;
   font-weight: 800;
   margin: 0 0 0.35rem;
 }
 
 .subtitle {
-  text-align: center;
   font-size: 0.9rem;
   opacity: 0.65;
   margin: 0 0 1.5rem;
@@ -27,13 +31,18 @@
   margin-bottom: 1rem;
 }
 
-.tab {
-  flex: 1;
-  padding: 0.6rem 0.75rem;
+// Shared box styling for the two framed controls above the list.
+.tab,
+.search-input {
   border: 2px solid rgba(colors.$primary-text-color, 0.12);
   border-radius: 10px;
   background: rgba(colors.$primary-text-color, 0.04);
   color: colors.$primary-text-color;
+}
+
+.tab {
+  flex: 1;
+  padding: 0.6rem 0.75rem;
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
@@ -49,10 +58,6 @@
 .search-input {
   width: 100%;
   padding: 0.75rem 1rem;
-  border: 2px solid rgba(colors.$primary-text-color, 0.12);
-  border-radius: 10px;
-  background: rgba(colors.$primary-text-color, 0.04);
-  color: colors.$primary-text-color;
   font-size: 0.9rem;
   margin-bottom: 1rem;
   box-sizing: border-box;
@@ -70,8 +75,12 @@
   margin-bottom: 0.6rem;
 }
 
-.selected-count {
+.selected-count,
+.clear-button {
   font-size: 0.78rem;
+}
+
+.selected-count {
   opacity: 0.6;
 }
 
@@ -79,7 +88,6 @@
   border: none;
   background: transparent;
   color: colors.$color-opening-trainer;
-  font-size: 0.78rem;
   cursor: pointer;
   padding: 0;
 }
@@ -137,6 +145,24 @@
   flex-shrink: 0;
 }
 
+// Which side's repertoire the line is. A lettered pill, not a chess glyph:
+// ♙ and ♟ are near-indistinguishable at this size on a dark background, and
+// a bare letter would read as part of the ECO code next to it.
+.side {
+  flex-shrink: 0;
+  padding: 0.1rem 0.28rem;
+  border-radius: 4px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  background: colors.$primary-text-color;
+  color: colors.$primary-bg-color;
+
+  &.black {
+    background: rgba(colors.$primary-text-color, 0.2);
+    color: colors.$primary-text-color;
+  }
+}
+
 .name-block {
   display: flex;
   flex-direction: column;
@@ -161,7 +187,6 @@
 
 .empty {
   padding: 1.5rem 1rem;
-  text-align: center;
   font-size: 0.85rem;
   opacity: 0.5;
 }

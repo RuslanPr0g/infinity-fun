@@ -1,4 +1,6 @@
 import { Injectable } from '@angular/core';
+import { PieceColor } from '../../chess/engine/core/board';
+import { openingSide } from '../models/opening-side';
 import {
   Opening,
   formatMoveLine,
@@ -15,6 +17,8 @@ export interface OpeningDisplay {
   readonly variation: string | null;
   /** Set only for entries the dataset names identically to another entry. */
   readonly moveLine: string | null;
+  /** Which side's repertoire this line belongs to. */
+  readonly side: PieceColor;
 }
 
 /**
@@ -45,6 +49,7 @@ export class OpeningDisplayService {
       title,
       variation,
       moveLine: ambiguous ? formatMoveLine(opening.moves) : null,
+      side: openingSide(opening),
     };
   }
 

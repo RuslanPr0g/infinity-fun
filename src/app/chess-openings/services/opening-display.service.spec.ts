@@ -27,6 +27,7 @@ describe('OpeningDisplayService', () => {
         title: 'Benoni Defense',
         variation: 'Czech Benoni Defense',
         moveLine: null,
+        side: 'black',
       });
     });
 
@@ -56,6 +57,7 @@ describe('OpeningDisplayService', () => {
         title: "King's Pawn Game",
         variation: null,
         moveLine: null,
+        side: 'white',
       });
     });
   });
@@ -96,6 +98,16 @@ describe('OpeningDisplayService', () => {
       for (const opening of all) {
         expect(service.formatDisplayName(opening, all)).not.toContain(opening.eco);
       }
+    });
+
+    it("should carry each opening's side through describe()", () => {
+      expect(service.describe(london1, all).side).toBe('white');
+      expect(
+        service.describe(
+          { id: 'b20', eco: 'B20', name: 'Sicilian Defense', moves: ['e4', 'c5'] },
+          all,
+        ).side,
+      ).toBe('black');
     });
 
     it('should leave unambiguous openings without a move line', () => {

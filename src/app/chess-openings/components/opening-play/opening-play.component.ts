@@ -3,7 +3,8 @@ import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, computed, in
 import { ChessBoardComponent } from '../../../chess/components/board/chess-board.component';
 import { ChessPieceComponent } from '../../../chess/components/piece/chess-piece.component';
 import { StockfishLoaderComponent } from '../../../chess/components/stockfish-loader/stockfish-loader.component';
-import { Square } from '../../../chess/engine/core/board';
+import { PieceColor, Square, opponentOf } from '../../../chess/engine/core/board';
+import { hasBookMoveFor, openingSide } from '../../models/opening-side';
 import { Opening } from '../../models/opening.model';
 import { OpeningDisplay, OpeningDisplayService } from '../../services/opening-display.service';
 import { OpeningDrillService } from '../../services/opening-drill.service';
@@ -35,12 +36,17 @@ import { PlayConfig } from '../drill-mode-select/drill-mode-select.component';
           <p class="opening-variation">{{ currentDisplay()?.variation }}</p>
         }
         <p class="opening-eco">{{ currentOpening()?.eco }}</p>
-        @if (sideOverridden()) {
-          <p class="side-note">
+        <p class="side-note">
+          @if (sideForced()) {
             This opening only has book moves for {{ drill.humanColorInUse() }} — you're playing
-            {{ drill.humanColorInUse() }} this time.
-          </p>
-        }
+            {{ drill.humanColorInUse() | titlecase }}.
+          } @else {
+            Playing as {{ drill.humanColorInUse() | titlecase }}
+            <button type="button" class="flip-button" (click)="onFlipSide()">
+              ⇄ Play the other side
+            </button>
+          }
+        </p>
 
         <div class="board-wrap">
           <app-chess-board
@@ -102,6 +108,13 @@ export class OpeningPlayComponent implements OnInit, OnDestroy {
   readonly currentIndex = signal(0);
   readonly selectedSquare = signal<Square | null>(null);
 
+  /**
+   * Set only when the user asks to play the side the opening isn't about
+   * (e.g. facing the Sicilian as White). Cleared on every opening change, so
+   * each one starts on its own side.
+   */
+  readonly sideOverride = signal<PieceColor | null>(null);
+
   readonly currentOpening = computed<Opening | null>(() => this.openings[this.currentIndex()] ?? null);
 
   readonly currentDisplay = computed<OpeningDisplay | null>(() => {
@@ -110,7 +123,17 @@ export class OpeningPlayComponent implements OnInit, OnDestroy {
   });
 
   readonly isLastOpening = computed(() => this.currentIndex() >= this.openings.length - 1);
-  readonly sideOverridden = computed(() => this.drill.humanColorInUse() !== this.playConfig.humanColor);
+
+  /**
+   * True when the drill had to hand the user a side they did not choose —
+   * a one-sided opening where the other colour never gets a book move. The
+   * flip control is hidden in that case, since flipping would be undone.
+   */
+  readonly sideForced = computed(() => {
+    const opening = this.currentOpening();
+    if (!opening) return false;
+    return !hasBookMoveFor(opening, opponentOf(this.drill.humanColorInUse()));
+  });
 
   readonly targetSquares = computed<Square[]>(() => {
     const from = this.selectedSquare();
@@ -181,6 +204,13 @@ export class OpeningPlayComponent implements OnInit, OnDestroy {
       return;
     }
     this.currentIndex.update((i) => i + 1);
+    this.sideOverride.set(null);
+    this.startOpening();
+  }
+
+  /** Restart the current opening from the other side. */
+  onFlipSide(): void {
+    this.sideOverride.set(opponentOf(this.drill.humanColorInUse()));
     this.startOpening();
   }
 
@@ -215,6 +245,7 @@ export class OpeningPlayComponent implements OnInit, OnDestroy {
     const opening = this.currentOpening();
     if (!opening) return;
     this.selectedSquare.set(null);
-    this.drill.start(opening, this.playConfig.humanColor, this.playConfig.botReplyMode);
+    const side = this.sideOverride() ?? openingSide(opening);
+    this.drill.start(opening, side, this.playConfig.botReplyMode);
   }
 }
