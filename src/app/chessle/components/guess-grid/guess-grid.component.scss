@@ -3,7 +3,7 @@
 .guess-grid {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.3rem;
   list-style: none;
   margin: 0 0 1rem;
   padding: 0;
@@ -31,7 +31,10 @@
 
   &.empty {
     justify-content: center;
-    opacity: 0.35;
+    padding: 0.2rem 0.85rem;
+    min-height: 0;
+    border-width: 1px;
+    opacity: 0.3;
   }
 }
 
@@ -47,5 +50,5 @@
 }
 
 .placeholder {
-  font-size: 0.75rem;
+  font-size: 0.65rem;
 }

@@ -14,7 +14,6 @@ import { RulesOverlayComponent } from './components/rules-overlay/rules-overlay.
 import { ChessleStats, INITIAL_CHESSLE_STATS } from './models/chessle.models';
 import { ChessleEngineService } from './services/chessle-engine.service';
 import { ChessleStatsService } from './services/chessle-stats.service';
-import { dayNumber } from './services/daily-selection.util';
 import { DailyPuzzleService } from './services/daily-puzzle.service';
 
 type Mode = 'daily' | 'free';
@@ -85,10 +84,8 @@ type Mode = 'daily' | 'free';
               [targetOpening]="target"
               [targetName]="targetName()"
               [mode]="mode()"
-              [guesses]="engine.guesses()"
               [stats]="stats()"
               [countdownText]="countdownText()"
-              [puzzleNumber]="puzzleNumber()"
               (playAgain)="startRandomRound()"
               (playFreeMode)="enterFree()"
             />
@@ -199,10 +196,6 @@ export class ChessleGameComponent implements OnInit, OnDestroy {
     const target = this.engine.target();
     if (!target) return '';
     return this.displayService.formatDisplayName(target, this.library.openings());
-  }
-
-  puzzleNumber(): number {
-    return this.dateKey ? dayNumber(this.dateKey) + 1 : 0;
   }
 
   countdownText(): string {
