@@ -1,13 +1,17 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Opening } from '../../../chess-openings/models/opening.model';
+import { Opening, getBaseOpeningName } from '../../../chess-openings/models/opening.model';
 
 /**
  * Free-text-feel guess entry: type to filter the pool, click a candidate to
  * guess it. Not raw free text (too punishing for exact naming/spelling) and
  * not multiple-choice (trivializes it) — mirrors the opening-picker/
  * opening-quiz-board typeahead pattern.
+ *
+ * Families already guessed are filtered out: guesses are matched at the
+ * family level, so re-picking one can only ever burn a try on a known-wrong
+ * answer.
  */
 @Component({
   selector: 'app-guess-input',
@@ -40,6 +44,8 @@ import { Opening } from '../../../chess-openings/models/opening.model';
 })
 export class GuessInputComponent {
   @Input({ required: true }) pool: Opening[] = [];
+  /** Family names already guessed this round — never offered again. */
+  @Input() guessedFamilies: ReadonlyArray<string> = [];
   @Output() guess = new EventEmitter<Opening>();
 
   readonly searchTerm = signal('');
@@ -47,7 +53,14 @@ export class GuessInputComponent {
   candidates(): Opening[] {
     const term = this.searchTerm().trim().toLowerCase();
     if (!term) return [];
-    return this.pool.filter((opening) => opening.name.toLowerCase().includes(term)).slice(0, 8);
+    const alreadyGuessed = new Set(this.guessedFamilies);
+    return this.pool
+      .filter(
+        (opening) =>
+          opening.name.toLowerCase().includes(term) &&
+          !alreadyGuessed.has(getBaseOpeningName(opening)),
+      )
+      .slice(0, 8);
   }
 
   select(opening: Opening): void {

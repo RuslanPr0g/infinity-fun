@@ -75,7 +75,11 @@ type Mode = 'daily' | 'free';
         <app-chessle-board [revealedMoves]="engine.revealedMoves()" />
 
         @if (engine.status() === 'in-progress') {
-          <app-guess-input [pool]="pool()" (guess)="onGuess($event)" />
+          <app-guess-input
+            [pool]="pool()"
+            [guessedFamilies]="guessedFamilies()"
+            (guess)="onGuess($event)"
+          />
           <p class="remaining">{{ engine.guessesRemaining() }} guesses left</p>
         } @else {
           @if (engine.target(); as target) {
@@ -196,6 +200,10 @@ export class ChessleGameComponent implements OnInit, OnDestroy {
     const target = this.engine.target();
     if (!target) return '';
     return this.displayService.formatDisplayName(target, this.library.openings());
+  }
+
+  guessedFamilies(): string[] {
+    return this.engine.guesses().map((guess) => guess.guessedFamily);
   }
 
   countdownText(): string {
