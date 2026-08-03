@@ -1,6 +1,33 @@
 @use '../../../../colors' as colors;
 
-.guess-grid {
+.pips {
+  display: flex;
+  justify-content: center;
+  gap: 0.35rem;
+  margin-bottom: 0.6rem;
+}
+
+.pip {
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 3px;
+  border: 2px solid rgba(colors.$primary-text-color, 0.2);
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+
+  &.wrong {
+    border-color: transparent;
+    background: rgba(#ef4444, 0.7);
+  }
+
+  &.correct {
+    border-color: transparent;
+    background: colors.$color-chessle;
+  }
+}
+
+.guess-list {
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
@@ -9,32 +36,24 @@
   padding: 0;
 }
 
-.guess-row {
+.guess-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.55rem 0.85rem;
+  gap: 0.5rem;
+  padding: 0.4rem 0.7rem;
   border-radius: 8px;
-  border: 2px solid rgba(colors.$primary-text-color, 0.1);
-  font-size: 0.85rem;
-  min-height: 1.4rem;
+  border: 1px solid rgba(colors.$primary-text-color, 0.1);
+  font-size: 0.8rem;
 
   &.wrong {
-    border-color: rgba(#ef4444, 0.5);
-    background: rgba(#ef4444, 0.12);
+    border-color: rgba(#ef4444, 0.45);
+    background: rgba(#ef4444, 0.1);
   }
 
   &.correct {
     border-color: colors.$color-chessle;
     background: rgba(colors.$color-chessle, 0.16);
-  }
-
-  &.empty {
-    justify-content: center;
-    padding: 0.2rem 0.85rem;
-    min-height: 0;
-    border-width: 1px;
-    opacity: 0.3;
   }
 }
 
@@ -43,12 +62,9 @@
 }
 
 .outcome-label {
-  font-size: 0.72rem;
+  flex-shrink: 0;
+  font-size: 0.66rem;
   font-weight: 700;
   text-transform: uppercase;
-  opacity: 0.75;
-}
-
-.placeholder {
-  font-size: 0.65rem;
+  opacity: 0.7;
 }
