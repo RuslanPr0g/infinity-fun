@@ -15,7 +15,7 @@ import { ChessleStats, INITIAL_CHESSLE_STATS } from './models/chessle.models';
 import { ChessleEngineService } from './services/chessle-engine.service';
 import { ChessleStatsService } from './services/chessle-stats.service';
 import { DailyPuzzleService } from './services/daily-puzzle.service';
-import { buildGuessPool } from './services/opening-pool.util';
+import { buildNotableOpenings } from '../chess-openings/services/notable-openings.util';
 
 type Mode = 'daily' | 'free';
 
@@ -129,7 +129,7 @@ export class ChessleGameComponent implements OnInit, OnDestroy {
     // The whole dataset, not popular(): the pool builder needs every row to
     // both scope answers to the popular families and weigh how much theory
     // sits under each variation.
-    this.pool.set(buildGuessPool(this.library.openings()));
+    this.pool.set(buildNotableOpenings(this.library.openings()));
     this.stats.set(this.statsService.load());
     this.enterDaily();
     this.loaded.set(true);

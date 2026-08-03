@@ -1,20 +1,20 @@
 import * as fc from 'fast-check';
-import { Opening, getBaseOpeningName, getVariationName } from '../../chess-openings/models/opening.model';
-import { buildGuessPool } from './opening-pool.util';
+import { Opening, getBaseOpeningName, getVariationName } from '../models/opening.model';
+import { buildNotableOpenings } from './notable-openings.util';
 
 /** Sicilian Defense is in POPULAR_OPENING_NAMES; "Fake Opening" is not. */
 function opening(name: string, moves = 4, id = name): Opening {
   return { id, eco: 'B20', name, moves: Array.from({ length: moves }, (_, i) => `m${i}`) };
 }
 
-describe('buildGuessPool', () => {
+describe('buildNotableOpenings', () => {
   it('keeps base families of the popular list, and drops other families', () => {
-    const pool = buildGuessPool([opening('Sicilian Defense'), opening('Fake Opening')]);
+    const pool = buildNotableOpenings([opening('Sicilian Defense'), opening('Fake Opening')]);
     expect(pool.map((o) => o.name)).toEqual(['Sicilian Defense']);
   });
 
   it('collapses rows sharing an exact name, keeping the deepest', () => {
-    const pool = buildGuessPool([
+    const pool = buildNotableOpenings([
       opening('Sicilian Defense', 2, 'shallow'),
       opening('Sicilian Defense', 6, 'deep'),
       opening('Sicilian Defense', 3, 'mid'),
@@ -24,7 +24,7 @@ describe('buildGuessPool', () => {
   });
 
   it('keeps a variation that has sub-lines beneath it', () => {
-    const pool = buildGuessPool([
+    const pool = buildNotableOpenings([
       opening('Sicilian Defense'),
       opening('Sicilian Defense: Najdorf Variation'),
       opening('Sicilian Defense: Najdorf Variation, Poisoned Pawn'),
@@ -33,7 +33,7 @@ describe('buildGuessPool', () => {
   });
 
   it('drops a variation with no sub-lines beneath it', () => {
-    const pool = buildGuessPool([
+    const pool = buildNotableOpenings([
       opening('Sicilian Defense'),
       opening('Sicilian Defense: Horsefly Novelty'),
     ]);
@@ -41,7 +41,7 @@ describe('buildGuessPool', () => {
   });
 
   it('never offers a sub-variation as an answer in its own right', () => {
-    const pool = buildGuessPool([
+    const pool = buildNotableOpenings([
       opening('Sicilian Defense'),
       opening('Sicilian Defense: Najdorf Variation'),
       opening('Sicilian Defense: Najdorf Variation, Poisoned Pawn'),
@@ -56,14 +56,14 @@ describe('buildGuessPool', () => {
       opening('Sicilian Defense: Najdorf Variation, Poisoned Pawn'),
       opening('Sicilian Defense'),
     ];
-    const forward = buildGuessPool(raw).map((o) => o.name);
-    const reversed = buildGuessPool([...raw].reverse()).map((o) => o.name);
+    const forward = buildNotableOpenings(raw).map((o) => o.name);
+    const reversed = buildNotableOpenings([...raw].reverse()).map((o) => o.name);
     expect(forward).toEqual(reversed);
     expect(forward).toEqual(['Sicilian Defense', 'Sicilian Defense: Najdorf Variation']);
   });
 
   it('returns an empty pool for empty input', () => {
-    expect(buildGuessPool([])).toEqual([]);
+    expect(buildNotableOpenings([])).toEqual([]);
   });
 
   // Feature: chessle, Property: no two answers ever share an exact name
@@ -87,7 +87,7 @@ describe('buildGuessPool', () => {
           { maxLength: 40 },
         ),
         (openings) => {
-          const names = buildGuessPool(openings).map((o) => o.name);
+          const names = buildNotableOpenings(openings).map((o) => o.name);
           expect(new Set(names).size).toBe(names.length);
         },
       ),
@@ -116,7 +116,7 @@ describe('buildGuessPool', () => {
           { maxLength: 40 },
         ),
         (openings) => {
-          for (const entry of buildGuessPool(openings)) {
+          for (const entry of buildNotableOpenings(openings)) {
             expect(getBaseOpeningName(entry)).toBe('Sicilian Defense');
             expect((getVariationName(entry) ?? '').includes(',')).toBe(false);
           }
@@ -139,7 +139,7 @@ describe('buildGuessPool', () => {
           { minLength: 1, maxLength: 30 },
         ),
         (openings) => {
-          for (const entry of buildGuessPool(openings)) {
+          for (const entry of buildNotableOpenings(openings)) {
             const deepest = Math.max(
               ...openings.filter((o) => o.name === entry.name).map((o) => o.moves.length),
             );

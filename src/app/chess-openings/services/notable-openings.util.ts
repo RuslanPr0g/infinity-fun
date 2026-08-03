@@ -1,5 +1,5 @@
-import { POPULAR_OPENING_NAMES } from '../../chess-openings/data/popular-openings.const';
-import { Opening, getBaseOpeningName, getVariationName } from '../../chess-openings/models/opening.model';
+import { POPULAR_OPENING_NAMES } from '../data/popular-openings.const';
+import { Opening, getBaseOpeningName, getVariationName } from '../models/opening.model';
 
 /**
  * A variation is kept only if the dataset records at least this many deeper
@@ -11,8 +11,8 @@ import { Opening, getBaseOpeningName, getVariationName } from '../../chess-openi
 const MIN_SUB_LINES = 1;
 
 /**
- * Builds Chessle's answer pool: the popular opening families plus their
- * well-known named variations.
+ * The popular opening families plus their well-known named variations —
+ * Chessle's answer pool, and the Opening Trainer's "Popular" shortlist.
  *
  * Three things are being filtered out, for different reasons:
  *
@@ -29,7 +29,7 @@ const MIN_SUB_LINES = 1;
  * Sorted by name so the pool order — which the daily puzzle indexes into —
  * never depends on the order rows happen to appear in the dataset.
  */
-export function buildGuessPool(allOpenings: ReadonlyArray<Opening>): Opening[] {
+export function buildNotableOpenings(allOpenings: ReadonlyArray<Opening>): Opening[] {
   const families = new Set<string>(POPULAR_OPENING_NAMES);
   const subLineCounts = countSubLines(allOpenings);
 

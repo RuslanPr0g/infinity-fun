@@ -6,6 +6,7 @@ import { LocalStorageService } from '../../../shared/services/local-storage/loca
 import { Opening } from '../../models/opening.model';
 import { OpeningDisplay, OpeningDisplayService } from '../../services/opening-display.service';
 import { OpeningLibraryService } from '../../services/opening-library.service';
+import { buildNotableOpenings } from '../../services/notable-openings.util';
 import { OpeningPreviewComponent } from '../opening-preview/opening-preview.component';
 
 type Tab = 'popular' | 'search';
@@ -172,7 +173,7 @@ export class OpeningPickerComponent implements OnInit {
   readonly preview = signal<PreviewAnchor | null>(null);
 
   readonly visibleOpenings = computed<Opening[]>(() => {
-    if (this.tab() === 'popular') return this.library.popular();
+    if (this.tab() === 'popular') return buildNotableOpenings(this.library.openings());
     return this.library.search(this.searchTerm()).slice(0, 100);
   });
 
