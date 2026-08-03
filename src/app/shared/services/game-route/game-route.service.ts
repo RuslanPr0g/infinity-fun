@@ -18,6 +18,11 @@ export class GameRouteService {
       color: '#A855F7',
     },
     {
+      name: 'Chessle',
+      route: '/chessle',
+      color: '#EAB308',
+    },
+    {
       name: 'Sea Battle Matrix',
       route: '/seabattle',
       color: '#0EA5E9',
