@@ -5,10 +5,11 @@ import { GuessOutcome, GuessRow, MAX_GUESSES } from '../../models/chessle.models
 /**
  * Guess progress as a compact strip of pips — one per guess slot, filled in
  * as guesses are spent. The board and move list already carry the round's
- * real content, so this only needs to answer "how many tries are left".
+ * real content, so this only needs to answer "how many tries are left" and
+ * "was I close".
  *
- * Colour is never the only signal: the strip is labelled for screen
- * readers with the used/total count.
+ * Colour is never the only signal: the strip's screen-reader label spells
+ * out the used/total count and how many guesses landed in the right family.
  */
 @Component({
   selector: 'app-guess-grid',
@@ -17,7 +18,12 @@ import { GuessOutcome, GuessRow, MAX_GUESSES } from '../../models/chessle.models
   template: `
     <div class="pips" role="img" [attr.aria-label]="pipsLabel()">
       @for (pip of pips(); track $index) {
-        <span class="pip" [class.wrong]="pip === 'wrong'" [class.correct]="pip === 'correct'"></span>
+        <span
+          class="pip"
+          [class.wrong]="pip === 'wrong'"
+          [class.family]="pip === 'family'"
+          [class.correct]="pip === 'correct'"
+        ></span>
       }
     </div>
   `,
@@ -35,6 +41,8 @@ export class GuessGridComponent {
   }
 
   pipsLabel(): string {
-    return `${this.guesses.length} of ${this.maxGuesses} guesses used`;
+    const used = `${this.guesses.length} of ${this.maxGuesses} guesses used`;
+    const nearMisses = this.guesses.filter((guess) => guess.outcome === 'family').length;
+    return nearMisses > 0 ? `${used}, ${nearMisses} in the right family` : used;
   }
 }

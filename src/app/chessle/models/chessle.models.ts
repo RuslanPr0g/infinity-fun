@@ -1,7 +1,13 @@
-export type GuessOutcome = 'wrong' | 'correct';
+/**
+ * 'family' means the guess named the right opening family but the wrong
+ * variation — the partial-credit tier that makes six guesses workable over a
+ * pool of variations.
+ */
+export type GuessOutcome = 'wrong' | 'family' | 'correct';
 
 export interface GuessRow {
-  readonly guessedFamily: string;
+  /** Full opening name as guessed, e.g. "Sicilian Defense: Najdorf Variation". */
+  readonly guessedName: string;
   readonly outcome: GuessOutcome;
 }
 

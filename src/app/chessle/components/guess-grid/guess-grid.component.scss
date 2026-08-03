@@ -21,6 +21,12 @@
     background: rgba(#ef4444, 0.7);
   }
 
+  // Right family, wrong variation.
+  &.family {
+    border-color: transparent;
+    background: #f59e0b;
+  }
+
   &.correct {
     border-color: transparent;
     background: colors.$color-chessle;

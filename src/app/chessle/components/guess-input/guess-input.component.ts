@@ -1,7 +1,18 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Opening, getBaseOpeningName } from '../../../chess-openings/models/opening.model';
+import {
+  Opening,
+  getBaseOpeningName,
+  getVariationName,
+} from '../../../chess-openings/models/opening.model';
+
+/** A candidate split into its family and variation halves for display. */
+interface CandidateRow {
+  readonly opening: Opening;
+  readonly family: string;
+  readonly variation: string | null;
+}
 
 /**
  * Free-text-feel guess entry: type to filter the pool, click a candidate to
@@ -9,9 +20,10 @@ import { Opening, getBaseOpeningName } from '../../../chess-openings/models/open
  * not multiple-choice (trivializes it) — mirrors the opening-picker/
  * opening-quiz-board typeahead pattern.
  *
- * Families already guessed are filtered out: guesses are matched at the
- * family level, so re-picking one can only ever burn a try on a known-wrong
- * answer.
+ * Only the exact openings already guessed are filtered out. Other variations
+ * of a family stay on offer even once that family has been tried, because
+ * narrowing down within a family is the whole point of the partial-credit
+ * tier.
  */
 @Component({
   selector: 'app-guess-input',
@@ -29,10 +41,13 @@ import { Opening, getBaseOpeningName } from '../../../chess-openings/models/open
       />
       @if (candidates().length > 0) {
         <ul class="candidate-list">
-          @for (opening of candidates(); track opening.id) {
+          @for (row of candidates(); track row.opening.id) {
             <li>
-              <button type="button" class="candidate-button" (click)="select(opening)">
-                {{ opening.name }}
+              <button type="button" class="candidate-button" (click)="select(row.opening)">
+                <span class="family">{{ row.family }}</span>
+                @if (row.variation) {
+                  <span class="variation">{{ row.variation }}</span>
+                }
               </button>
             </li>
           }
@@ -44,23 +59,28 @@ import { Opening, getBaseOpeningName } from '../../../chess-openings/models/open
 })
 export class GuessInputComponent {
   @Input({ required: true }) pool: Opening[] = [];
-  /** Family names already guessed this round — never offered again. */
-  @Input() guessedFamilies: ReadonlyArray<string> = [];
+  /** Full opening names already guessed this round — never offered again. */
+  @Input() guessedNames: ReadonlyArray<string> = [];
   @Output() guess = new EventEmitter<Opening>();
 
   readonly searchTerm = signal('');
 
-  candidates(): Opening[] {
+  candidates(): CandidateRow[] {
     const term = this.searchTerm().trim().toLowerCase();
     if (!term) return [];
-    const alreadyGuessed = new Set(this.guessedFamilies);
+    const alreadyGuessed = new Set(this.guessedNames);
+
     return this.pool
       .filter(
         (opening) =>
-          opening.name.toLowerCase().includes(term) &&
-          !alreadyGuessed.has(getBaseOpeningName(opening)),
+          opening.name.toLowerCase().includes(term) && !alreadyGuessed.has(opening.name),
       )
-      .slice(0, 8);
+      .slice(0, 8)
+      .map((opening) => ({
+        opening,
+        family: getBaseOpeningName(opening),
+        variation: getVariationName(opening),
+      }));
   }
 
   select(opening: Opening): void {

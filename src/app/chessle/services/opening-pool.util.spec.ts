@@ -1,102 +1,152 @@
 import * as fc from 'fast-check';
-import { Opening, getBaseOpeningName } from '../../chess-openings/models/opening.model';
+import { Opening, getBaseOpeningName, getVariationName } from '../../chess-openings/models/opening.model';
 import { buildGuessPool } from './opening-pool.util';
 
-const RAW: Opening[] = [
-  { id: 'b00-pirc', eco: 'B00', name: 'Pirc Defense', moves: ['e4', 'd6'] },
-  { id: 'b00-pirc-2', eco: 'B00', name: 'Pirc Defense', moves: ['e4', 'd6', 'd4'] },
-  { id: 'b07-pirc', eco: 'B07', name: 'Pirc Defense', moves: ['e4', 'd6', 'd4', 'Nf6', 'Nc3', 'g6'] },
-  { id: 'c50-italian', eco: 'C50', name: 'Italian Game', moves: ['e4', 'e5', 'Nf3', 'Nc6', 'Bc4'] },
-];
+/** Sicilian Defense is in POPULAR_OPENING_NAMES; "Fake Opening" is not. */
+function opening(name: string, moves = 4, id = name): Opening {
+  return { id, eco: 'B20', name, moves: Array.from({ length: moves }, (_, i) => `m${i}`) };
+}
 
 describe('buildGuessPool', () => {
-  it('collapses same-named entries to one, keeping the deepest line', () => {
-    const pool = buildGuessPool(RAW);
-    expect(pool.length).toBe(2);
-    const pirc = pool.find((o) => o.name === 'Pirc Defense')!;
-    expect(pirc.id).toBe('b07-pirc');
-    expect(pirc.moves.length).toBe(6);
+  it('keeps base families of the popular list, and drops other families', () => {
+    const pool = buildGuessPool([opening('Sicilian Defense'), opening('Fake Opening')]);
+    expect(pool.map((o) => o.name)).toEqual(['Sicilian Defense']);
   });
 
-  it('treats variations as part of their base family', () => {
+  it('collapses rows sharing an exact name, keeping the deepest', () => {
     const pool = buildGuessPool([
-      { id: 'b20', eco: 'B20', name: 'Sicilian Defense', moves: ['e4', 'c5'] },
-      {
-        id: 'b90',
-        eco: 'B90',
-        name: 'Sicilian Defense: Najdorf Variation',
-        moves: ['e4', 'c5', 'Nf3', 'd6', 'd4', 'cxd4'],
-      },
+      opening('Sicilian Defense', 2, 'shallow'),
+      opening('Sicilian Defense', 6, 'deep'),
+      opening('Sicilian Defense', 3, 'mid'),
     ]);
     expect(pool.length).toBe(1);
-    expect(pool[0].id).toBe('b90');
+    expect(pool[0].id).toBe('deep');
   });
 
-  it('is sorted by family name, independent of input order', () => {
-    const forward = buildGuessPool(RAW).map((o) => o.id);
-    const reversed = buildGuessPool([...RAW].reverse()).map((o) => o.id);
+  it('keeps a variation that has sub-lines beneath it', () => {
+    const pool = buildGuessPool([
+      opening('Sicilian Defense'),
+      opening('Sicilian Defense: Najdorf Variation'),
+      opening('Sicilian Defense: Najdorf Variation, Poisoned Pawn'),
+    ]);
+    expect(pool.map((o) => o.name)).toContain('Sicilian Defense: Najdorf Variation');
+  });
+
+  it('drops a variation with no sub-lines beneath it', () => {
+    const pool = buildGuessPool([
+      opening('Sicilian Defense'),
+      opening('Sicilian Defense: Horsefly Novelty'),
+    ]);
+    expect(pool.map((o) => o.name)).toEqual(['Sicilian Defense']);
+  });
+
+  it('never offers a sub-variation as an answer in its own right', () => {
+    const pool = buildGuessPool([
+      opening('Sicilian Defense'),
+      opening('Sicilian Defense: Najdorf Variation'),
+      opening('Sicilian Defense: Najdorf Variation, Poisoned Pawn'),
+      opening('Sicilian Defense: Najdorf Variation, English Attack'),
+    ]);
+    expect(pool.every((o) => !(getVariationName(o) ?? '').includes(','))).toBe(true);
+  });
+
+  it('is sorted by name, independent of input order', () => {
+    const raw = [
+      opening('Sicilian Defense: Najdorf Variation'),
+      opening('Sicilian Defense: Najdorf Variation, Poisoned Pawn'),
+      opening('Sicilian Defense'),
+    ];
+    const forward = buildGuessPool(raw).map((o) => o.name);
+    const reversed = buildGuessPool([...raw].reverse()).map((o) => o.name);
     expect(forward).toEqual(reversed);
-    expect(forward).toEqual(['c50-italian', 'b07-pirc']);
+    expect(forward).toEqual(['Sicilian Defense', 'Sicilian Defense: Najdorf Variation']);
   });
 
-  // Feature: chessle, Property: the pool never contains two entries of the same family
-  it('never returns two entries sharing a family', () => {
+  it('returns an empty pool for empty input', () => {
+    expect(buildGuessPool([])).toEqual([]);
+  });
+
+  // Feature: chessle, Property: no two answers ever share an exact name
+  it('never returns two entries with the same name', () => {
     fc.assert(
       fc.property(
         fc.array(
           fc.record({
             id: fc.string({ minLength: 1 }),
-            eco: fc.constantFrom('A00', 'B20', 'C50'),
+            eco: fc.constant('B20'),
             name: fc.constantFrom(
-              'Pirc Defense',
-              'Italian Game',
               'Sicilian Defense',
+              'French Defense',
               'Sicilian Defense: Najdorf Variation',
+              'Sicilian Defense: Najdorf Variation, Poisoned Pawn',
+              'French Defense: Winawer Variation',
+              'French Defense: Winawer Variation, Advance',
             ),
-            moves: fc.array(fc.constantFrom('e4', 'd4', 'Nf3'), { maxLength: 8 }),
+            moves: fc.array(fc.constant('e4'), { minLength: 1, maxLength: 9 }),
           }),
-          { maxLength: 30 },
+          { maxLength: 40 },
         ),
         (openings) => {
-          const pool = buildGuessPool(openings);
-          const families = pool.map(getBaseOpeningName);
-          expect(new Set(families).size).toBe(families.length);
+          const names = buildGuessPool(openings).map((o) => o.name);
+          expect(new Set(names).size).toBe(names.length);
         },
       ),
     );
   });
 
-  // Feature: chessle, Property: every input family survives, at its maximum depth
-  it('keeps each input family exactly once, at its deepest move count', () => {
+  // Feature: chessle, Property: every answer belongs to a popular family and
+  // is either that family itself or one of its comma-free variations
+  it('only ever returns popular families or their top-level variations', () => {
     fc.assert(
       fc.property(
         fc.array(
           fc.record({
             id: fc.string({ minLength: 1 }),
-            eco: fc.constant('A00'),
-            name: fc.constantFrom('Pirc Defense', 'Italian Game', 'Dutch Defense'),
-            moves: fc.array(fc.constant('e4'), { minLength: 1, maxLength: 9 }),
+            eco: fc.constant('B20'),
+            name: fc.constantFrom(
+              'Sicilian Defense',
+              'Fake Opening',
+              'Fake Opening: Some Variation',
+              'Fake Opening: Some Variation, Deeper',
+              'Sicilian Defense: Najdorf Variation',
+              'Sicilian Defense: Najdorf Variation, Poisoned Pawn',
+            ),
+            moves: fc.array(fc.constant('e4'), { minLength: 1, maxLength: 6 }),
           }),
-          { minLength: 1, maxLength: 30 },
+          { maxLength: 40 },
         ),
         (openings) => {
-          const pool = buildGuessPool(openings);
-          const inputFamilies = new Set(openings.map(getBaseOpeningName));
-          expect(new Set(pool.map(getBaseOpeningName))).toEqual(inputFamilies);
-
-          for (const entry of pool) {
-            const family = getBaseOpeningName(entry);
-            const deepest = Math.max(
-              ...openings.filter((o) => getBaseOpeningName(o) === family).map((o) => o.moves.length),
-            );
-            expect(entry.moves.length).toBe(deepest);
+          for (const entry of buildGuessPool(openings)) {
+            expect(getBaseOpeningName(entry)).toBe('Sicilian Defense');
+            expect((getVariationName(entry) ?? '').includes(',')).toBe(false);
           }
         },
       ),
     );
   });
 
-  it('returns an empty pool for empty input', () => {
-    expect(buildGuessPool([])).toEqual([]);
+  // Feature: chessle, Property: the kept row is always the deepest of its name
+  it('always keeps the deepest recorded line for each name', () => {
+    fc.assert(
+      fc.property(
+        fc.array(
+          fc.record({
+            id: fc.string({ minLength: 1 }),
+            eco: fc.constant('B20'),
+            name: fc.constantFrom('Sicilian Defense', 'French Defense'),
+            moves: fc.array(fc.constant('e4'), { minLength: 1, maxLength: 9 }),
+          }),
+          { minLength: 1, maxLength: 30 },
+        ),
+        (openings) => {
+          for (const entry of buildGuessPool(openings)) {
+            const deepest = Math.max(
+              ...openings.filter((o) => o.name === entry.name).map((o) => o.moves.length),
+            );
+            expect(entry.moves.length).toBe(deepest);
+          }
+        },
+      ),
+    );
   });
 });

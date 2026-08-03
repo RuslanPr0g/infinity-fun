@@ -35,7 +35,7 @@ describe('DailyPuzzleService', () => {
     const state = {
       dateKey: '2026-01-01',
       targetOpeningId: 'a',
-      guesses: [{ guessedFamily: 'Opening B', outcome: 'wrong' as const }],
+      guesses: [{ guessedName: 'Opening B', outcome: 'wrong' as const }],
       status: 'in-progress' as const,
     };
     service.save(state);

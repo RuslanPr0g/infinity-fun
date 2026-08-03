@@ -78,9 +78,12 @@ type Mode = 'daily' | 'free';
         @if (engine.status() === 'in-progress') {
           <app-guess-input
             [pool]="pool()"
-            [guessedFamilies]="guessedFamilies()"
+            [guessedNames]="guessedNames()"
             (guess)="onGuess($event)"
           />
+          @if (lastGuessFamily(); as family) {
+            <p class="family-hint">Right family — try another {{ family }} variation</p>
+          }
           <p class="remaining">{{ engine.guessesRemaining() }} guesses left</p>
         } @else {
           @if (engine.target(); as target) {
@@ -123,7 +126,10 @@ export class ChessleGameComponent implements OnInit, OnDestroy {
 
   async ngOnInit(): Promise<void> {
     await this.library.ensureLoaded();
-    this.pool.set(buildGuessPool(this.library.popular()));
+    // The whole dataset, not popular(): the pool builder needs every row to
+    // both scope answers to the popular families and weigh how much theory
+    // sits under each variation.
+    this.pool.set(buildGuessPool(this.library.openings()));
     this.stats.set(this.statsService.load());
     this.enterDaily();
     this.loaded.set(true);
@@ -150,9 +156,12 @@ export class ChessleGameComponent implements OnInit, OnDestroy {
     const target = this.dailyPuzzle.targetFor(this.pool(), this.dateKey);
     const saved = this.dailyPuzzle.load(this.dateKey);
 
-    if (saved) {
-      const resolved = this.library.byId(saved.targetOpeningId) ?? target;
-      this.engine.restore(resolved, saved.guesses, saved.status);
+    // Only resume state saved against today's actual target. Restoring by id
+    // alone would happily resurrect an opening the pool no longer contains —
+    // any state persisted before a pool change points at an entry that is no
+    // longer a valid answer.
+    if (saved && saved.targetOpeningId === target.id) {
+      this.engine.restore(target, saved.guesses, saved.status);
     } else {
       this.engine.start(target);
       this.persistDaily();
@@ -172,18 +181,24 @@ export class ChessleGameComponent implements OnInit, OnDestroy {
 
   onGuess(opening: Opening): void {
     const wasInProgress = this.engine.status() === 'in-progress';
-    this.engine.submitGuess(opening);
+    const outcome = this.engine.submitGuess(opening);
     const justFinished = wasInProgress && this.engine.status() !== 'in-progress';
 
     if (this.engine.status() === 'won') {
       this.sound.playCorrect();
-      this.announcement.set(`Correct — ${this.targetName()}. Solved in ${this.engine.guesses().length} guesses.`);
+      this.announcement.set(
+        `Correct — ${this.targetName()}. Solved in ${this.engine.guesses().length} guesses.`,
+      );
     } else if (this.engine.status() === 'lost') {
       this.sound.playWrong();
       this.announcement.set(`Out of guesses. It was ${this.targetName()}.`);
     } else {
+      const lead =
+        outcome === 'family'
+          ? 'Right family, wrong variation.'
+          : 'Wrong guess.';
       this.announcement.set(
-        `Wrong guess, ${this.engine.guessesRemaining()} guesses left. Next move revealed.`,
+        `${lead} ${this.engine.guessesRemaining()} guesses left. Next move revealed.`,
       );
     }
 
@@ -203,8 +218,20 @@ export class ChessleGameComponent implements OnInit, OnDestroy {
     return this.displayService.formatDisplayName(target, this.library.openings());
   }
 
-  guessedFamilies(): string[] {
-    return this.engine.guesses().map((guess) => guess.guessedFamily);
+  guessedNames(): string[] {
+    return this.engine.guesses().map((guess) => guess.guessedName);
+  }
+
+  /**
+   * The family to nudge toward when the latest guess landed in the right one,
+   * or null otherwise. The colon is the family/variation boundary in the
+   * dataset — see opening.model.ts.
+   */
+  lastGuessFamily(): string | null {
+    const guesses = this.engine.guesses();
+    const last = guesses[guesses.length - 1];
+    if (!last || last.outcome !== 'family') return null;
+    return last.guessedName.split(':')[0].trim();
   }
 
   countdownText(): string {

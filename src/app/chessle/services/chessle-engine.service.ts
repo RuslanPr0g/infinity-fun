@@ -2,13 +2,21 @@ import { Injectable, computed, signal } from '@angular/core';
 import { Opening, getBaseOpeningName } from '../../chess-openings/models/opening.model';
 import { ChessleStatus, GuessOutcome, GuessRow, MAX_GUESSES } from '../models/chessle.models';
 
+/** Exact opening wins; same family with a different variation is partial credit. */
+function compare(guessed: Opening, target: Opening): GuessOutcome {
+  if (guessed.name === target.name) return 'correct';
+  if (getBaseOpeningName(guessed) === getBaseOpeningName(target)) return 'family';
+  return 'wrong';
+}
+
 /**
  * Drives one Chessle round: reveals the target opening's moves one at a
- * time, up to MAX_GUESSES rows. A wrong guess reveals the next move; a
- * correct guess (matched at the opening-family level — see
- * getBaseOpeningName) ends the round as a win. Mode-agnostic — daily and
- * free play both drive this same service, differing only in how the target
- * opening is chosen and whether the round is persisted.
+ * time, up to MAX_GUESSES rows. Only an exact opening match wins; naming the
+ * right family with the wrong variation scores 'family', which still spends
+ * the guess and reveals the next move but tells the player they are in the
+ * right neighbourhood. Mode-agnostic — daily and free play both drive this
+ * same service, differing only in how the target opening is chosen and
+ * whether the round is persisted.
  */
 @Injectable({ providedIn: 'root' })
 export class ChessleEngineService {
@@ -46,12 +54,11 @@ export class ChessleEngineService {
     const target = this.target();
     if (!target) return null;
 
-    const correct = getBaseOpeningName(guessed) === getBaseOpeningName(target);
-    const outcome: GuessOutcome = correct ? 'correct' : 'wrong';
-    const nextGuesses = [...this.guesses(), { guessedFamily: getBaseOpeningName(guessed), outcome }];
+    const outcome = compare(guessed, target);
+    const nextGuesses = [...this.guesses(), { guessedName: guessed.name, outcome }];
     this.guesses.set(nextGuesses);
 
-    if (correct) {
+    if (outcome === 'correct') {
       this.status.set('won');
     } else if (nextGuesses.length >= MAX_GUESSES) {
       this.status.set('lost');

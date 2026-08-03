@@ -23,16 +23,17 @@
 }
 
 .candidate-button {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
   width: 100%;
-  padding: 0.6rem 0.85rem;
+  padding: 0.5rem 0.85rem;
   margin-bottom: 0.4rem;
   border: 2px solid rgba(colors.$primary-text-color, 0.1);
   border-radius: 10px;
   background: rgba(colors.$primary-text-color, 0.03);
   color: colors.$primary-text-color;
   text-align: left;
-  font-size: 0.85rem;
   cursor: pointer;
   transition:
     border-color 0.15s,
@@ -41,5 +42,14 @@
   &:hover {
     border-color: colors.$color-chessle;
     background: rgba(colors.$color-chessle, 0.1);
+  }
+
+  .family {
+    font-size: 0.85rem;
+  }
+
+  .variation {
+    font-size: 0.74rem;
+    opacity: 0.7;
   }
 }

@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { Opening } from '../../../chess-openings/models/opening.model';
+import { Opening, getBaseOpeningName } from '../../../chess-openings/models/opening.model';
 import { OPENING_BLURBS } from '../../data/opening-blurbs.const';
 import { ChessleStats, ChessleStatus, INITIAL_CHESSLE_STATS } from '../../models/chessle.models';
 
@@ -55,7 +55,16 @@ export class ResultSummaryComponent {
   @Output() playAgain = new EventEmitter<void>();
   @Output() playFreeMode = new EventEmitter<void>();
 
+  /**
+   * Blurbs are written per family, so a variation falls back to its parent's
+   * blurb. Still null when neither is present — the result panel drops the
+   * line rather than showing filler.
+   */
   blurb(): string | null {
-    return OPENING_BLURBS[this.targetOpening.name] ?? null;
+    return (
+      OPENING_BLURBS[this.targetOpening.name] ??
+      OPENING_BLURBS[getBaseOpeningName(this.targetOpening)] ??
+      null
+    );
   }
 }
