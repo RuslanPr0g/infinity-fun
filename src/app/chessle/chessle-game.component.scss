@@ -1,0 +1,78 @@
+@use '../../colors' as colors;
+
+.chessle-container {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 1rem 1rem 2rem;
+  color: colors.$primary-text-color;
+
+  button {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.loading {
+  text-align: center;
+  opacity: 0.6;
+  padding-top: 3rem;
+}
+
+.title {
+  text-align: center;
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin: 0 0 0.25rem;
+  color: colors.$color-chessle;
+}
+
+.subtitle {
+  text-align: center;
+  font-size: 0.85rem;
+  opacity: 0.65;
+  margin: 0 0 1.25rem;
+}
+
+.mode-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.tab {
+  flex: 1;
+  padding: 0.6rem;
+  border: 2px solid rgba(colors.$primary-text-color, 0.12);
+  border-radius: 10px;
+  background: transparent;
+  color: colors.$primary-text-color;
+  opacity: 0.6;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &.active {
+    opacity: 1;
+    border-color: colors.$color-chessle;
+    color: colors.$color-chessle;
+  }
+}
+
+.remaining {
+  text-align: center;
+  font-size: 0.75rem;
+  opacity: 0.55;
+  margin: 0.75rem 0 0;
+}

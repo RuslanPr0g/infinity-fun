@@ -1,0 +1,53 @@
+@use '../../../../colors' as colors;
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(colors.$primary-bg-color, 0.92);
+  padding: 1.5rem;
+}
+
+.card {
+  text-align: center;
+  color: colors.$primary-text-color;
+  max-width: 380px;
+
+  h2 {
+    margin: 0 0 0.75rem;
+    color: colors.$color-chessle;
+  }
+
+  p {
+    margin: 0 0 1.25rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    opacity: 0.85;
+  }
+}
+
+.example {
+  display: flex;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-bottom: 1.5rem;
+  font-size: 1.4rem;
+}
+
+.got-it-button {
+  padding: 0.85rem 2.5rem;
+  border: none;
+  border-radius: 10px;
+  background: colors.$color-chessle;
+  color: #1c1503;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}

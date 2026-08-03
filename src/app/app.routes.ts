@@ -12,6 +12,7 @@ import { DateCountdownComponent } from './date-countdown/date-countdown.componen
 import { MathQuizGameComponent } from './math-quiz/math-quiz-game.component';
 import { ChessGameComponent } from './chess/chess-game.component';
 import { ChessOpeningsGameComponent } from './chess-openings/chess-openings-game.component';
+import { ChessleGameComponent } from './chessle/chessle-game.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -28,5 +29,6 @@ export const routes: Routes = [
   { path: 'math-quiz', component: MathQuizGameComponent },
   { path: 'chess', component: ChessGameComponent },
   { path: 'chess-openings', component: ChessOpeningsGameComponent },
+  { path: 'chessle', component: ChessleGameComponent },
   { path: '**', redirectTo: '' },
 ];

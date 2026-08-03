@@ -1,0 +1,51 @@
+@use '../../../../colors' as colors;
+
+.guess-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+}
+
+.guess-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 0.85rem;
+  border-radius: 8px;
+  border: 2px solid rgba(colors.$primary-text-color, 0.1);
+  font-size: 0.85rem;
+  min-height: 1.4rem;
+
+  &.wrong {
+    border-color: rgba(#ef4444, 0.5);
+    background: rgba(#ef4444, 0.12);
+  }
+
+  &.correct {
+    border-color: colors.$color-chessle;
+    background: rgba(colors.$color-chessle, 0.16);
+  }
+
+  &.empty {
+    justify-content: center;
+    opacity: 0.35;
+  }
+}
+
+.family {
+  font-weight: 600;
+}
+
+.outcome-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+
+.placeholder {
+  font-size: 0.75rem;
+}
