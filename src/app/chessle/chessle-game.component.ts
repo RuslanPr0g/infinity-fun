@@ -15,6 +15,7 @@ import { ChessleStats, INITIAL_CHESSLE_STATS } from './models/chessle.models';
 import { ChessleEngineService } from './services/chessle-engine.service';
 import { ChessleStatsService } from './services/chessle-stats.service';
 import { DailyPuzzleService } from './services/daily-puzzle.service';
+import { buildGuessPool } from './services/opening-pool.util';
 
 type Mode = 'daily' | 'free';
 
@@ -122,7 +123,7 @@ export class ChessleGameComponent implements OnInit, OnDestroy {
 
   async ngOnInit(): Promise<void> {
     await this.library.ensureLoaded();
-    this.pool.set(this.library.popular());
+    this.pool.set(buildGuessPool(this.library.popular()));
     this.stats.set(this.statsService.load());
     this.enterDaily();
     this.loaded.set(true);
