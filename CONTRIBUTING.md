@@ -20,3 +20,5 @@ To ship your change:
 1. Check the latest tag: `gh release list --limit 1` (or see the Releases page).
 2. Include a higher version in your PR title / squash-merge commit message, e.g. `v4.17.0: add time of day select`.
 3. Merge — this triggers the tag, GitHub Release, and deployment in one go.
+
+<!-- v4.16.2 -->
