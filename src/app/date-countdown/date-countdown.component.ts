@@ -22,6 +22,7 @@ interface TimeLeft {
 export class DateCountdownComponent implements OnInit, OnDestroy {
   selectedDate: string = '';
   selectedDayOfWeek: string = '';
+  selectedTimeOfDayOfWeek: string = '';
   targetDate: Date | null = null;
   timeLeft: TimeLeft | null = null;
   private intervalSub: Subscription | null = null;
@@ -63,11 +64,13 @@ export class DateCountdownComponent implements OnInit, OnDestroy {
       if (params['date']) {
         this.selectedDate = params['date'];
         this.selectedDayOfWeek = '';
+        this.selectedTimeOfDayOfWeek = '';
         this.setTargetDate(new Date(this.selectedDate));
       } else if (params['day']) {
         this.selectedDayOfWeek = params['day'];
+        this.selectedTimeOfDayOfWeek = params['time'] ?? '';
         this.selectedDate = '';
-        this.calculateNextDayOfWeek(this.selectedDayOfWeek);
+        this.calculateNextDayOfWeek(this.selectedDayOfWeek, this.selectedTimeOfDayOfWeek);
       }
     });
 
@@ -83,6 +86,7 @@ export class DateCountdownComponent implements OnInit, OnDestroy {
   onDateChange(): void {
     if (this.selectedDate) {
       this.selectedDayOfWeek = '';
+      this.selectedTimeOfDayOfWeek = '';
       this.targetDate = null;
       this.timeLeft = null;
       this.setTargetDate(new Date(this.selectedDate));
@@ -95,11 +99,14 @@ export class DateCountdownComponent implements OnInit, OnDestroy {
   }
 
   onDayOfWeekChange(): void {
-    if (this.selectedDayOfWeek) {
+    if (this.selectedDayOfWeek || this.selectedTimeOfDayOfWeek) {
       this.selectedDate = '';
       this.targetDate = null;
-      this.timeLeft = null;
-      this.calculateNextDayOfWeek(this.selectedDayOfWeek);
+      if (this.selectedTimeOfDayOfWeek && !this.selectedDayOfWeek) {
+        this.timeLeft = null;
+      } else {
+        this.calculateNextDayOfWeek(this.selectedDayOfWeek, this.selectedTimeOfDayOfWeek);
+      }
       this.updateUrl();
     } else {
       this.targetDate = null;
@@ -122,7 +129,12 @@ export class DateCountdownComponent implements OnInit, OnDestroy {
     this.calculateTimeLeft();
   }
 
-  private calculateNextDayOfWeek(dayName: string): void {
+  private parseTimePart(part: string): number {
+    const number = Number.parseInt(part);
+    return Number.isNaN(number) ? 0 : number;
+  }
+
+  private calculateNextDayOfWeek(dayName: string, timeOfDay: string): void {
     const today = new Date();
     const dayIndex = this.daysOfWeek.indexOf(dayName);
     const currentDayIndex = today.getDay();
@@ -130,7 +142,8 @@ export class DateCountdownComponent implements OnInit, OnDestroy {
     if (daysUntil === 0) daysUntil = 7;
     const target = new Date(today);
     target.setDate(today.getDate() + daysUntil);
-    target.setHours(0, 0, 0, 0);
+    const [hours, minutes] = !!timeOfDay ? timeOfDay.split(":").map(this.parseTimePart) : [0, 0];
+    target.setHours(hours, minutes, 0, 0);
     this.setTargetDate(target);
   }
 
@@ -161,16 +174,8 @@ export class DateCountdownComponent implements OnInit, OnDestroy {
   }
 
   private updateUrl(): void {
-    const queryParams: any = {};
-    if (this.selectedDate) queryParams.date = this.selectedDate;
-    if (this.selectedDayOfWeek) queryParams.day = this.selectedDayOfWeek;
-    if (this.title && this.title !== 'Date Countdown')
-      queryParams.title = this.title;
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams,
-      queryParamsHandling: '',
-    });
+    const url = this.getShareUrl();
+    window.history.replaceState({}, '', url);
   }
 
   getCountdownText(): string {
@@ -182,13 +187,18 @@ export class DateCountdownComponent implements OnInit, OnDestroy {
 
   getShareUrl(): string {
     const baseUrl = window.location.origin + window.location.pathname;
-    const params = [];
-    if (this.selectedDate) params.push(`date=${this.selectedDate}`);
-    if (this.selectedDayOfWeek) params.push(`day=${this.selectedDayOfWeek}`);
+
+    const queryParams = new URLSearchParams();
+    if (this.selectedDate) queryParams.set('date', this.selectedDate);
+    if (this.selectedDayOfWeek) queryParams.set('day', this.selectedDayOfWeek);
+    if (this.selectedTimeOfDayOfWeek) queryParams.set('time', this.selectedTimeOfDayOfWeek);
     if (this.title && this.title !== 'Date Countdown')
-      params.push(`title=${encodeURIComponent(this.title)}`);
-    const query = params.length ? '?' + params.join('&') : '';
-    return baseUrl + query;
+      queryParams.set('title', this.title);
+    const query = queryParams.toString();
+
+    return query
+      ? `${baseUrl}?${query}`
+      : baseUrl;
   }
 
   copyToClipboard(): void {
