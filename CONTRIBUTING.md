@@ -12,4 +12,11 @@ Thanks for your interest in contributing!
 
 ## CI Checks
 
-On push/PR to `master`: Angular build (`ci.yml`). On push to `master`: auto-tag + GitHub Release + deployment (`cd-on-commit.yml`, `cd.yml`). Since merges trigger an automatic release, keep commit messages clean (they drive the version tag).
+On push/PR to `master`: Angular build (`ci.yml`). On push to `master`: auto-tag + GitHub Release + deployment (`cd-on-commit.yml`, `cd.yml`).
+
+**Versioning is manual, not automatic.** `cd-on-commit.yml` only creates a new tag/release/deploy if the merge commit message contains a version number greater than the latest tag, in the form `vX.Y.Z` (e.g. `v4.17.0`). If your merge commit doesn't include a higher version, the workflow runs but skips tagging/deploying entirely.
+
+To ship your change:
+1. Check the latest tag: `gh release list --limit 1` (or see the Releases page).
+2. Include a higher version in your PR title / squash-merge commit message, e.g. `v4.17.0: add time of day select`.
+3. Merge — this triggers the tag, GitHub Release, and deployment in one go.
