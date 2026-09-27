@@ -30,7 +30,7 @@
       [ngClass]="{ copied: copied }"
     >
       <div class="target-info">
-        <p class="target-date">{{ targetDate | date: "fullDate" }}</p>
+        <p class="target-date">{{ targetDate | date : "fullDate" }}</p>
       </div>
 
       <div class="time-display">
@@ -93,6 +93,12 @@
             {{ day }}
           </option>
         </select>
+        <input
+          type="time"
+          [(ngModel)]="selectedTimeOfDayOfWeek"
+          (change)="onDayOfWeekChange()"
+          class="time-input"
+        />
       </div>
     </div>
   </div>
