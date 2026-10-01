@@ -21,3 +21,15 @@
   color: colors.$primary-text-color;
   word-break: break-word;
 }
+
+@media (max-width: 480px) {
+  .game-screen {
+    padding: 1rem;
+  }
+
+  .question-text {
+    font-size: clamp(1.25rem, 7vw, 1.75rem);
+    margin: 1.5rem 0;
+    overflow-wrap: anywhere;
+  }
+}

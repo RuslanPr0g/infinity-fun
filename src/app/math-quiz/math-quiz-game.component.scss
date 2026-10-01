@@ -5,3 +5,9 @@
   color: colors.$primary-text-color;
   padding: 1rem;
 }
+
+@media (max-width: 480px) {
+  .math-quiz-container {
+    padding: 0.5rem 0;
+  }
+}

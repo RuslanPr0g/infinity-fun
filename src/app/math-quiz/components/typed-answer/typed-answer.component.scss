@@ -47,3 +47,18 @@
     }
   }
 }
+
+@media (max-width: 480px) {
+  .typed-answer {
+    input {
+      min-width: 0;
+      max-width: none;
+      font-size: max(16px, 1.25rem);
+    }
+
+    button {
+      min-height: 48px;
+      touch-action: manipulation;
+    }
+  }
+}
