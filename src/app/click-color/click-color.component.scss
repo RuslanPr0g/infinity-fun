@@ -170,3 +170,84 @@
     width: 75%;
   }
 }
+
+@media (max-width: 480px) {
+  // Cover the visible viewport regardless of scroll position, below the header
+  .overlay {
+    position: fixed;
+    z-index: 10;
+    top: 72px;
+    left: 16px;
+    width: calc(100% - 32px);
+    height: auto;
+    bottom: 16px;
+    border-radius: 24px;
+  }
+
+  // Keep score + timer on one row so the whole grid fits on a small screen
+  .game-container .header {
+    flex-direction: row;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .current-color {
+    margin: 8px 0 16px;
+  }
+
+  .color-display {
+    width: 64px;
+    height: 64px;
+    margin-top: 6px;
+  }
+
+  .color-grid {
+    gap: 12px;
+    width: 100%;
+    max-width: 340px;
+  }
+
+  .color {
+    width: 100%;
+    height: 64px;
+    touch-action: manipulation;
+  }
+
+  .start-button {
+    min-height: 48px;
+    touch-action: manipulation;
+  }
+}
+
+// Phones in landscape: keep the overlay on screen and the grid compact
+@media (max-height: 500px) and (orientation: landscape) {
+  .overlay {
+    position: fixed;
+    z-index: 10;
+    top: 64px;
+    bottom: 8px;
+    left: 5vw;
+    width: 90vw;
+    height: auto;
+    border-radius: 24px;
+
+    & .start-button {
+      margin-top: 16px;
+    }
+  }
+
+  .current-color {
+    margin: 0 0 12px;
+  }
+
+  .color-display {
+    width: 56px;
+    height: 56px;
+  }
+
+  .color {
+    width: 64px;
+    height: 56px;
+    touch-action: manipulation;
+  }
+}

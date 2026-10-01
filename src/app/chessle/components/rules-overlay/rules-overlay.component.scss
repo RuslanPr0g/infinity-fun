@@ -9,12 +9,16 @@
   justify-content: center;
   background: rgba(colors.$primary-bg-color, 0.92);
   padding: 1.5rem;
+  overflow-y: auto;
 }
 
 .card {
   text-align: center;
   color: colors.$primary-text-color;
   max-width: 380px;
+  // Lets the card scroll instead of clipping when the overlay is shorter
+  // than its content (phone landscape).
+  margin: auto;
 
   h2 {
     margin: 0 0 0.75rem;

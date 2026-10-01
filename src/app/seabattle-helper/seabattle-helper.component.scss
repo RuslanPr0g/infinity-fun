@@ -71,6 +71,8 @@
   font-size: 12px;
   color: #fff;
   flex-shrink: 0;
+  touch-action: manipulation;
+  user-select: none;
 }
 
 .cell.empty {
@@ -116,5 +118,29 @@
 
   .corner {
     width: 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .seabattle-container {
+    padding: 20px 8px;
+  }
+
+  .cell {
+    width: 32px;
+    height: 32px;
+  }
+
+  .top-number,
+  .left-label {
+    width: 20px;
+  }
+
+  .top-number {
+    width: 32px;
+  }
+
+  .top-labels {
+    margin-left: 20px;
   }
 }

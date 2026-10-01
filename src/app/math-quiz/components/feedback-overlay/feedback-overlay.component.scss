@@ -14,3 +14,9 @@
 .feedback-incorrect {
   color: #ef4444;
 }
+
+@media (max-width: 480px) {
+  .feedback-line {
+    overflow-wrap: anywhere;
+  }
+}

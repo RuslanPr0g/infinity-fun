@@ -161,3 +161,21 @@
     height: 180px;
   }
 }
+
+@media (max-width: 480px) {
+  .card {
+    padding: 16px;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .controls input {
+    min-width: 0;
+    font-size: 16px;
+  }
+  .controls button {
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+  .controls .info-btn {
+    min-width: 44px;
+  }
+}

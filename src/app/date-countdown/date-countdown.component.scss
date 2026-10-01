@@ -353,3 +353,41 @@
     }
   }
 }
+
+@media (max-width: 480px) {
+  .title-section {
+    min-width: 0;
+  }
+
+  .title,
+  .title-input {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .edit-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    flex-shrink: 0;
+    touch-action: manipulation;
+  }
+
+  .share-section {
+    .share-url {
+      font-size: 16px;
+    }
+
+    .copy-button {
+      min-height: 44px;
+      touch-action: manipulation;
+    }
+  }
+
+  .countdown-display {
+    touch-action: manipulation;
+  }
+}
