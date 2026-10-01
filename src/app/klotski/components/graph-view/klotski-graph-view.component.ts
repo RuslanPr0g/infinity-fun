@@ -22,6 +22,7 @@ const PERSPECTIVE_DISTANCE = 4;
 const TILT = -1.0;
 const MIN_ZOOM = 0.7;
 const MAX_ZOOM = 60;
+const MAX_DPR = 2;
 
 @Component({
   selector: 'app-klotski-graph-view',
@@ -80,7 +81,8 @@ export class KlotskiGraphViewComponent implements AfterViewInit, OnChanges, OnDe
   private bucketStart: number[] = [];
   private bucketColors: string[] = [];
 
-  private dragging = false;
+  private readonly pointers = new Map<number, { x: number; y: number }>();
+  private pinchDistance = 0;
   private lastX = 0;
 
   private readonly onWheel = (e: WheelEvent): void => {
@@ -88,20 +90,37 @@ export class KlotskiGraphViewComponent implements AfterViewInit, OnChanges, OnDe
     this.zoomBy(Math.exp(-e.deltaY * 0.0015));
   };
   private readonly onDown = (e: PointerEvent): void => {
-    this.dragging = true;
+    this.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
     this.autoRotate = false;
     this.lastX = e.clientX;
+    this.pinchDistance = this.currentPinchDistance();
     this.canvasRef.nativeElement.setPointerCapture(e.pointerId);
   };
   private readonly onMove = (e: PointerEvent): void => {
-    if (!this.dragging) return;
+    if (!this.pointers.has(e.pointerId)) return;
+    this.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (this.pointers.size >= 2) {
+      const distance = this.currentPinchDistance();
+      if (this.pinchDistance > 0 && distance > 0) this.zoomBy(distance / this.pinchDistance);
+      this.pinchDistance = distance;
+      return;
+    }
     this.yaw += (e.clientX - this.lastX) * 0.01;
     this.lastX = e.clientX;
     this.dirty = true;
   };
-  private readonly onUp = (): void => {
-    this.dragging = false;
+  private readonly onUp = (e: PointerEvent): void => {
+    this.pointers.delete(e.pointerId);
+    this.pinchDistance = 0;
+    const left = this.pointers.values().next().value;
+    if (left) this.lastX = left.x;
   };
+
+  private currentPinchDistance(): number {
+    if (this.pointers.size < 2) return 0;
+    const [a, b] = [...this.pointers.values()];
+    return Math.hypot(a.x - b.x, a.y - b.y);
+  }
 
   ngAfterViewInit(): void {
     const canvas = this.canvasRef.nativeElement;
@@ -152,7 +171,7 @@ export class KlotskiGraphViewComponent implements AfterViewInit, OnChanges, OnDe
 
   private resize(): void {
     const rect = this.wrapRef.nativeElement.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
+    const dpr = Math.min(MAX_DPR, window.devicePixelRatio || 1);
     this.width = rect.width;
     this.height = rect.height;
     const canvas = this.canvasRef.nativeElement;

@@ -22,7 +22,9 @@ canvas {
   width: 100%;
   height: 100%;
   cursor: grab;
-  touch-action: none;
+  // Horizontal drag rotates, vertical swipe still scrolls the page.
+  touch-action: pan-y;
+  -webkit-touch-callout: none;
 }
 
 .overlay {
@@ -45,8 +47,9 @@ canvas {
   gap: 4px;
 
   button {
-    width: 30px;
-    height: 30px;
+    width: 40px;
+    height: 40px;
+    touch-action: manipulation;
     border: 1px solid #3a3a42;
     border-radius: 6px;
     background: rgba(30, 30, 36, 0.85);
@@ -54,8 +57,10 @@ canvas {
     font-size: 1.1rem;
     cursor: pointer;
 
-    &:hover {
-      border-color: colors.$color-klotski;
+    @media (hover: hover) {
+      &:hover {
+        border-color: colors.$color-klotski;
+      }
     }
   }
 }

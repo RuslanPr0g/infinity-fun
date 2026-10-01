@@ -1,7 +1,9 @@
 @use '../../../../colors' as colors;
 
 .board-frame {
-  width: min(100%, 320px);
+  // Keep the whole board (4:5) visible on short phone screens too.
+  width: min(100%, 320px, calc((100svh - 260px) * 0.8));
+  min-width: 240px;
   margin: 0 auto;
 }
 
@@ -15,6 +17,8 @@
   border-radius: 6px 6px 0 0;
   touch-action: none;
   user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .exit {

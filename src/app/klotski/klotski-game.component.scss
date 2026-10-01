@@ -20,15 +20,20 @@ h1 {
 }
 
 button {
+  min-height: 44px;
   padding: 0.45rem 0.9rem;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   border: 1px solid #3a3a42;
   border-radius: 6px;
   background: #1f1f26;
   color: colors.$primary-text-color;
   cursor: pointer;
 
-  &:hover:not(:disabled) {
-    border-color: colors.$color-klotski;
+  @media (hover: hover) {
+    &:hover:not(:disabled) {
+      border-color: colors.$color-klotski;
+    }
   }
 
   &:disabled {
@@ -62,6 +67,7 @@ button {
 
   @media (max-width: 800px) {
     grid-template-columns: 1fr;
+    gap: 1rem;
   }
 }
 
@@ -91,4 +97,25 @@ button {
   font-size: 0.75rem;
   opacity: 0.65;
   line-height: 1.5;
+}
+
+@media (max-width: 480px) {
+  .klotski-container {
+    padding: 0.5rem;
+  }
+
+  .subtitle {
+    font-size: 0.8rem;
+  }
+
+  .presets,
+  .actions,
+  .view-controls {
+    gap: 0.4rem;
+    margin: 0.5rem 0;
+  }
+
+  button {
+    padding: 0.45rem 0.7rem;
+  }
 }
