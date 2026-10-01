@@ -166,3 +166,35 @@
     color: colors.$primary-text-color;
   }
 }
+
+// ── Phones ────────────────────────────────────────────────────────────────────
+// Slimmer side padding lets the board use more of the 375px width; the small
+// text buttons keep their look but get a finger-sized hit area.
+@media (max-width: 480px) {
+  .play {
+    padding: 0.75rem 0.5rem 1.5rem;
+  }
+
+  .top-bar {
+    gap: 0.5rem;
+  }
+
+  .exit-button {
+    min-height: 40px;
+    min-width: 44px;
+    padding: 0 0.5rem;
+  }
+
+  .flip-button {
+    min-height: 40px;
+    padding: 0 0.25rem;
+  }
+
+  .prompt-overlay {
+    overflow-y: auto;
+  }
+
+  .prompt-button {
+    min-height: 44px;
+  }
+}

@@ -6,6 +6,10 @@
   padding: 1.5rem 1.25rem 2rem;
   color: colors.$primary-text-color;
 
+  @media (max-width: 480px) {
+    padding: 1rem 0.25rem 1.5rem;
+  }
+
   &.hidden {
     visibility: hidden;
     pointer-events: none;
@@ -96,6 +100,15 @@
   text-align: left;
   transition: border-color 0.15s, background 0.15s, transform 0.1s;
 
+  // Narrow phones: stack the icon above the text so the description gets the
+  // card's full width instead of a one-word-per-line sliver.
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 0.8rem 0.75rem;
+    min-width: 0;
+  }
+
   &:hover {
     border-color: rgba(colors.$primary-text-color, 0.25);
     background: rgba(colors.$primary-text-color, 0.07);
@@ -182,6 +195,7 @@
 
 .color-pick {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
   gap: 0.75rem;

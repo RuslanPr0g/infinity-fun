@@ -20,6 +20,10 @@
   padding: 2rem 2.5rem;
   max-width: 420px;
 
+  @media (max-width: 480px) {
+    padding: 1.5rem 1.25rem;
+  }
+
   .result {
     color: colors.$color-unusual-chess;
     margin-bottom: 0.5rem;

@@ -84,3 +84,15 @@
   opacity: 0.55;
   margin: 0.4rem 0 0;
 }
+
+// ── Phones ────────────────────────────────────────────────────────────────────
+// Slimmer side padding gives the board more of the 375px width.
+@media (max-width: 480px) {
+  .chessle-container {
+    padding: 0.75rem 0.5rem 1.5rem;
+  }
+
+  .tab {
+    min-height: 44px;
+  }
+}
