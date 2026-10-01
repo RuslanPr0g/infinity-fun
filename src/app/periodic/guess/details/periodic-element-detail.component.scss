@@ -354,3 +354,34 @@
     max-height: 250px;
   }
 }
+
+@media (max-width: 480px) {
+  .modal-content {
+    max-height: 85vh;
+  }
+  .close-btn {
+    width: 40px;
+    height: 40px;
+  }
+  .element-name-section {
+    padding-right: 48px;
+  }
+  .toggle-label {
+    min-height: 40px;
+  }
+  .search-input {
+    font-size: 16px;
+  }
+  .search-results {
+    left: 24px;
+    right: 24px;
+    top: 62px;
+    background: rgb(20, 20, 30);
+  }
+  .search-result-item {
+    min-height: 44px;
+  }
+  .detail-row {
+    grid-template-columns: minmax(84px, 35%) 1fr;
+  }
+}

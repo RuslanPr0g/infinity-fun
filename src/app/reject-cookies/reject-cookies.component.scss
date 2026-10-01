@@ -57,3 +57,11 @@
     opacity: 0;
   }
 }
+
+@media (max-width: 480px) {
+  .game-result div {
+    margin: 0 16px;
+    font-size: 2rem;
+    text-align: center;
+  }
+}

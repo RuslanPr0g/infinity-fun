@@ -110,3 +110,19 @@ footer {
     );
   }
 }
+
+@media (max-width: 480px) {
+  .hero {
+    padding: 1.5rem 1rem;
+  }
+
+  .features {
+    gap: 1rem;
+    padding: 0 1rem 1.5rem;
+  }
+
+  .game-result button {
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+}

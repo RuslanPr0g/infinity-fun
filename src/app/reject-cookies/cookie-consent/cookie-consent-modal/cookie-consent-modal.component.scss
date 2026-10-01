@@ -367,3 +367,24 @@ input.ng-valid.ng-touched {
     font-size: calc(.6 * var(--size));
     line-height: 0;
 }
+@media (max-width: 480px) {
+    .modal {
+        padding: 1.25rem 1rem;
+        max-height: 90dvh;
+    }
+
+    .fake-form label input,
+    .captcha-step input {
+        min-height: 40px;
+        font-size: 16px;
+    }
+
+    .accept-btn,
+    .essential-btn,
+    .customize-btn,
+    .fake-form .confirm-btn,
+    .captcha-step .final-reject-btn {
+        min-height: 44px;
+        touch-action: manipulation;
+    }
+}
