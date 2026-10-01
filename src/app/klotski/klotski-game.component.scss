@@ -1,0 +1,94 @@
+@use '../../colors' as colors;
+
+.klotski-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1rem;
+  color: colors.$primary-text-color;
+  text-align: center;
+}
+
+h1 {
+  color: colors.$color-klotski;
+  margin-bottom: 0.25rem;
+}
+
+.subtitle {
+  opacity: 0.75;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+button {
+  padding: 0.45rem 0.9rem;
+  border: 1px solid #3a3a42;
+  border-radius: 6px;
+  background: #1f1f26;
+  color: colors.$primary-text-color;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    border-color: colors.$color-klotski;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  &.active {
+    background: colors.$color-klotski;
+    border-color: colors.$color-klotski;
+    color: #111;
+  }
+}
+
+.presets,
+.actions,
+.view-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 0.75rem 0;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 340px) 1fr;
+  gap: 1.5rem;
+  align-items: start;
+  text-align: center;
+
+  @media (max-width: 800px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.stats {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 1rem;
+
+  span {
+    display: block;
+    font-size: 0.7rem;
+    opacity: 0.65;
+  }
+
+  strong {
+    font-size: 1.3rem;
+  }
+}
+
+.solved {
+  margin-top: 0.75rem;
+  color: colors.$color-klotski;
+  font-weight: bold;
+}
+
+.legend {
+  font-size: 0.75rem;
+  opacity: 0.65;
+  line-height: 1.5;
+}

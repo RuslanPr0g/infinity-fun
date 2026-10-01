@@ -13,6 +13,7 @@ import { MathQuizGameComponent } from './math-quiz/math-quiz-game.component';
 import { ChessGameComponent } from './chess/chess-game.component';
 import { ChessOpeningsGameComponent } from './chess-openings/chess-openings-game.component';
 import { ChessleGameComponent } from './chessle/chessle-game.component';
+import { KlotskiGameComponent } from './klotski/klotski-game.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -30,5 +31,6 @@ export const routes: Routes = [
   { path: 'chess', component: ChessGameComponent },
   { path: 'chess-openings', component: ChessOpeningsGameComponent },
   { path: 'chessle', component: ChessleGameComponent },
+  { path: 'klotski', component: KlotskiGameComponent },
   { path: '**', redirectTo: '' },
 ];

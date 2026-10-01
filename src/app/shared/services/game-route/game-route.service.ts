@@ -8,6 +8,11 @@ export class GameRouteService {
   // Please, make sure that the colors are matching the color scheme here: _colors.scss
   private games: GameRoute[] = [
     {
+      name: 'Klotski Graph',
+      route: '/klotski',
+      color: '#84CC16',
+    },
+    {
       name: 'Unusual Chess',
       route: '/chess',
       color: '#14B8A6',
