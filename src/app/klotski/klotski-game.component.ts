@@ -11,6 +11,7 @@ import { LocalStorageService } from '../shared/services/local-storage/local-stor
 import { SoundService } from '../shared/services/sound/sound.service';
 import { KlotskiBoardComponent } from './components/board/klotski-board.component';
 import { KlotskiGraphViewComponent } from './components/graph-view/klotski-graph-view.component';
+import { KlotskiPreviewComponent } from './components/preview/klotski-preview.component';
 import {
   EdgeMode,
   Move,
@@ -35,7 +36,7 @@ const AUTO_SOLVE_STEP_MS = 450;
 @Component({
   selector: 'app-klotski-game',
   standalone: true,
-  imports: [KlotskiBoardComponent, KlotskiGraphViewComponent],
+  imports: [KlotskiBoardComponent, KlotskiGraphViewComponent, KlotskiPreviewComponent],
   template: `
     <div class="klotski-container">
       <h1>Klotski</h1>
@@ -101,16 +102,30 @@ const AUTO_SOLVE_STEP_MS = 450;
         </section>
 
         <section class="viz">
-          <app-klotski-graph-view
-            [graph]="graph()"
-            [layout]="layout()"
-            [trail]="trail()"
-            [current]="current()"
-            [hintNode]="hintNode()"
-            [mode]="viewMode()"
-            [follow]="follow()"
-            [edgeMode]="edgeMode()"
-          />
+          <div class="viz-stage">
+            <app-klotski-graph-view
+              [graph]="graph()"
+              [layout]="layout()"
+              [trail]="trail()"
+              [current]="current()"
+              [hintNode]="hintNode()"
+              [mode]="viewMode()"
+              [follow]="follow()"
+              [edgeMode]="edgeMode()"
+              [selectedNode]="selectedNode()"
+              (nodeTap)="selectedNode.set($event)"
+            />
+            @if (preview(); as pv) {
+              <app-klotski-preview
+                class="preview-card"
+                [pieces]="pv.pieces"
+                [movesLeft]="pv.movesLeft"
+                [fromStart]="pv.fromStart"
+                [label]="pv.label"
+                (closed)="selectedNode.set(-1)"
+              />
+            }
+          </div>
 
           <div class="view-controls">
             <button type="button" [class.active]="viewMode() === '2d'" (click)="viewMode.set('2d')">2D</button>
@@ -125,7 +140,7 @@ const AUTO_SOLVE_STEP_MS = 450;
             }
             colour = moves left (yellow = solved) · distance from centre = moves from start
             @if (viewMode() === '3d') { · height = moves left }
-            · green line = your path
+            · green line = your path · tap a dot to preview it
           </p>
         </section>
       </div>
@@ -150,6 +165,8 @@ export class KlotskiGameComponent implements OnInit, OnDestroy {
   readonly autoSolving = signal(false);
   readonly usedHelp = signal(false);
   readonly best = signal<number | null>(null);
+
+  readonly selectedNode = signal(-1);
 
   readonly viewMode = signal<ViewMode>('3d');
   readonly follow = signal(true);
@@ -192,6 +209,24 @@ export class KlotskiGameComponent implements OnInit, OnDestroy {
     if (!g || !h) return -1;
     const next = this.engine.move(this.pieces(), h.pieceId, h.row, h.col);
     return g.index.get(this.engine.keyOf(next)) ?? -1;
+  });
+
+  readonly preview = computed(() => {
+    const g = this.graph();
+    const l = this.layout();
+    const i = this.selectedNode();
+    if (!g || !l || i < 0 || i >= g.keys.length) return null;
+    let label = '';
+    if (i === this.current()) label = 'You are here';
+    else if (i === l.root) label = 'Start';
+    else if (g.goalDist[i] === 0) label = 'Solved position';
+    else if (this.trail().includes(i)) label = 'On your path';
+    return {
+      pieces: this.engine.boardFromKey(g.keys[i]),
+      movesLeft: g.goalDist[i],
+      fromStart: l.depth[i],
+      label,
+    };
   });
 
   private solveTimer: ReturnType<typeof setInterval> | null = null;
@@ -285,6 +320,7 @@ export class KlotskiGameComponent implements OnInit, OnDestroy {
   }
 
   private reset(key: string): void {
+    this.selectedNode.set(-1);
     this.pieces.set(this.engine.boardFromKey(key));
     this.history.set([]);
     this.hint.set(null);

@@ -2,10 +2,12 @@ import {
   AfterViewInit,
   Component,
   ElementRef,
+  EventEmitter,
   Input,
   NgZone,
   OnChanges,
   OnDestroy,
+  Output,
   SimpleChanges,
   ViewChild,
   inject,
@@ -23,6 +25,8 @@ const TILT = -1.0;
 const MIN_ZOOM = 0.7;
 const MAX_ZOOM = 60;
 const MAX_DPR = 2;
+const TAP_SLOP_PX = 8;
+const TAP_RADIUS_PX = 18;
 
 @Component({
   selector: 'app-klotski-graph-view',
@@ -53,6 +57,10 @@ export class KlotskiGraphViewComponent implements AfterViewInit, OnChanges, OnDe
   @Input() mode: ViewMode = '3d';
   @Input() follow = true;
   @Input() edgeMode: EdgeMode = 'tree';
+  /** Node whose board is being previewed, or -1. */
+  @Input() selectedNode = -1;
+  /** Emits the tapped node index, or -1 when empty space is tapped. */
+  @Output() nodeTap = new EventEmitter<number>();
 
   @ViewChild('canvas', { static: true }) private canvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('wrap', { static: true }) private wrapRef!: ElementRef<HTMLElement>;
@@ -84,6 +92,7 @@ export class KlotskiGraphViewComponent implements AfterViewInit, OnChanges, OnDe
   private readonly pointers = new Map<number, { x: number; y: number }>();
   private pinchDistance = 0;
   private lastX = 0;
+  private tap: { id: number; x: number; y: number } | null = null;
 
   private readonly onWheel = (e: WheelEvent): void => {
     e.preventDefault();
@@ -94,11 +103,15 @@ export class KlotskiGraphViewComponent implements AfterViewInit, OnChanges, OnDe
     this.autoRotate = false;
     this.lastX = e.clientX;
     this.pinchDistance = this.currentPinchDistance();
+    this.tap = this.pointers.size === 1 ? { id: e.pointerId, x: e.clientX, y: e.clientY } : null;
     this.canvasRef.nativeElement.setPointerCapture(e.pointerId);
   };
   private readonly onMove = (e: PointerEvent): void => {
     if (!this.pointers.has(e.pointerId)) return;
     this.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (this.tap && Math.hypot(e.clientX - this.tap.x, e.clientY - this.tap.y) > TAP_SLOP_PX) {
+      this.tap = null;
+    }
     if (this.pointers.size >= 2) {
       const distance = this.currentPinchDistance();
       if (this.pinchDistance > 0 && distance > 0) this.zoomBy(distance / this.pinchDistance);
@@ -111,10 +124,34 @@ export class KlotskiGraphViewComponent implements AfterViewInit, OnChanges, OnDe
   };
   private readonly onUp = (e: PointerEvent): void => {
     this.pointers.delete(e.pointerId);
+    if (e.type === 'pointerup' && this.tap?.id === e.pointerId) {
+      const node = this.nodeAt(e.clientX, e.clientY);
+      this.zone.run(() => this.nodeTap.emit(node));
+    }
+    this.tap = null;
     this.pinchDistance = 0;
     const left = this.pointers.values().next().value;
     if (left) this.lastX = left.x;
   };
+
+  /** Nearest drawn node to a screen point (within a finger-sized radius), or -1. */
+  private nodeAt(clientX: number, clientY: number): number {
+    const g = this.graph;
+    if (!g || !this.layout) return -1;
+    const rect = this.canvasRef.nativeElement.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+    let best = -1;
+    let bestDist = TAP_RADIUS_PX * TAP_RADIUS_PX;
+    for (let i = 0; i < g.keys.length; i++) {
+      const d = (this.sx[i] - x) ** 2 + (this.sy[i] - y) ** 2;
+      if (d < bestDist) {
+        bestDist = d;
+        best = i;
+      }
+    }
+    return best;
+  }
 
   private currentPinchDistance(): number {
     if (this.pointers.size < 2) return 0;
@@ -355,6 +392,25 @@ export class KlotskiGraphViewComponent implements AfterViewInit, OnChanges, OnDe
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.arc(sx[this.hintNode], sy[this.hintNode], 7 + pulse * 5, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    if (this.selectedNode >= 0) {
+      const i = this.selectedNode;
+      ctx.strokeStyle = '#f472b6';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.arc(sx[i], sy[i], 10, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(sx[i] - 15, sy[i]);
+      ctx.lineTo(sx[i] - 6, sy[i]);
+      ctx.moveTo(sx[i] + 6, sy[i]);
+      ctx.lineTo(sx[i] + 15, sy[i]);
+      ctx.moveTo(sx[i], sy[i] - 15);
+      ctx.lineTo(sx[i], sy[i] - 6);
+      ctx.moveTo(sx[i], sy[i] + 6);
+      ctx.lineTo(sx[i], sy[i] + 15);
       ctx.stroke();
     }
 
