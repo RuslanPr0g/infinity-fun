@@ -97,3 +97,31 @@
     border-color: colors.$primary-text-color;
   }
 }
+
+@media (max-width: 480px) {
+  .results {
+    padding: 1rem;
+  }
+
+  .stats {
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .stat {
+    min-width: 0;
+    padding: 0.75rem 0.5rem;
+
+    .stat-value {
+      font-size: 1.1rem;
+      overflow-wrap: anywhere;
+    }
+  }
+
+  .primary-btn,
+  .secondary-btn {
+    flex: 1 1 140px;
+    min-height: 48px;
+    touch-action: manipulation;
+  }
+}

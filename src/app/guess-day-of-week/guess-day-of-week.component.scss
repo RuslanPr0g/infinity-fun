@@ -311,3 +311,56 @@
     gap: 12px;
   }
 }
+
+@media (max-width: 480px) {
+  // 16px prevents iOS Safari auto-zoom when focusing the date inputs
+  .date-input input {
+    font-size: 16px;
+    min-height: 44px;
+  }
+
+  .range-selection {
+    gap: 28px;
+  }
+
+  // Header is stacked here; drop the side margin so the feedback stays centered
+  .feedback {
+    flex: none;
+    margin-left: 0;
+    width: 100%;
+    padding: 12px;
+  }
+
+  .game-header {
+    justify-content: center;
+    padding: 16px;
+  }
+
+  .date-display {
+    padding: 20px 16px;
+    gap: 12px;
+
+    .date {
+      overflow-wrap: anywhere;
+    }
+  }
+
+  .start-button {
+    min-width: 0;
+    width: 100%;
+    max-width: 280px;
+  }
+
+  .day-button,
+  .start-button {
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+}
+
+// Phones in landscape: still avoid iOS focus auto-zoom
+@media (max-height: 500px) and (orientation: landscape) {
+  .date-input input {
+    font-size: 16px;
+  }
+}

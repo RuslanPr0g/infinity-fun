@@ -71,3 +71,26 @@
     font-weight: 500;
   }
 }
+
+@media (max-width: 480px) {
+  .difficulty-select {
+    padding: 1rem;
+  }
+
+  // Comfortable tap target for the text-only back link
+  .back-btn {
+    min-height: 44px;
+    padding: 0 0.5rem 0 0;
+    margin-bottom: 0.5rem;
+    touch-action: manipulation;
+  }
+
+  .title {
+    margin: 0.5rem 0 1.25rem;
+  }
+
+  .difficulty-card {
+    padding: 1.25rem 1rem;
+    touch-action: manipulation;
+  }
+}

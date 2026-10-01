@@ -53,3 +53,17 @@
     opacity: 0.7;
   }
 }
+
+// ── Phones ────────────────────────────────────────────────────────────────────
+// 16px input text stops iOS Safari zooming on focus; candidates get a
+// finger-sized hit area.
+@media (max-width: 480px) {
+  .search-input {
+    font-size: 16px;
+  }
+
+  .candidate-button {
+    min-height: 44px;
+    justify-content: center;
+  }
+}

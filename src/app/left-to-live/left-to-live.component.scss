@@ -139,3 +139,11 @@ span {
     height: 3vw;
   }
 }
+
+@media (max-width: 480px) {
+  .controls .control input {
+    font-size: 16px;
+    min-height: 44px;
+    width: 72px;
+  }
+}

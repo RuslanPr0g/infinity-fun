@@ -237,3 +237,35 @@
   opacity: 0.75;
   margin: 0 0 1.5rem;
 }
+
+// ── Phones ────────────────────────────────────────────────────────────────────
+// 16px input text stops iOS Safari zooming on focus; slimmer side padding
+// gives the board more width; text buttons get a finger-sized hit area.
+@media (max-width: 480px) {
+  .quiz,
+  .summary {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  .top-bar {
+    gap: 0.5rem;
+  }
+
+  .exit-button {
+    min-height: 40px;
+    min-width: 44px;
+    padding: 0 0.5rem;
+  }
+
+  .search-input {
+    font-size: 16px;
+  }
+
+  .reveal-button,
+  .skip-button,
+  .candidate-button,
+  .next-button {
+    min-height: 44px;
+  }
+}

@@ -32,3 +32,12 @@
     }
   }
 }
+
+@media (max-width: 480px) {
+  .mc-options button {
+    min-height: 48px;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    touch-action: manipulation;
+  }
+}

@@ -19,6 +19,10 @@
   max-width: 380px;
   width: 90%;
   box-shadow: 0 0 60px rgba(colors.$color-unusual-chess, 0.12);
+
+  @media (max-width: 480px) {
+    padding: 2rem 1.25rem;
+  }
 }
 
 // ── Cycling pieces row ────────────────────────────────────────────────────────

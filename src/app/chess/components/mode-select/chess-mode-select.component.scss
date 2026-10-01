@@ -6,6 +6,10 @@
   padding: 1.5rem;
   text-align: center;
   color: colors.$primary-text-color;
+
+  @media (max-width: 480px) {
+    padding: 1rem 0.25rem;
+  }
 }
 
 .title {
@@ -43,6 +47,10 @@
   color: colors.$primary-text-color;
   cursor: pointer;
 
+  @media (max-width: 480px) {
+    min-height: 44px;
+  }
+
   &.active {
     border-color: colors.$color-unusual-chess;
     color: colors.$color-unusual-chess;
@@ -56,6 +64,10 @@
   background: rgba(colors.$primary-text-color, 0.05);
   padding: 1.5rem;
   text-align: left;
+
+  @media (max-width: 480px) {
+    padding: 1.25rem 1rem;
+  }
 
   .mode-name {
     color: colors.$color-unusual-chess;

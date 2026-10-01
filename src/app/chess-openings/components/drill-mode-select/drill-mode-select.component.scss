@@ -126,3 +126,16 @@
     opacity: 0.9;
   }
 }
+
+// ── Phones ────────────────────────────────────────────────────────────────────
+@media (max-width: 480px) {
+  .mode-select {
+    padding: 1.25rem 0.75rem 1.5rem;
+  }
+
+  .tab,
+  .option-button,
+  .back-button {
+    min-height: 44px;
+  }
+}

@@ -118,6 +118,11 @@
     color: #ef4444;
     font-size: 0.8rem;
     cursor: pointer;
+
+    @media (max-width: 480px) {
+      min-height: 40px;
+      padding: 0.35rem 0.9rem;
+    }
   }
 }
 
@@ -132,6 +137,7 @@
 
   .promotion-pick {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
@@ -166,6 +172,10 @@
     color: rgba(colors.$primary-text-color, 0.75);
     cursor: pointer;
     user-select: none;
+
+    @media (max-width: 480px) {
+      min-height: 40px;
+    }
 
     input {
       width: 1.05rem;
