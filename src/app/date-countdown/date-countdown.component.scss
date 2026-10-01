@@ -391,3 +391,27 @@
     touch-action: manipulation;
   }
 }
+
+// iOS WebKit sizes native date/time inputs by their picker and ignores
+// width: 100%, so they overflow the card and collapse when empty.
+@supports (-webkit-touch-callout: none) {
+  .input-group {
+    align-items: stretch;
+
+    .date-input,
+    .time-input {
+      -webkit-appearance: none;
+      appearance: none;
+      display: block;
+      min-width: 0;
+      max-width: 100%;
+      min-height: 48px;
+      text-align: left;
+
+      &::-webkit-date-and-time-value {
+        text-align: left;
+        min-height: 1.2em;
+      }
+    }
+  }
+}
