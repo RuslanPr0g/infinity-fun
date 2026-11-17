@@ -16,7 +16,7 @@ import { UnitKind } from '../engine/unit-data';
   },
   styles: `
     :host { display: inline-block; position: relative; flex: none; pointer-events: none; }
-    canvas { position: absolute; left: 50%; top: 50%; width: 200%; height: 200%; transform: translate(-50%, -50%); }
+    canvas { position: absolute; left: 50%; top: 50%; width: 200%; height: 200%; max-width: none; max-height: none; transform: translate(-50%, -50%); }
     .spin { animation: fb-spin linear infinite; }
     .rev { animation-direction: reverse; }
     @keyframes fb-spin { from { transform: translate(-50%, -50%) rotate(0); } to { transform: translate(-50%, -50%) rotate(360deg); } }
