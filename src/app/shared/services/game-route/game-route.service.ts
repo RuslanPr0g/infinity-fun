@@ -48,7 +48,7 @@ export class GameRouteService {
       route: '/seabattle',
       color: '#0EA5E9',
       category: 'strategy',
-      description: 'Battleship helper that shows where ships most likely hide.',
+      description: 'A Battleship helper that shows where ships likely hide.',
     },
     {
       name: 'Periodic Quiz',

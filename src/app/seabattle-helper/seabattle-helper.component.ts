@@ -1,291 +1,89 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-
-type CellState = 'empty' | 'miss' | 'hit' | 'kill';
-
-interface Cell {
-  state: CellState;
-  autoMiss?: boolean;
-}
+import { Component, computed, signal } from '@angular/core';
+import { GameShellComponent } from '../shared/ui';
+import { Grid, SIZE, bestShots, canClick, emptyGrid, heat, tap } from './seabattle.engine';
 
 @Component({
   selector: 'app-seabattle',
   standalone: true,
-  imports: [CommonModule],
-  templateUrl: './seabattle-helper.component.html',
-  styleUrls: ['./seabattle-helper.component.scss'],
+  imports: [GameShellComponent],
+  template: `
+    <app-game-shell [help]="help" maxWidth="620px">
+      <p class="lead">Mark your shots. The brighter a square, the more likely a ship is there.</p>
+
+      <div class="board" [style.--n]="size">
+        <span></span>
+        @for (n of cols; track n) { <span class="label">{{ n }}</span> }
+        @for (row of grid(); track y; let y = $index) {
+          <span class="label">{{ rows[y] }}</span>
+          @for (c of row; track x; let x = $index) {
+            <button type="button" class="cell {{ c.state }}" [class.best]="best().has(x + ',' + y)"
+              [class.locked]="!canClick(grid(), x, y)" [style.--heat]="c.state === 'empty' ? heatOf(x, y) : 0"
+              [attr.aria-label]="rows[y] + cols[x] + ', ' + c.state" (click)="onTap(x, y)">
+              @if (numbers() && c.state === 'empty' && scores()[y][x] > 0) { <small>{{ scores()[y][x] }}</small> }
+            </button>
+          }
+        }
+      </div>
+
+      <ul class="legend">
+        <li><i class="cell best sample"></i>Best shot</li>
+        <li><i class="cell miss sample"></i>Miss</li>
+        <li><i class="cell hit sample"></i>Hit</li>
+        <li><i class="cell kill sample"></i>Sunk</li>
+      </ul>
+
+      <div class="actions">
+        <button type="button" class="ui-btn" [disabled]="!history().length" (click)="undo()">Undo</button>
+        <button type="button" class="ui-btn" [disabled]="!history().length" (click)="clear()">Clear board</button>
+        <button type="button" class="ui-btn seg" [class.on]="numbers()" [attr.aria-pressed]="numbers()" (click)="numbers.set(!numbers())">Numbers</button>
+      </div>
+    </app-game-shell>
+  `,
+  styleUrl: './seabattle-helper.component.scss',
 })
-export class SeaBattleHelperGameComponent implements OnInit {
-  readonly size = 10;
-  grid: Cell[][] = [];
-  probabilityMatrix: number[][] = [];
-  readonly ships = [4, 3, 3, 2, 2, 2, 1, 1, 1, 1];
+export class SeaBattleHelperGameComponent {
+  readonly help = [
+    'Use this next to a real game of Sea Battle (Battleship) on a 10×10 board.',
+    'Tap a square once for a miss, twice for a hit, three times when the ship sinks.',
+    'Tap a sunk ship again to undo it.',
+    'The fleet is one 4-square ship, two 3s, three 2s and four 1s. Ships never touch, not even at the corners.',
+    'While a ship is hit but not sunk, only the squares next to it can be marked.',
+  ];
+  readonly size = SIZE;
+  readonly rows = 'ABCDEFGHIJ'.split('');
+  readonly cols = Array.from({ length: SIZE }, (_, i) => i + 1);
+  readonly canClick = canClick;
 
-  readonly letters = Array.from({ length: this.size }, (_, i) =>
-    String.fromCharCode(65 + i),
-  );
-  readonly numbers = Array.from({ length: this.size }, (_, i) => i + 1);
+  readonly grid = signal<Grid>(emptyGrid());
+  readonly history = signal<Grid[]>([]);
+  readonly numbers = signal(false);
 
-  ngOnInit() {
-    this.resetGrid();
-    this.updateProbabilities();
+  readonly scores = computed(() => heat(this.grid()));
+  readonly best = computed(() => bestShots(this.grid(), this.scores()));
+  private readonly max = computed(() => Math.max(1, ...this.scores().flat()));
+
+  heatOf(x: number, y: number): number {
+    return this.scores()[y][x] / this.max();
   }
 
-  resetGrid() {
-    this.grid = Array.from({ length: this.size }, () =>
-      Array.from({ length: this.size }, () => ({
-        state: 'empty' as CellState,
-      })),
-    );
-    this.clearProbabilities();
-  }
-
-  clearProbabilities() {
-    this.probabilityMatrix = Array.from({ length: this.size }, () =>
-      Array(this.size).fill(0),
-    );
-  }
-
-  onCellClick(x: number, y: number) {
-    const cell = this.grid[y][x];
-
-    if (!this.canClickCell(x, y)) return;
-
-    if (cell.state === 'kill') {
-      this.clearKilledShip(x, y);
-    } else {
-      const order: CellState[] = ['empty', 'miss', 'hit', 'kill'];
-      const next = order[(order.indexOf(cell.state) + 1) % order.length];
-      cell.state = next;
-      if (next === 'kill') this.propagateKill(x, y);
-      if (next === 'empty') this.recalculateMissesAroundKills();
-    }
-
-    this.updateProbabilities();
-    this.grid = [...this.grid];
-  }
-
-  canClickCell(x: number, y: number) {
-    const hits = this.getHitCoords();
-    if (hits.length === 0) return true;
-
-    const cell = this.grid[y][x];
-    if (cell.state === 'hit' || cell.state === 'kill') return true;
-
-    return hits.some(([hx, hy]) => Math.abs(hx - x) + Math.abs(hy - y) === 1);
-  }
-
-  propagateKill(x: number, y: number) {
-    const queue: [number, number][] = [[x, y]];
-    const visited = new Set<string>();
-
-    while (queue.length) {
-      const [cx, cy] = queue.shift()!;
-      const key = `${cx},${cy}`;
-      if (visited.has(key)) continue;
-      visited.add(key);
-
-      this.grid[cy][cx].state = 'kill';
-      this.markSurroundingMiss(cx, cy);
-
-      for (let dy = -1; dy <= 1; dy++) {
-        for (let dx = -1; dx <= 1; dx++) {
-          const nx = cx + dx;
-          const ny = cy + dy;
-          if (
-            nx >= 0 &&
-            ny >= 0 &&
-            nx < this.size &&
-            ny < this.size &&
-            this.grid[ny][nx].state === 'hit'
-          ) {
-            queue.push([nx, ny]);
-          }
-        }
-      }
+  onTap(x: number, y: number): void {
+    const next = tap(this.grid(), x, y);
+    if (next !== this.grid()) {
+      this.history.update((h) => [...h.slice(-99), this.grid()]);
+      this.grid.set(next);
     }
   }
 
-  clearKilledShip(x: number, y: number) {
-    const shipCells: [number, number][] = [];
-    const visited = new Set<string>();
-    const queue: [number, number][] = [[x, y]];
-
-    while (queue.length) {
-      const [cx, cy] = queue.shift()!;
-      const key = `${cx},${cy}`;
-      if (visited.has(key)) continue;
-      visited.add(key);
-
-      if (this.grid[cy][cx].state === 'kill') {
-        shipCells.push([cx, cy]);
-        const dirs: [number, number][] = [
-          [1, 0],
-          [-1, 0],
-          [0, 1],
-          [0, -1],
-        ];
-        for (const [dx, dy] of dirs) {
-          const nx = cx + dx;
-          const ny = cy + dy;
-          if (
-            nx >= 0 &&
-            ny >= 0 &&
-            nx < this.size &&
-            ny < this.size &&
-            this.grid[ny][nx].state === 'kill'
-          ) {
-            queue.push([nx, ny]);
-          }
-        }
-      }
-    }
-
-    for (const [cx, cy] of shipCells) {
-      this.grid[cy][cx].state = 'empty';
-    }
-
-    // Clear surrounding auto-misses
-    for (const [cx, cy] of shipCells) {
-      for (let dy = -1; dy <= 1; dy++) {
-        for (let dx = -1; dx <= 1; dx++) {
-          const nx = cx + dx;
-          const ny = cy + dy;
-          if (
-            nx >= 0 &&
-            ny >= 0 &&
-            nx < this.size &&
-            ny < this.size &&
-            this.grid[ny][nx].autoMiss
-          ) {
-            this.grid[ny][nx].state = 'empty';
-            delete this.grid[ny][nx].autoMiss;
-          }
-        }
-      }
+  undo(): void {
+    const h = this.history();
+    if (h.length) {
+      this.grid.set(h[h.length - 1]);
+      this.history.set(h.slice(0, -1));
     }
   }
 
-  recalculateMissesAroundKills() {
-    for (let y = 0; y < this.size; y++) {
-      for (let x = 0; x < this.size; x++) {
-        if (this.grid[y][x].state === 'miss') {
-          this.grid[y][x].state = 'empty';
-          delete this.grid[y][x].autoMiss;
-        }
-      }
-    }
-
-    for (let y = 0; y < this.size; y++) {
-      for (let x = 0; x < this.size; x++) {
-        if (this.grid[y][x].state === 'kill') this.markSurroundingMiss(x, y);
-      }
-    }
-  }
-
-  markSurroundingMiss(x: number, y: number) {
-    for (let dy = -1; dy <= 1; dy++) {
-      for (let dx = -1; dx <= 1; dx++) {
-        const nx = x + dx;
-        const ny = y + dy;
-        if (
-          nx >= 0 &&
-          ny >= 0 &&
-          nx < this.size &&
-          ny < this.size &&
-          this.grid[ny][nx].state === 'empty'
-        ) {
-          this.grid[ny][nx].state = 'miss';
-          this.grid[ny][nx].autoMiss = true;
-        }
-      }
-    }
-  }
-
-  updateProbabilities() {
-    this.clearProbabilities();
-    const hits = this.getHitCoords();
-
-    for (const shipSize of this.ships) {
-      for (let y = 0; y < this.size; y++) {
-        for (let x = 0; x <= this.size - shipSize; x++) {
-          if (this.canPlaceShip(x, y, shipSize, true, hits)) {
-            for (let i = 0; i < shipSize; i++)
-              this.probabilityMatrix[y][x + i]++;
-          }
-        }
-      }
-      for (let y = 0; y <= this.size - shipSize; y++) {
-        for (let x = 0; x < this.size; x++) {
-          if (this.canPlaceShip(x, y, shipSize, false, hits)) {
-            for (let i = 0; i < shipSize; i++)
-              this.probabilityMatrix[y + i][x]++;
-          }
-        }
-      }
-    }
-  }
-
-  canPlaceShip(
-    x: number,
-    y: number,
-    shipSize: number,
-    horizontal: boolean,
-    hits: [number, number][],
-  ): boolean {
-    for (let i = 0; i < shipSize; i++) {
-      const cx = horizontal ? x + i : x;
-      const cy = horizontal ? y : y + i;
-      if (cx >= this.size || cy >= this.size) return false;
-      const state = this.grid[cy][cx].state;
-      if (state === 'miss' || state === 'kill') return false;
-    }
-
-    if (hits.length > 0) {
-      const coversAllHits = hits.every(([hx, hy]) =>
-        horizontal
-          ? hy === y && hx >= x && hx < x + shipSize
-          : hx === x && hy >= y && hy < y + shipSize,
-      );
-      if (!coversAllHits) return false;
-    }
-
-    return true;
-  }
-
-  getHitCoords(): [number, number][] {
-    const hits: [number, number][] = [];
-    for (let y = 0; y < this.size; y++) {
-      for (let x = 0; x < this.size; x++) {
-        if (this.grid[y][x].state === 'hit') hits.push([x, y]);
-      }
-    }
-    return hits;
-  }
-
-  getCellColor(x: number, y: number): string {
-    const cell = this.grid[y][x];
-    if (cell.state === 'hit') return '#ff9800';
-    if (cell.state === 'kill') return '#a00502';
-    if (cell.state === 'miss') return '#546e7a';
-    if (cell.state === 'empty') {
-      const max = this.getMaxProbability();
-      const value = this.probabilityMatrix[y][x];
-      if (max === 0 || value === 0) return '#003366';
-      const intensity = Math.round((value / max) * 225);
-      return `rgb(${intensity},0,${255 - intensity})`;
-    }
-    return '#003366';
-  }
-
-  getMaxProbability(): number {
-    let max = 0;
-    for (let y = 0; y < this.size; y++) {
-      for (let x = 0; x < this.size; x++) {
-        if (this.probabilityMatrix[y][x] > max)
-          max = this.probabilityMatrix[y][x];
-      }
-    }
-    return max;
+  clear(): void {
+    this.history.update((h) => [...h, this.grid()]);
+    this.grid.set(emptyGrid());
   }
 }
