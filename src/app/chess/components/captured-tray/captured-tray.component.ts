@@ -16,7 +16,7 @@ import { ChessPieceComponent } from '../piece/chess-piece.component';
   imports: [CommonModule, ChessPieceComponent],
   template: `
     <div class="tray">
-      <span class="owner">{{ owner === 'white' ? 'White' : 'Black' }} captured</span>
+      <span class="owner">{{ owner === 'white' ? 'White' : 'Black' }} took</span>
       <span class="pieces">
         @if (captured.length === 0) {
           <span class="none">—</span>

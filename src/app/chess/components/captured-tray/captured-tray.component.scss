@@ -1,34 +1,13 @@
-@use '../../../../colors' as colors;
-
 .tray {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.35rem 0.6rem;
-  border-radius: 8px;
-  background: rgba(colors.$primary-text-color, 0.05);
-  color: colors.$primary-text-color;
-  min-height: 2rem;
-
-  .owner {
-    font-size: 0.72rem;
-    opacity: 0.7;
-    white-space: nowrap;
-  }
-
-  .pieces {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.1rem;
-
-    app-chess-piece {
-      width: 1.4rem;
-      height: 1.4rem;
-    }
-  }
-
-  .none {
-    opacity: 0.4;
-  }
+  gap: 10px;
+  min-height: 40px;
+  padding: 6px 12px;
+  border-radius: 12px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  .owner { flex: none; font-size: 13px; font-weight: 600; color: var(--muted); }
+  .pieces { display: flex; flex-wrap: wrap; gap: 2px; app-chess-piece { width: 22px; height: 22px; } }
+  .none { color: var(--muted); }
 }

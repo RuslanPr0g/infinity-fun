@@ -3,23 +3,23 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { GameStatus } from '../../engine/variant';
 
 /** End-of-game overlay: result, reason, and rematch/change-mode actions. */
+import { UiModalComponent } from '../../../shared/ui';
 @Component({
   selector: 'app-game-over-overlay',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, UiModalComponent],
   template: `
-    <div class="game-over">
-      <div class="panel">
+    <ui-modal size="sm" [closable]="false">
+      <div class="box">
+        <p class="ui-kicker">Game over</p>
         <h2 class="result">{{ resultText }}</h2>
-        <p class="reason">{{ reasonText }}</p>
+        <p class="ui-muted">{{ reasonText }}</p>
         <div class="actions">
-          <button type="button" class="rematch" (click)="rematch.emit()">Rematch</button>
-          <button type="button" class="change" (click)="changeMode.emit()">
-            Change mode
-          </button>
+          <button type="button" class="ui-btn" (click)="changeMode.emit()">Other mode</button>
+          <button type="button" class="ui-btn primary" (click)="rematch.emit()">Play again</button>
         </div>
       </div>
-    </div>
+    </ui-modal>
   `,
   styleUrl: './game-over-overlay.component.scss',
 })

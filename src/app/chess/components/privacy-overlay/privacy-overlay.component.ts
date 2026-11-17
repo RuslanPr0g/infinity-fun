@@ -6,24 +6,20 @@ import { PieceColor } from '../../engine/core/board';
  * and the other player's entry, so a pending move is never visible to the
  * second player.
  */
+import { UiModalComponent } from '../../../shared/ui';
 @Component({
   selector: 'app-privacy-overlay',
   standalone: true,
+  imports: [UiModalComponent],
   template: `
-    <div class="privacy">
-      <div class="panel">
-        <span class="icon">🙈</span>
-        <h2 class="headline">
-          Pass the device to {{ nextColor === 'black' ? 'Black' : 'White' }}
-        </h2>
-        <p class="hint">
-          {{ nextColor === 'black' ? 'White' : 'Black' }}'s move is locked in and hidden.
-        </p>
-        <button type="button" class="ready-button" (click)="ready.emit()">
-          I'm {{ nextColor === 'black' ? 'Black' : 'White' }} — continue
-        </button>
+    <ui-modal size="sm" [closable]="false" [opaque]="true">
+      <div class="box">
+        <span class="icon" aria-hidden="true">🙈</span>
+        <h2>Pass the device to {{ nextColor === 'black' ? 'Black' : 'White' }}</h2>
+        <p class="ui-muted">{{ nextColor === 'black' ? 'White' : 'Black' }}’s move is locked in and hidden.</p>
+        <button type="button" class="ui-btn primary big block" (click)="ready.emit()">I’m {{ nextColor === 'black' ? 'Black' : 'White' }}, show the board</button>
       </div>
-    </div>
+    </ui-modal>
   `,
   styleUrl: './privacy-overlay.component.scss',
 })

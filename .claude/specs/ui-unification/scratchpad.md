@@ -28,7 +28,7 @@ Plan: `~/.claude/plans/pasted-content-id-4447-create-scratchpa-swift-rain.md`. R
 | 11 | Sea Battle | 50px cells, reversed breakpoints | fluid grid | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | 12 | Chessle | own palette | tokens, modal | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | 13 | Opening Trainer | hover-only preview | tap preview | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| 14 | Unusual Chess | 5 copied overlays | UiModal, fluid board | | | | | | |
+| 14 | Unusual Chess | 5 copied overlays | UiModal, fluid board | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | 15 | Klotski | own canvas loop, 24 hex | CanvasStage, tokens | | | | | | |
 | 16 | Home + docs + release | home-link component | footer version, docs, v5.0.0 | | | | | | |
 

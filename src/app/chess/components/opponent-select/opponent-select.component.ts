@@ -32,7 +32,7 @@ const BOT_META: Record<string, BotMeta> = {
   easy:      { icon: '🎯' },
   medium:    { icon: '⚔️' },
   hard:      { icon: '💀' },
-  stockfish: { icon: '🤖', badge: '⚡ Stockfish 18', badgeClass: 'badge-engine' },
+  stockfish: { icon: '🤖', badge: 'Stockfish 18', badgeClass: 'badge-engine' },
 };
 
 /**
@@ -49,119 +49,59 @@ const BOT_META: Record<string, BotMeta> = {
   standalone: true,
   imports: [CommonModule, StockfishLoaderComponent],
   template: `
-    <!-- Stockfish loader overlay, shown inline before the game starts -->
     @if (showLoader()) {
       <app-stockfish-loader (ready)="onLoaderReady()" />
     }
 
     <div class="opponent-select" [class.hidden]="showLoader()">
-      <h2 class="heading">{{ mode?.name ?? 'Chess' }} — choose opponent</h2>
+      <p class="ui-kicker">{{ mode?.name ?? 'Chess' }} · who do you play?</p>
 
-      <!-- ── Section 1: Hotseat ─────────────────────────────────────── -->
-      <section class="section">
-        <span class="section-label">Local multiplayer</span>
-        <button
-          type="button"
-          class="hotseat-card"
-          [class.active]="choice() === 'hotseat'"
-          (click)="chooseHotseat()"
-        >
-          <span class="hotseat-icon">👥</span>
-          <span class="hotseat-info">
-            <span class="option-name">Two players</span>
-            <span class="option-desc">Hotseat on this device with hidden move entry.</span>
-          </span>
+      <section>
+        <span class="label">On this device</span>
+        <button type="button" class="option ui-panel" [class.on]="choice() === 'hotseat'" (click)="chooseHotseat()">
+          <span class="icon">👥</span>
+          <span class="info"><b>Two players</b><small>Take turns on this device. Moves stay hidden.</small></span>
         </button>
       </section>
 
-      <!-- ── Section 2: vs Bot ──────────────────────────────────────── -->
-      <section class="section">
-        <span class="section-label">vs Bot</span>
-        <div class="bot-grid">
+      <section>
+        <span class="label">Against a bot</span>
+        <div class="bots">
           @for (bot of bots; track bot.id) {
-            <button
-              type="button"
-              class="bot-card"
-              [class.active]="choice() === bot.id"
-              [class.engine-card]="bot.id === 'stockfish'"
-              (click)="chooseBot(bot)"
-            >
-              <span class="bot-icon">{{ metaFor(bot.id).icon }}</span>
-              <span class="bot-info">
-                <span class="option-name">
-                  {{ bot.name }}
-                  @if (metaFor(bot.id).badge; as badge) {
-                    <span class="badge" [class]="metaFor(bot.id).badgeClass ?? ''">
-                      {{ badge }}
-                    </span>
-                  }
-                </span>
-                <span class="option-desc">{{ bot.description }}</span>
+            <button type="button" class="option ui-panel" [class.on]="choice() === bot.id" (click)="chooseBot(bot)">
+              <span class="icon">{{ metaFor(bot.id).icon }}</span>
+              <span class="info">
+                <b>{{ bot.name }} @if (metaFor(bot.id).badge; as badge) { <span class="badge">{{ badge }}</span> }</b>
+                <small>{{ bot.description }}</small>
               </span>
             </button>
           }
         </div>
       </section>
 
-      <!-- ── Royale army layout (hotseat only) ─────────────────────── -->
       @if (choice() === 'hotseat' && mode?.id === 'shrinking-royale') {
-        <div class="color-pick">
-          <span class="color-label">Starting army</span>
-          <button
-            type="button"
-            class="color-button"
-            [class.active]="royaleArmyLayout() === 'centered'"
-            (click)="royaleArmyLayout.set('centered')"
-          >
-            8×8 centered
-          </button>
-          <button
-            type="button"
-            class="color-button"
-            [class.active]="royaleArmyLayout() === 'expanded'"
-            (click)="royaleArmyLayout.set('expanded')"
-          >
-            16×16 expanded
-          </button>
+        <div class="pick">
+          <span class="label">Armies start</span>
+          <div class="ui-seg">
+            <button type="button" class="ui-btn seg" [class.on]="royaleArmyLayout() === 'centered'" (click)="royaleArmyLayout.set('centered')">In the middle (8×8)</button>
+            <button type="button" class="ui-btn seg" [class.on]="royaleArmyLayout() === 'expanded'" (click)="royaleArmyLayout.set('expanded')">Spread out (16×16)</button>
+          </div>
         </div>
       }
 
-      <!-- ── Color picker (bot games only) ─────────────────────────── -->
       @if (choice() !== null && choice() !== 'hotseat') {
-        <div class="color-pick">
-          <span class="color-label">Play as</span>
-          <button
-            type="button"
-            class="color-button"
-            [class.active]="humanColor() === 'white'"
-            (click)="humanColor.set('white')"
-          >
-            ♙ White
-          </button>
-          <button
-            type="button"
-            class="color-button"
-            [class.active]="humanColor() === 'black'"
-            (click)="humanColor.set('black')"
-          >
-            ♟ Black
-          </button>
+        <div class="pick">
+          <span class="label">You play</span>
+          <div class="ui-seg">
+            <button type="button" class="ui-btn seg" [class.on]="humanColor() === 'white'" (click)="humanColor.set('white')">♙ White</button>
+            <button type="button" class="ui-btn seg" [class.on]="humanColor() === 'black'" (click)="humanColor.set('black')">♟ Black</button>
+          </div>
         </div>
       }
 
-      <!-- ── Actions ────────────────────────────────────────────────── -->
       <div class="actions">
-        <button type="button" class="back-button" (click)="back.emit()">
-          ← Back
-        </button>
-        <button
-          type="button"
-          class="start-button"
-          [disabled]="choice() === null"
-          (click)="confirm()"
-        >
-          Start game
-        </button>
+        <button type="button" class="ui-btn ghost" (click)="back.emit()">← Back</button>
+        <button type="button" class="ui-btn primary big" [disabled]="choice() === null" (click)="confirm()">Start game</button>
       </div>
     </div>
   `,

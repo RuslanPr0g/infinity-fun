@@ -1,64 +1,20 @@
-@use '../../../../colors' as colors;
-
 .move-log {
-  border: 2px solid rgba(colors.$primary-text-color, 0.12);
-  border-radius: 12px;
-  padding: 0.9rem;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--card);
   max-height: 220px;
   overflow-y: auto;
   text-align: left;
-  color: colors.$primary-text-color;
-
-  .log-title {
-    font-size: 0.95rem;
-    color: colors.$color-unusual-chess;
-    margin-bottom: 0.5rem;
-  }
-
-  .empty {
-    font-size: 0.85rem;
-    opacity: 0.6;
-  }
-
-  .rounds {
-    list-style: none;
-  }
-
-  .round {
-    margin-bottom: 0.6rem;
-
-    .round-number {
-      font-size: 0.8rem;
-      color: colors.$color-unusual-chess;
-    }
-
-    .outcomes {
-      list-style: none;
-      margin-top: 0.2rem;
-
-      li {
-        font-size: 0.82rem;
-        opacity: 0.85;
-        margin-bottom: 0.15rem;
-      }
-    }
-  }
+  .log-title { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .empty { font-size: 14px; color: var(--muted); }
+  .rounds { list-style: none; }
+  .round { margin-bottom: 10px; }
+  .round-number { font-size: 12px; font-weight: 700; color: var(--accent); }
+  .outcomes { list-style: none; margin-top: 2px; li { font-size: 14px; line-height: 1.45; } }
 }
-
-// Desktop playing screen: the host is a grid item stretched to fill the
-// leftover height of the side column, so the log itself grows to match and
-// scrolls internally instead of stopping at the mobile 220px cap.
+// Wide screens: fill the leftover height of the side column and scroll inside.
 @media (min-width: 900px) {
-  :host {
-    display: block;
-    min-height: 0;
-    height: 100%;
-  }
-
-  .move-log {
-    max-height: none;
-    height: 100%;
-    min-height: 0;
-    overflow-y: auto;
-  }
+  :host { display: block; min-height: 0; height: 100%; }
+  .move-log { max-height: none; height: 100%; }
 }

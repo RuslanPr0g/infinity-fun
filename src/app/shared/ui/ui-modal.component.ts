@@ -8,7 +8,7 @@ import { AfterViewInit, Component, ElementRef, HostListener, input, output, view
   selector: 'ui-modal',
   standalone: true,
   template: `
-    <div class="backdrop" (click)="closable() && closed.emit()"></div>
+    <div class="backdrop" [class.opaque]="opaque()" (click)="closable() && closed.emit()"></div>
     <div class="ui-modal {{ size() }}" role="dialog" aria-modal="true" [attr.aria-label]="heading() || null" tabindex="-1" #card>
       @if (closable()) {
         <button type="button" class="ui-btn ghost icon x" aria-label="Close" (click)="closed.emit()">✕</button>
@@ -25,6 +25,8 @@ export class UiModalComponent implements AfterViewInit {
   readonly heading = input<string>('');
   readonly size = input<'sm' | 'md' | 'lg'>('md');
   readonly closable = input<boolean>(true);
+  /** Hide everything behind it completely (e.g. a secret move on a shared device). */
+  readonly opaque = input<boolean>(false);
   readonly closed = output<void>();
 
   private readonly card = viewChild.required<ElementRef<HTMLElement>>('card');

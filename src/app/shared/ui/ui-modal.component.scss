@@ -17,6 +17,7 @@
   inset: 0;
   background: rgba(4, 5, 13, 0.66);
   backdrop-filter: blur(3px);
+  &.opaque { background: #070a14; backdrop-filter: none; }
 }
 
 .ui-modal {

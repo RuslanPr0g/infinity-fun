@@ -24,31 +24,24 @@ import { StockfishService } from '../../services/stockfish.service';
 const PIECES = ['♜', '♞', '♝', '♛', '♚', '♝', '♞', '♜'];
 const MIN_DISPLAY_MS = 3000;
 
+import { UiModalComponent } from '../../../shared/ui';
 @Component({
   selector: 'app-stockfish-loader',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, UiModalComponent],
   template: `
-    <div class="loader-backdrop">
-      <div class="loader-card">
-        <div class="pieces-row" aria-hidden="true">
+    <ui-modal size="sm" [closable]="false">
+      <div class="box">
+        <div class="pieces" aria-hidden="true">
           @for (piece of pieces; track $index) {
-            <span
-              class="piece"
-              [class.active]="$index === activePieceIndex()"
-            >{{ piece }}</span>
+            <span [class.on]="$index === activePieceIndex()">{{ piece }}</span>
           }
         </div>
-
-        <p class="status-line">{{ statusLine() }}</p>
-
-        <div class="progress-bar" role="progressbar" aria-label="Loading Stockfish engine">
-          <div class="progress-fill" [style.width.%]="progressPct()"></div>
-        </div>
-
-        <p class="sub-line">{{ subLine() }}</p>
+        <p class="status">{{ statusLine() }}</p>
+        <div class="ui-bar" role="progressbar" aria-label="Loading the chess bot"><div [style.width.%]="progressPct()"></div></div>
+        <p class="ui-muted sub">{{ subLine() }}</p>
       </div>
-    </div>
+    </ui-modal>
   `,
   styleUrl: './stockfish-loader.component.scss',
 })
@@ -58,7 +51,7 @@ export class StockfishLoaderComponent implements OnInit, OnDestroy {
   readonly pieces = PIECES;
 
   readonly activePieceIndex = signal(0);
-  readonly statusLine = signal('Preparing engine…');
+  readonly statusLine = signal('Getting the bot ready…');
   readonly subLine = signal('One moment');
   readonly progressPct = signal(0);
 
@@ -75,8 +68,8 @@ export class StockfishLoaderComponent implements OnInit, OnDestroy {
     const alreadyCached = await this.stockfish.isAlreadyCached();
 
     if (alreadyCached) {
-      this.statusLine.set('Loading engine…');
-      this.subLine.set('Cached — loading instantly');
+      this.statusLine.set('Loading the bot…');
+      this.subLine.set('Already downloaded, almost there');
       this.progressPct.set(80);
       await this.stockfish.init();
       this.progressPct.set(100);
@@ -86,8 +79,8 @@ export class StockfishLoaderComponent implements OnInit, OnDestroy {
     }
 
     // First load: run init + 3s minimum in parallel.
-    this.statusLine.set('Loading engine…');
-    this.subLine.set('Downloading Stockfish 18 (~7 MB) — caching for next time');
+    this.statusLine.set('Loading the bot…');
+    this.subLine.set('Downloading Stockfish 18 (about 7 MB). Next time it’s instant.');
 
     // Simulate smooth progress up to ~90% while waiting.
     let elapsed = 0;
@@ -97,7 +90,7 @@ export class StockfishLoaderComponent implements OnInit, OnDestroy {
       const pct = 90 * (1 - Math.exp(-elapsed / 2000));
       this.progressPct.set(Math.round(pct));
       if (elapsed >= 2000) {
-        this.statusLine.set('Caching for next time…');
+        this.statusLine.set('Saving it for next time…');
       }
     }, 100);
 
@@ -107,7 +100,7 @@ export class StockfishLoaderComponent implements OnInit, OnDestroy {
     ]);
 
     this.progressPct.set(100);
-    this.statusLine.set('Engine ready');
+    this.statusLine.set('Ready');
     this.subLine.set('Stockfish 18 loaded');
     this.cleanup();
     this.ready.emit();

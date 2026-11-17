@@ -45,7 +45,7 @@
   align-items: center;
   justify-content: center;
   font-size: clamp(1.1rem, 5vw, 1.8rem);
-  color: #ef4444;
+  color: #ff4d6d;
   font-weight: 700;
   opacity: 0;
   animation: miss-flash 1s ease 0.6s;
@@ -57,9 +57,9 @@
   left: 50%;
   top: 62%;
   transform: translateX(-50%);
-  background: rgba(18, 18, 18, 0.85);
-  color: #f0f0f0;
-  border: 1px solid #14b8a6;
+  background: rgba(13, 19, 36, 0.9);
+  color: var(--text);
+  border: 1px solid var(--accent);
   border-radius: 999px;
   padding: 0.3rem 0.9rem;
   font-size: 0.85rem;

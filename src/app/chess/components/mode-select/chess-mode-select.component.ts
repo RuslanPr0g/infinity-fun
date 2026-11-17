@@ -13,41 +13,20 @@ import { CHESS_MODES, ChessModeDescriptor } from '../../models/chess-modes';
   imports: [CommonModule],
   template: `
     <div class="mode-select">
-      <h1 class="title">Unusual Chess</h1>
-      <p class="subtitle">Non-standard chess variants. Pick a mode.</p>
-
-      <div class="tabs" role="tablist">
+      <div class="ui-seg tabs" role="tablist">
         @for (mode of modes; track mode.id; let i = $index) {
-          <button
-            type="button"
-            role="tab"
-            class="tab"
-            [class.active]="i === activeIndex()"
-            [attr.aria-selected]="i === activeIndex()"
-            (click)="activeIndex.set(i)"
-          >
-            {{ mode.name }}
-          </button>
+          <button type="button" role="tab" class="ui-btn seg" [class.on]="i === activeIndex()" [attr.aria-selected]="i === activeIndex()" (click)="activeIndex.set(i)">{{ mode.name }}</button>
         }
       </div>
 
       @if (activeMode; as mode) {
-        <div class="card">
-          <h2 class="mode-name">{{ mode.name }}</h2>
+        <div class="card ui-panel">
+          <h2>{{ mode.name }}</h2>
           <p class="tagline">{{ mode.tagline }}</p>
           <ul class="rules">
-            @for (line of mode.rulesSummary; track $index) {
-              <li>{{ line }}</li>
-            }
+            @for (line of mode.rulesSummary; track $index) { <li>{{ line }}</li> }
           </ul>
-          <button
-            type="button"
-            class="play-button"
-            [disabled]="!mode.enabled"
-            (click)="play.emit(mode)"
-          >
-            {{ mode.enabled ? 'Play' : 'Coming soon' }}
-          </button>
+          <button type="button" class="ui-btn primary big block" [disabled]="!mode.enabled" (click)="play.emit(mode)">{{ mode.enabled ? 'Play' : 'Coming soon' }}</button>
         </div>
       }
     </div>

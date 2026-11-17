@@ -9,9 +9,9 @@ import { RoundLogEntry } from '../../services/chess-session.service';
   imports: [CommonModule],
   template: `
     <div class="move-log">
-      <h3 class="log-title">Move log</h3>
+      <h3 class="log-title">Moves</h3>
       @if (entries.length === 0) {
-        <p class="empty">No rounds resolved yet.</p>
+        <p class="empty">No moves yet.</p>
       }
       <ol class="rounds">
         @for (entry of reversed; track entry.round) {

@@ -1,222 +1,90 @@
-@use '../../colors' as colors;
+@use 'tokens' as t;
+@use 'breakpoints' as bp;
 
-.chess-container {
-  max-width: 560px;
-  margin: 0 auto;
-  padding: 1rem 1rem 2rem;
-  color: colors.$primary-text-color;
+.playing { display: flex; flex-direction: column; gap: 10px; text-align: left; }
 
-  button {
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-  }
+// Phones: one column in DOM order (tray, board, tray, controls, log).
+.play-layout { display: flex; flex-direction: column; gap: 10px; }
 
-  @media (max-width: 480px) {
-    padding: 0.6rem 0.6rem 1.5rem;
-  }
-
-  @media (min-width: 900px) {
-    max-width: 980px;
-  }
-}
-
-.playing {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  margin-top: 0.75rem;
-}
-
-// Mobile/default: a plain flex column in DOM order — top tray, board, bottom
-// tray, controls, log — identical to the pre-desktop-layout markup.
-.play-layout {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-}
-
-// Desktop: board on the left sized to guarantee the whole playing screen
-// fits the viewport with no page scroll; a side column on the right holds
-// the trays/controls/log, with the log growing to fill leftover height and
-// scrolling internally. Named grid areas re-place the same DOM nodes without
-// reordering them, so the mobile flex layout above stays untouched.
+// Wide screens: board left, sized so the whole screen fits without scrolling; the rest on the right.
 @media (min-width: 900px) {
   .play-layout {
-    --board-size: min(560px, calc(100vh - 200px));
+    --board-size: min(600px, calc(100dvh - 190px));
     display: grid;
-    grid-template-columns: var(--board-size) minmax(280px, 340px);
+    grid-template-columns: var(--board-size) minmax(280px, 360px);
     grid-template-rows: auto auto auto 1fr;
-    grid-template-areas:
-      'board tray-top'
-      'board controls'
-      'board tray-bottom'
-      'board log';
-    column-gap: 1.25rem;
-    row-gap: 0.6rem;
+    grid-template-areas: 'board tray-top' 'board controls' 'board tray-bottom' 'board log';
+    column-gap: 20px;
+    row-gap: 10px;
     height: var(--board-size);
+    justify-content: center;
   }
+  .board-wrap { grid-area: board; }
+  .tray-top { grid-area: tray-top; }
+  .tray-bottom { grid-area: tray-bottom; }
+  .controls { grid-area: controls; }
+  app-move-log { grid-area: log; display: block; min-height: 0; overflow: hidden; }
+}
 
-  .board-wrap {
-    grid-area: board;
+// Phone on its side: board left, the rest scrolls on the right.
+@media (min-aspect-ratio: 4/3) and (max-height: 560px) {
+  .play-layout {
+    display: grid;
+    grid-template-columns: min(48vw, calc(100dvh - 120px)) 1fr;
+    grid-auto-rows: min-content;
+    column-gap: 16px;
+    align-items: start;
   }
-
-  .tray-top {
-    grid-area: tray-top;
-  }
-
-  .tray-bottom {
-    grid-area: tray-bottom;
-  }
-
-  .controls {
-    grid-area: controls;
-  }
-
-  app-move-log {
-    grid-area: log;
-    display: block;
-    min-height: 0;
-    overflow: hidden;
-  }
+  .board-wrap { grid-column: 1; grid-row: 1 / span 6; }
+  .play-layout > :not(.board-wrap) { grid-column: 2; }
 }
 
 .top-bar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
+  gap: 10px;
   flex-wrap: wrap;
-
-  .status-text {
-    font-size: 0.9rem;
-    color: colors.$color-unusual-chess;
-
-    @media (max-width: 480px) {
-      font-size: 0.8rem;
-    }
-  }
-
-  .burn-chip {
-    padding: 0.25rem 0.6rem;
-    border: 1px solid rgba(249, 115, 22, 0.6);
-    border-radius: 999px;
-    background: rgba(249, 115, 22, 0.12);
-    color: #f97316;
-    font-size: 0.75rem;
-    white-space: nowrap;
-
-    @media (max-width: 480px) {
-      font-size: 0.7rem;
-    }
-  }
-
-  .resign-button {
-    padding: 0.35rem 0.8rem;
-    border: 2px solid rgba(239, 68, 68, 0.6);
-    border-radius: 8px;
-    background: transparent;
-    color: #ef4444;
-    font-size: 0.8rem;
-    cursor: pointer;
-
-    @media (max-width: 480px) {
-      min-height: 40px;
-      padding: 0.35rem 0.9rem;
-    }
-  }
+  .status-text { flex: 1; min-width: 0; font-weight: 700; color: var(--accent); }
+}
+.burn-chip {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(249, 115, 22, 0.6);
+  background: rgba(249, 115, 22, 0.12);
+  color: #fb923c;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
-.board-wrap {
-  position: relative;
-}
+.board-wrap { position: relative; }
 
-.controls {
+.controls { display: flex; flex-direction: column; gap: 10px; }
+.promotion-pick {
   display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-
-  .promotion-pick {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-
-    .promo-label {
-      font-size: 0.85rem;
-      opacity: 0.8;
-    }
-
-    .promo-button {
-      width: 2.8rem;
-      height: 2.8rem;
-      padding: 0.25rem;
-      border: 2px solid rgba(colors.$primary-text-color, 0.2);
-      border-radius: 8px;
-      background: rgba(colors.$primary-text-color, 0.05);
-      cursor: pointer;
-
-      &.active {
-        border-color: colors.$color-unusual-chess;
-        background: rgba(20, 184, 166, 0.15);
-      }
-    }
-  }
-
-  .confirm-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.45rem;
-    font-size: 0.8rem;
-    color: rgba(colors.$primary-text-color, 0.75);
-    cursor: pointer;
-    user-select: none;
-
-    @media (max-width: 480px) {
-      min-height: 40px;
-    }
-
-    input {
-      width: 1.05rem;
-      height: 1.05rem;
-      accent-color: colors.$color-unusual-chess;
-      cursor: pointer;
-    }
-  }
-
-  .action-row {
-    display: flex;
-    gap: 0.6rem;
-
-    button {
-      min-height: 48px;
-    }
-
-    .pass-button {
-      flex: 1;
-      padding: 0.8rem;
-      border: 2px solid rgba(colors.$primary-text-color, 0.25);
-      border-radius: 8px;
-      background: transparent;
-      color: colors.$primary-text-color;
-      cursor: pointer;
-    }
-
-    .confirm-button {
-      flex: 2;
-      padding: 0.8rem;
-      border: none;
-      border-radius: 8px;
-      background: colors.$color-unusual-chess;
-      color: #04211d;
-      font-weight: 700;
-      cursor: pointer;
-
-      &:disabled {
-        opacity: 0.35;
-        cursor: default;
-      }
-    }
-  }
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  .promo-label { font-size: 14px; color: var(--muted); }
+  .promo-button { width: 48px; height: 48px; padding: 4px; &.active { border-color: var(--accent); background: var(--accent-soft); } }
+}
+.action-row {
+  display: flex;
+  gap: 8px;
+  .ui-btn { min-height: 48px; }
+  .pass-button { flex: 1; }
+  .confirm-button { flex: 2; }
+}
+.confirm-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  font-size: 14px;
+  color: var(--muted);
+  cursor: pointer;
+  user-select: none;
+  input { width: 18px; height: 18px; accent-color: var(--accent); }
 }

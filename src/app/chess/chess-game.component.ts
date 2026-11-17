@@ -42,10 +42,12 @@ import { ChessSettingsService } from './services/chess-settings.service';
  */
 type ScreenState = 'mode-select' | 'opponent-select' | 'playing';
 
+import { GameShellComponent } from '../shared/ui';
 @Component({
   selector: 'app-chess-game',
   standalone: true,
   imports: [
+    GameShellComponent,
     CommonModule,
     ChessModeSelectComponent,
     OpponentSelectComponent,
@@ -59,7 +61,7 @@ type ScreenState = 'mode-select' | 'opponent-select' | 'playing';
     GameOverOverlayComponent,
   ],
   template: `
-    <div class="chess-container">
+    <app-game-shell [help]="help" [maxWidth]="screen() === 'playing' ? '1040px' : '640px'">
       @switch (screen()) {
         @case ('mode-select') {
           <app-chess-mode-select (play)="onModeChosen($event)" />
@@ -78,9 +80,7 @@ type ScreenState = 'mode-select' | 'opponent-select' | 'playing';
               @if (burnCountdownText(); as burnText) {
                 <span class="burn-chip">🔥 {{ burnText }}</span>
               }
-              <button type="button" class="resign-button" (click)="onResign()">
-                Resign
-              </button>
+              <button type="button" class="ui-btn danger small" (click)="onResign()">Resign</button>
             </div>
 
             <div class="play-layout">
@@ -128,7 +128,7 @@ type ScreenState = 'mode-select' | 'opponent-select' | 'playing';
                       @for (option of promotionOptions; track option) {
                         <button
                           type="button"
-                          class="promo-button"
+                          class="ui-btn promo-button"
                           [class.active]="pendingPromotion() === option"
                           (click)="setPromotion(option)"
                         >
@@ -139,14 +139,14 @@ type ScreenState = 'mode-select' | 'opponent-select' | 'playing';
                   }
                   <div class="action-row">
                     @if (session.passAllowed()) {
-                      <button type="button" class="pass-button" (click)="onPass()">
+                      <button type="button" class="ui-btn pass-button" (click)="onPass()">
                         Pass
                       </button>
                     }
                     @if (settings.confirmMoves() || pendingIsPromotion()) {
                       <button
                         type="button"
-                        class="confirm-button"
+                        class="ui-btn primary confirm-button"
                         [disabled]="pendingIntent() === null"
                         (click)="onConfirm()"
                       >
@@ -188,11 +188,17 @@ type ScreenState = 'mode-select' | 'opponent-select' | 'playing';
           }
         }
       }
-    </div>
+    </app-game-shell>
   `,
   styleUrl: './chess-game.component.scss',
 })
 export class ChessGameComponent implements OnDestroy {
+  readonly help = [
+    'Chess with a twist. Pick a mode, then play a friend on this device or a bot.',
+    'Tap a piece, then tap where it should go.',
+    'Each mode explains its own rules before you start.',
+    'Two players on one device: the screen hides your move before you pass it over.',
+  ];
   readonly session = inject(ChessSessionService);
   readonly settings = inject(ChessSettingsService);
 
@@ -270,7 +276,7 @@ export class ChessGameComponent implements OnDestroy {
     if (!position || burnedRings === undefined) return null;
     const remaining = roundsUntilBurn(position.round, burnedRings, position.startBurnedRings);
     if (remaining === null) return null;
-    return `ring burns in ${remaining} move${remaining === 1 ? '' : 's'}`;
+    return `Edge burns in ${remaining} move${remaining === 1 ? '' : 's'}`;
   });
 
   readonly targetSquares = computed<Square[]>(() => {
@@ -346,14 +352,14 @@ export class ChessGameComponent implements OnDestroy {
     const phase = this.session.phase();
     if (phase === 'reveal') {
       const resolution = this.session.lastResolution();
-      return `Round ${resolution?.round ?? round} — revealing…`;
+      return `Round ${resolution?.round ?? round}: showing moves…`;
     }
     const config = this.session.config();
     if (config?.opponent === 'bot') {
-      return `Round ${round} — your move`;
+      return `Round ${round}: your move`;
     }
     const color = this.session.entryColor() === 'white' ? 'White' : 'Black';
-    return `Round ${round} — ${color}: enter your move`;
+    return `Round ${round}: ${color} to move`;
   });
 
   readonly confirmLabel = computed<string>(() => {
