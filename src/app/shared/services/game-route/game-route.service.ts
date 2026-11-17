@@ -97,7 +97,7 @@ export class GameRouteService {
       route: '/left-to-live',
       color: '#EF4444',
       category: 'life',
-      description: 'See the months you have left, and how they\'ll be spent.',
+      description: 'See the months you have left, one dot each.',
     },
     {
       name: 'Date Countdown',

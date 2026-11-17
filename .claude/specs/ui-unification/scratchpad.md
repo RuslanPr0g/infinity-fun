@@ -22,7 +22,7 @@ Plan: `~/.claude/plans/pasted-content-id-4447-create-scratchpa-swift-rain.md`. R
 | 5 | Guess Day of Week | gradient buttons, `100vh-88px` | 4+3 day grid | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | 6 | Periodic Quiz | `min-width:500px` card | modal detail sheet | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | 7 | Math Quiz | modern, own palette | tokens, stat bar | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| 8 | Months Left | ~1000 spans | canvas grid | | | | | | |
+| 8 | Months Left | ~1000 spans | canvas grid | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | 9 | Date Countdown | emoji edit span | scroll shell, real buttons | | | | | | |
 | 10 | Reject Cookies | hover-only flee, 39 hex | touch flee, clean frame | | | | | | |
 | 11 | Sea Battle | 50px cells, reversed breakpoints | fluid grid | | | | | | |
