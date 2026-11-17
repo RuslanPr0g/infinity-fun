@@ -1,0 +1,57 @@
+// Design tokens for the whole site, taken from Figure Battle (the reference look).
+// Sass values for maths (rgba(), mix()); CSS custom properties (see `css-vars`) for components.
+
+$bg: #070a14;
+$surface: #0d1324;
+$panel: rgba(14, 19, 33, 0.92);
+$card: rgba(255, 255, 255, 0.035);
+$line: rgba(255, 255, 255, 0.07);
+$line-strong: rgba(255, 255, 255, 0.14);
+$btn: #172036;
+$btn-hover: #212e4e;
+$btn-active: #2a3b63;
+
+$text: #e6ecff;
+$muted: #8a96b8;
+$accent: #3ec5ff;
+$danger: #ff4d6d;
+$gold: #ffc857;
+$ok: #7dffb0;
+
+$radius-sm: 8px;
+$radius: 10px;
+$radius-card: 14px;
+$radius-panel: 16px;
+$radius-modal: 22px;
+
+$shadow-panel: 0 6px 24px rgba(0, 0, 0, 0.35);
+$shadow-modal: 0 10px 50px rgba(0, 0, 0, 0.5);
+
+$font: Inter, 'Segoe UI', Roboto, Cantarell, Ubuntu, 'Noto Sans', system-ui, sans-serif;
+$font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
+
+$tap: 44px;
+
+@mixin css-vars {
+  --bg: #{$bg};
+  --surface: #{$surface};
+  --panel: #{$panel};
+  --card: #{$card};
+  --line: #{$line};
+  --line-strong: #{$line-strong};
+  --btn: #{$btn};
+  --btn-hover: #{$btn-hover};
+  --btn-active: #{$btn-active};
+  --text: #{$text};
+  --muted: #{$muted};
+  --danger: #{$danger};
+  --gold: #{$gold};
+  --ok: #{$ok};
+  // Each game sets --game-color (GameShellComponent); --accent follows it.
+  --game-color: #{$accent};
+  --accent: var(--game-color);
+  --accent-soft: color-mix(in srgb, var(--accent) 20%, transparent);
+  --on-accent: #04121c;
+  --font: #{$font};
+  --font-mono: #{$font-mono};
+}

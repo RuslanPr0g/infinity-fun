@@ -1,0 +1,201 @@
+// Shared UI building blocks for every page. A 1:1 port of Figure Battle's `.fb-*` rules,
+// coloured by `--accent` (each game's own color via GameShellComponent).
+@use 'tokens' as t;
+
+// surfaces
+.ui-panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: t.$radius-panel;
+  box-shadow: t.$shadow-panel;
+}
+.ui-card {
+  background: var(--card);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: t.$radius-card;
+  padding: 12px 16px;
+}
+
+// text
+.ui-kicker { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+.ui-title { font-weight: 800; font-size: clamp(22px, 4vw, 34px); line-height: 1.1; }
+.ui-muted { color: var(--muted); }
+.ui-gold { color: var(--gold); }
+.ui-ok { color: var(--ok); }
+.ui-danger { color: var(--danger); }
+.ui-row { display: flex; align-items: center; gap: 12px; }
+.ui-grow { flex: 1; min-width: 0; }
+
+// buttons
+.ui-btn {
+  appearance: none;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 8px 14px;
+  border-radius: t.$radius;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--btn);
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.12s, border-color 0.12s, transform 0.08s, filter 0.12s;
+
+  &:hover { background: var(--btn-hover); border-color: var(--line-strong); }
+  &:active { background: var(--btn-active); transform: scale(0.98); }
+  &:disabled { opacity: 0.4; cursor: default; transform: none; }
+  &:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  &.primary {
+    background: var(--accent);
+    color: var(--on-accent);
+    border-color: transparent;
+    &:hover { filter: brightness(1.15); }
+    &:active { filter: brightness(0.9); }
+    &:disabled { filter: none; }
+  }
+  &.ghost {
+    background: transparent;
+    border-color: transparent;
+    &:hover { background: rgba(255, 255, 255, 0.07); }
+    &:active { background: rgba(255, 255, 255, 0.12); }
+  }
+  &.danger {
+    background: rgba(t.$danger, 0.14);
+    border-color: rgba(t.$danger, 0.35);
+    color: #ff8399;
+    &:hover { background: rgba(t.$danger, 0.24); }
+  }
+  &.ok {
+    background: rgba(t.$ok, 0.14);
+    border-color: rgba(t.$ok, 0.4);
+    color: t.$ok;
+  }
+  &.seg {
+    min-height: 34px;
+    padding: 6px 10px;
+    border-radius: t.$radius-sm;
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.06);
+    font-size: 13px;
+    &:hover { background: rgba(255, 255, 255, 0.08); }
+    &.on { background: var(--accent-soft); border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+  }
+  &.small { min-height: 30px; font-size: 13px; padding: 4px 10px; }
+  &.big { min-height: 52px; font-size: 18px; padding: 10px 22px; }
+  &.block { display: flex; width: 100%; }
+  &.icon { min-width: 40px; padding: 8px; }
+}
+.ui-seg { display: flex; flex-wrap: wrap; gap: 6px; }
+
+// chips (filters, tags)
+.ui-chip {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: inherit;
+  font: inherit;
+  font-size: 14px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.15s, border-color 0.15s;
+  &:hover { background: rgba(255, 255, 255, 0.09); }
+  &.on { background: var(--text); color: #111; border-color: var(--text); }
+}
+
+// form fields
+.ui-input {
+  appearance: none;
+  width: 100%;
+  min-height: t.$tap;
+  padding: 10px 14px;
+  border-radius: t.$radius;
+  border: 1px solid var(--line-strong);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+  font: inherit;
+  font-size: 16px; // 16px stops iOS zooming in on focus
+  outline: none;
+  transition: border-color 0.15s, background-color 0.15s;
+  &::placeholder { color: rgba(255, 255, 255, 0.35); }
+  &:focus { border-color: var(--accent); background: rgba(255, 255, 255, 0.08); }
+  &.bad { border-color: var(--danger); }
+  &.good { border-color: var(--ok); }
+}
+.ui-label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600; color: var(--muted); text-align: left; }
+
+// stats (score, streak, best…)
+.ui-stats { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.ui-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 72px;
+  padding: 6px 12px;
+  border-radius: 12px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  > b { font-size: 20px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  > span { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  &.hot > b { color: var(--accent); }
+}
+
+// progress bar
+.ui-bar {
+  height: 8px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.07);
+  overflow: hidden;
+  > div { height: 100%; background: var(--accent); border-radius: 5px; transition: width 0.15s; }
+}
+
+// short message that fades in and out
+.ui-toast {
+  position: fixed;
+  left: 50%;
+  bottom: max(32px, calc(env(safe-area-inset-bottom) + 24px));
+  transform: translateX(-50%);
+  z-index: 300;
+  max-width: calc(100% - 32px);
+  padding: 10px 18px;
+  font-size: 15px;
+  font-weight: 600;
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  animation: ui-toast 2.15s ease forwards;
+}
+
+// feedback flashes
+.ui-shake { animation: ui-shake 0.35s; }
+.ui-pop { animation: ui-pop 0.25s ease-out; }
+
+@keyframes ui-fade { from { opacity: 0; } }
+@keyframes ui-pop { from { opacity: 0; transform: scale(0.96) translateY(6px); } }
+@keyframes ui-toast {
+  0% { opacity: 0; }
+  7%, 81% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes ui-shake {
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}

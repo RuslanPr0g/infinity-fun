@@ -1,0 +1,53 @@
+@use 'tokens' as t;
+@use 'breakpoints' as bp;
+
+:host {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  animation: ui-fade 0.22s ease-out;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 5, 13, 0.66);
+  backdrop-filter: blur(3px);
+}
+
+.ui-modal {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  max-height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: t.$surface;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: t.$radius-modal;
+  box-shadow: t.$shadow-modal;
+  padding: clamp(18px, 4vw, 30px) clamp(16px, 4vw, 32px);
+  color: var(--text);
+  outline: none;
+  animation: ui-pop 0.25s ease-out;
+
+  &.sm { max-width: 420px; }
+  &.lg { max-width: 820px; }
+}
+
+.x {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  color: var(--muted);
+}
+
+.head {
+  font-size: 22px;
+  font-weight: 800;
+  margin: 0 36px 14px 0;
+}

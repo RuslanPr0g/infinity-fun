@@ -6,6 +6,8 @@ import { GameCategory, GameRoute } from '../core/models/game-route.model';
 import { GameRouteService } from '../shared/services/game-route/game-route.service';
 import { LocalStorageService } from '../shared/services/local-storage/local-storage.service';
 import { GameArtComponent } from './game-art/game-art.component';
+import { StarfieldComponent } from './starfield/starfield.component';
+import { environment } from '../../environments/environment';
 
 type Filter = GameCategory | 'all';
 
@@ -15,8 +17,9 @@ const MAX_RECENT = 4;
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterLink, NgTemplateOutlet, GameArtComponent],
+  imports: [RouterLink, NgTemplateOutlet, GameArtComponent, StarfieldComponent],
   template: `
+    <app-starfield />
     <div class="home">
       <header class="hero">
         <div class="kicker">{{ games.length }} free browser games · no sign-up</div>
@@ -98,6 +101,8 @@ const MAX_RECENT = 4;
           <button type="button" class="chip" (click)="query.set(''); filter.set('all')">Show all games</button>
         </div>
       }
+
+      <footer class="foot">Infinity Fun · {{ version }}</footer>
     </div>
 
     <ng-template #body let-g>
@@ -119,6 +124,7 @@ export class HomeComponent {
   private readonly storage = inject(LocalStorageService);
   private readonly searchEl = viewChild.required<ElementRef<HTMLInputElement>>('search');
 
+  readonly version = environment.releaseVersion;
   readonly games = this.gameService.getGames();
   readonly categories = this.gameService.getCategories();
   readonly query = signal('');

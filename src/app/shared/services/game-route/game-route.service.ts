@@ -5,7 +5,7 @@ import { GameCategoryInfo, GameRoute } from '../../../core/models/game-route.mod
   providedIn: 'root',
 })
 export class GameRouteService {
-  // Please, make sure that the colors are matching the color scheme here: _colors.scss
+  // The one place each game's accent color lives. GameShellComponent and the home page read it from here.
   private games: GameRoute[] = [
     {
       name: 'Figure Battle',
@@ -53,7 +53,7 @@ export class GameRouteService {
     {
       name: 'Periodic Quiz',
       route: '/periodic',
-      color: '#1648a3',
+      color: '#3B82F6',
       category: 'brain',
       description: 'Name the elements and learn the periodic table.',
     },
@@ -81,7 +81,7 @@ export class GameRouteService {
     {
       name: 'Math Comparer',
       route: '/math-comparer',
-      color: '#044d4d',
+      color: '#8B5CF6',
       category: 'brain',
       description: 'Which side is bigger? Compare expressions at a glance.',
     },
@@ -102,7 +102,7 @@ export class GameRouteService {
     {
       name: 'Date Countdown',
       route: '/date-countdown',
-      color: '#9c1d1d',
+      color: '#FB7185',
       category: 'life',
       description: 'Count down to any date and share the countdown.',
     },
@@ -136,5 +136,10 @@ export class GameRouteService {
 
   getCategories(): GameCategoryInfo[] {
     return this.categories;
+  }
+
+  /** The game for an app route such as `/chess`, or undefined. */
+  byRoute(route: string): GameRoute | undefined {
+    return this.games.find((g) => !g.isExternal && g.route === route);
   }
 }

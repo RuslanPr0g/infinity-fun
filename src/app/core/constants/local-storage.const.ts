@@ -14,4 +14,6 @@ export class LocalStorageConst {
   public static KlotskiBest: string = 'KlotskiBest';
 
   public static RecentGames: string = 'RecentGames';
+
+  public static SoundMuted: string = 'SoundMuted';
 }

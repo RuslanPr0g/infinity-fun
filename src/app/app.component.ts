@@ -1,29 +1,11 @@
-import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, RouterOutlet } from '@angular/router';
-import { HomeLinkComponent } from './shared/components/home-link/home-link.component';
-import { CommonModule } from '@angular/common';
-import { SpaceBackgroundComponent } from './space-background/space-background.component';
-import { ScrollService } from './shared/services/scroll/scroll.service';
+import { Component } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
 
+/** Just the router. Home brings its own header; every game brings <app-game-shell>. */
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterOutlet,
-    HomeLinkComponent,
-    SpaceBackgroundComponent,
-  ],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.scss',
+  imports: [RouterOutlet],
+  template: `<router-outlet />`,
 })
-export class AppComponent implements OnInit {
-  constructor(
-    protected route: ActivatedRoute,
-    private scroll: ScrollService,
-  ) {}
-
-  ngOnInit(): void {
-    this.scroll.initMobileScrollOnAction();
-  }
-}
+export class AppComponent {}

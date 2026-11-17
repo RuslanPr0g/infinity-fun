@@ -1,0 +1,9 @@
+// One set of breakpoints for the whole site.
+$phone: 480px;
+$tablet: 760px;
+
+@mixin phone { @media (max-width: $phone) { @content; } }
+@mixin tablet { @media (max-width: $tablet) { @content; } }
+@mixin short { @media (max-height: 520px) { @content; } }
+@mixin touch { @media (pointer: coarse) { @content; } }
+@mixin hover { @media (hover: hover) and (pointer: fine) { @content; } }

@@ -1,17 +1,20 @@
 // Shared look for every Figure Battle screen. Unencapsulated, so everything is scoped under .fb.
-$text: #e6ecff;
-$muted: #8a96b8;
-$accent: #3ec5ff;
-$danger: #ff4d6d;
-$gold: #ffc857;
-$heal: #7dffb0;
+// Values come from the site tokens (Figure Battle is the reference look they were taken from).
+@use 'tokens' as t;
+
+$text: t.$text;
+$muted: t.$muted;
+$accent: t.$accent;
+$danger: t.$danger;
+$gold: t.$gold;
+$heal: t.$ok;
 
 .fb {
   position: fixed;
   inset: 0;
   z-index: 100;
   overflow: hidden;
-  background: #070a14;
+  background: t.$bg;
   color: $text;
   font-size: 16px;
   line-height: 1.25;
@@ -21,7 +24,7 @@ $heal: #7dffb0;
   touch-action: manipulation;
 
   &, & * {
-    font-family: Inter, 'Segoe UI', Roboto, Cantarell, Ubuntu, 'Noto Sans', system-ui, sans-serif;
+    font-family: t.$font;
   }
 
   .fb-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }

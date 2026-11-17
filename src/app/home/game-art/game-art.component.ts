@@ -51,7 +51,7 @@ let nextUid = 0;
           <path d="M128 56 L128 74" class="stroke thin dash2" />
         }
         @case ('/chess') {
-          <g transform="translate(30 14)">
+          <g transform="translate(18 14)">
             @for (i of eight; track i) {
               @for (j of eight; track j) {
                 @if ((i + j) % 2 === 0) { <rect [attr.x]="i * 9" [attr.y]="j * 9" width="9" height="9" class="sq" /> }
@@ -60,26 +60,30 @@ let nextUid = 0;
             <rect x="0" y="0" width="72" height="72" class="stroke frame" fill="none" />
             <rect x="0" y="0" width="72" height="9" class="burn" /><rect x="0" y="63" width="72" height="9" class="burn" />
           </g>
-          <text x="118" y="66" class="glyph big">&#9822;&#xFE0E;</text>
-          <text x="106" y="40" class="glyph small white-t">&#9819;&#xFE0E;</text>
+          <text x="58" y="56" class="glyph small white-t">&#9819;&#xFE0E;</text>
+          <text x="124" y="72" class="glyph big">&#9822;&#xFE0E;</text>
         }
         @case ('/chess-openings') {
-          <g transform="translate(44 10)">
+          <g transform="translate(70 10)">
             @for (i of eight; track i) {
               @for (j of eight; track j) {
                 @if ((i + j) % 2 === 1) { <rect [attr.x]="i * 10" [attr.y]="j * 10" width="10" height="10" class="sq" /> }
               }
             }
-            <path d="M45 65 L45 38" class="arrow" /><path d="M65 75 L55 55" class="arrow" /><path d="M25 75 L35 55" class="arrow faint" />
-            <polygon points="45,32 40,40 50,40" class="fill" /><polygon points="53,51 51,60 58,57" class="fill" />
+            <!-- 1. e4: e2 → e4 -->
+            <path d="M45 65 V52" class="arrow" /><polygon points="45,43 39,52 51,52" class="fill" />
+            <!-- 1… e5: e7 → e5 (black, faint) -->
+            <path d="M45 15 V28" class="arrow faint" /><polygon points="45,37 39,28 51,28" class="fill faint-f" />
+            <!-- 2. Nf3: g1 → f3, knight L -->
+            <path d="M65 75 V55 H64" class="arrow" /><polygon points="56,55 65,49 65,61" class="fill" />
           </g>
-          <text x="12" y="34" class="label">1. e4</text><text x="12" y="50" class="label faint-t">1… e5</text><text x="12" y="66" class="label">2. Nf3</text>
+          <text x="14" y="34" class="label">1. e4</text><text x="14" y="54" class="label faint-t">1… e5</text><text x="14" y="74" class="label">2. Nf3</text>
         }
         @case ('/chessle') {
           @for (row of [0, 1, 2]; track row) {
             @for (col of [0, 1, 2, 3, 4]; track col) {
               <rect [attr.x]="28 + col * 22" [attr.y]="16 + row * 24" width="18" height="20" rx="3"
-                [class]="'tile t' + ((row * 5 + col * 3 + row) % 3)" />
+                [class]="'tile t' + chessleTiles[row][col]" />
             }
           }
           <text x="37" y="31" class="glyph tiny">&#9817;&#xFE0E;</text><text x="59" y="31" class="glyph tiny">&#9816;&#xFE0E;</text>
@@ -117,12 +121,17 @@ let nextUid = 0;
           <text x="16" y="74" class="label faint-t">WED</text><text x="124" y="74" class="label">SUN</text>
         }
         @case ('/reject-cookies') {
-          <circle cx="58" cy="52" r="30" class="cookie" />
-          <circle cx="86" cy="32" r="12" class="bg-cut" />
-          <g class="chip"><circle cx="46" cy="44" r="3.5" /><circle cx="62" cy="62" r="3.5" /><circle cx="44" cy="66" r="3" /><circle cx="66" cy="44" r="2.5" /></g>
-          <rect x="88" y="54" width="58" height="22" rx="11" class="pill" />
-          <text x="117" y="69" class="pill-t">Reject all</text>
-          <path d="M110 22 l12 12 m0 -12 l-12 12" class="hit" />
+          <mask [attr.id]="uid + 'bite'">
+            <rect width="160" height="100" fill="#fff" />
+            <circle cx="72" cy="28" r="9" fill="#000" /><circle cx="78" cy="40" r="7" fill="#000" />
+          </mask>
+          <g [attr.mask]="'url(#' + uid + 'bite)'">
+            <circle cx="50" cy="50" r="28" class="cookie" />
+            <g class="chip"><circle cx="40" cy="40" r="3.5" /><circle cx="56" cy="60" r="3.5" /><circle cx="36" cy="62" r="3" /><circle cx="58" cy="44" r="2.5" /></g>
+          </g>
+          <rect x="88" y="54" width="62" height="22" rx="11" class="pill" />
+          <text x="119" y="68" class="pill-t">Reject all</text>
+          <path d="M113 22 l12 12 m0 -12 l-12 12" class="hit" />
         }
         @case ('/country-guesser') {
           <circle cx="62" cy="50" r="34" class="stroke frame" fill="none" />
@@ -181,6 +190,7 @@ export class GameArtComponent {
   readonly route = input.required<string>();
 
   readonly eight = [0, 1, 2, 3, 4, 5, 6, 7];
+  readonly chessleTiles = [[1, 2, 0, 2, 1], [0, 2, 0, 1, 0], [0, 0, 0, 0, 0]];
   readonly ten = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
   readonly months = Array.from({ length: 216 }, (_, i) => ({ x: (i % 18) * 6, y: Math.floor(i / 18) * 6, used: i < 131 }));
   readonly heat = [[3, 4, 0.25], [4, 4, 0.5], [5, 4, 0.35], [4, 3, 0.3], [4, 5, 0.6], [5, 5, 0.4], [3, 5, 0.2], [6, 2, 0.15], [1, 6, 0.2]];

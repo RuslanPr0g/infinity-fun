@@ -10,7 +10,7 @@
 .home {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 8px 20px 64px;
+  padding: max(24px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(40px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
 }
 
 // ── hero ──
@@ -202,6 +202,13 @@ h3 { font-size: 20px; font-weight: 800; }
 .name { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 16px; }
 .ext { opacity: 0.6; }
 
+.foot {
+  text-align: center;
+  font-size: 12px;
+  color: rgba(240, 240, 240, 0.35);
+  padding-top: 8px;
+}
+
 .empty {
   text-align: center;
   padding: 40px 0;
@@ -217,7 +224,7 @@ h3 { font-size: 20px; font-weight: 800; }
   .chips { flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; scrollbar-width: none; margin: 0 -20px; padding: 0 20px; }
 }
 @media (max-width: 520px) {
-  .home { padding: 0 14px 48px; }
+  .home { padding: max(16px, env(safe-area-inset-top)) 14px max(32px, env(safe-area-inset-bottom)); }
   .search kbd { display: none; }
   .grid { grid-template-columns: 1fr 1fr; gap: 10px; }
   .card { border-radius: 14px; }

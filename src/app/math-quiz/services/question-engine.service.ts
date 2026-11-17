@@ -490,10 +490,17 @@ export class QuestionEngine {
         text = `Estimate: (${a} + ${b}) × ${c} ≈ ?`;
       }
     } else {
-      const a = this.randInt(1, 500);
-      const b = this.randInt(1, 500);
-      const c = this.randInt(1, 500);
-      const d = this.randInt(1, 500);
+      // Keep the result clearly positive; a negative or tiny difference has no sensible estimate.
+      let a: number, b: number, c: number, d: number;
+      do {
+        a = this.randInt(1, 500);
+        b = this.randInt(1, 500);
+        c = this.randInt(1, 500);
+        d = this.randInt(1, 500);
+        if (a * b < c * d) {
+          [a, b, c, d] = [c, d, a, b];
+        }
+      } while (a * b - c * d < 100);
       trueValue = a * b - c * d;
       text = `Estimate: (${a} × ${b}) − (${c} × ${d}) ≈ ?`;
     }
@@ -520,9 +527,11 @@ export class QuestionEngine {
       }
     }
 
-    while (distractors.length < 3) {
-      const offset = Math.ceil(Math.abs(trueValue) * 0.2) + distractors.length + 1;
-      const sign = distractors.length % 2 === 0 ? 1 : -1;
+    // Fallback: step further out each try. (Stepping only by distractors.length could repeat the same
+    // clamped candidate forever and freeze the page.) Above `correct` there is always room.
+    for (let step = 1; distractors.length < 3; step++) {
+      const offset = Math.ceil(Math.abs(trueValue) * 0.3) + step;
+      const sign = step % 2 === 1 ? 1 : -1;
       const candidate = Math.max(1, correct + sign * offset);
       if (candidate !== correct && !distractors.includes(candidate)) {
         distractors.push(candidate);

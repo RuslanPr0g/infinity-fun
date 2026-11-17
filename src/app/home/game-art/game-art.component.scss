@@ -22,6 +22,7 @@ svg { display: block; width: 100%; height: 100%; }
 .white-t { fill: #fff; fill-opacity: 0.85; }
 .arrow { stroke: currentColor; stroke-width: 4; stroke-linecap: round; fill: none; }
 .faint { stroke-opacity: 0.35; }
+.faint-f { fill-opacity: 0.35; }
 .label { fill: #fff; font-size: 11px; font-weight: 700; font-family: inherit; }
 .faint-t { fill-opacity: 0.4; }
 
@@ -44,10 +45,9 @@ svg { display: block; width: 100%; height: 100%; }
 .q { fill: #fff; font-size: 40px; font-weight: 800; text-anchor: middle; }
 
 .cookie { fill: currentColor; fill-opacity: 0.75; }
-.bg-cut { fill: #0b0c1e; }
 .chip { fill: #1b1240; fill-opacity: 0.8; }
 .pill { fill: #fff; fill-opacity: 0.1; stroke: currentColor; }
-.pill-t { fill: #fff; font-size: 10px; font-weight: 700; text-anchor: middle; }
+.pill-t { fill: #fff; font-size: 8.5px; font-weight: 700; text-anchor: middle; }
 .pole { stroke: #fff; stroke-opacity: 0.6; stroke-width: 2; }
 
 .box { fill: rgba(255, 255, 255, 0.06); stroke: currentColor; stroke-width: 2; filter: brightness(2.2); }
