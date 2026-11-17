@@ -18,6 +18,7 @@ import {
   StateGraph,
   ViewMode,
 } from '../../models/klotski.models';
+import { CanvasStage } from '../../../shared/canvas/canvas-stage';
 
 const BUCKETS = 14;
 const PERSPECTIVE_DISTANCE = 4;
@@ -35,11 +36,11 @@ const TAP_RADIUS_PX = 18;
     <div class="graph-wrap" #wrap>
       <canvas #canvas></canvas>
       @if (!graph) {
-        <div class="overlay">Mapping every reachable position…</div>
+        <div class="overlay">Finding every possible position…</div>
       }
       <div class="zoom">
-        <button type="button" (click)="zoomBy(1.5)" aria-label="Zoom in">+</button>
-        <button type="button" (click)="zoomBy(1 / 1.5)" aria-label="Zoom out">−</button>
+        <button type="button" class="ui-btn icon" (click)="zoomBy(1.5)" aria-label="Zoom in">+</button>
+        <button type="button" class="ui-btn icon" (click)="zoomBy(1 / 1.5)" aria-label="Zoom out">−</button>
       </div>
     </div>
   `,
@@ -66,8 +67,7 @@ export class KlotskiGraphViewComponent implements AfterViewInit, OnChanges, OnDe
   @ViewChild('wrap', { static: true }) private wrapRef!: ElementRef<HTMLElement>;
 
   private ctx!: CanvasRenderingContext2D;
-  private raf = 0;
-  private resizeObserver?: ResizeObserver;
+  private stage?: CanvasStage;
   private width = 0;
   private height = 0;
   private dirty = true;
@@ -161,25 +161,26 @@ export class KlotskiGraphViewComponent implements AfterViewInit, OnChanges, OnDe
 
   ngAfterViewInit(): void {
     const canvas = this.canvasRef.nativeElement;
-    this.ctx = canvas.getContext('2d')!;
     this.zoomTarget = this.zoom = this.follow ? 5 : 1;
-
-    this.zone.runOutsideAngular(() => {
-      canvas.addEventListener('wheel', this.onWheel, { passive: false });
-      canvas.addEventListener('pointerdown', this.onDown);
-      canvas.addEventListener('pointermove', this.onMove);
-      canvas.addEventListener('pointerup', this.onUp);
-      canvas.addEventListener('pointercancel', this.onUp);
-      this.resizeObserver = new ResizeObserver(() => this.resize());
-      this.resizeObserver.observe(this.wrapRef.nativeElement);
-      this.resize();
-      this.prepare();
-      const loop = (): void => {
-        this.raf = requestAnimationFrame(loop);
-        this.tick();
-      };
-      this.raf = requestAnimationFrame(loop);
+    this.stage = new CanvasStage(canvas, {
+      zone: this.zone,
+      sizeFrom: this.wrapRef.nativeElement,
+      maxDpr: MAX_DPR,
+      resized: (size) => {
+        this.width = size.w;
+        this.height = size.h;
+        this.dirty = true;
+      },
+      draw: () => this.tick(),
     });
+    this.ctx = this.stage.ctx;
+    this.stage.listen('wheel', this.onWheel, { passive: false });
+    this.stage.listen('pointerdown', this.onDown);
+    this.stage.listen('pointermove', this.onMove);
+    this.stage.listen('pointerup', this.onUp);
+    this.stage.listen('pointercancel', this.onUp);
+    this.prepare();
+    this.stage.start();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -191,30 +192,11 @@ export class KlotskiGraphViewComponent implements AfterViewInit, OnChanges, OnDe
   }
 
   ngOnDestroy(): void {
-    cancelAnimationFrame(this.raf);
-    this.resizeObserver?.disconnect();
-    const canvas = this.canvasRef.nativeElement;
-    canvas.removeEventListener('wheel', this.onWheel);
-    canvas.removeEventListener('pointerdown', this.onDown);
-    canvas.removeEventListener('pointermove', this.onMove);
-    canvas.removeEventListener('pointerup', this.onUp);
-    canvas.removeEventListener('pointercancel', this.onUp);
+    this.stage?.destroy();
   }
 
   zoomBy(factor: number): void {
     this.zoomTarget = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, this.zoomTarget * factor));
-    this.dirty = true;
-  }
-
-  private resize(): void {
-    const rect = this.wrapRef.nativeElement.getBoundingClientRect();
-    const dpr = Math.min(MAX_DPR, window.devicePixelRatio || 1);
-    this.width = rect.width;
-    this.height = rect.height;
-    const canvas = this.canvasRef.nativeElement;
-    canvas.width = Math.max(1, Math.round(rect.width * dpr));
-    canvas.height = Math.max(1, Math.round(rect.height * dpr));
-    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     this.dirty = true;
   }
 

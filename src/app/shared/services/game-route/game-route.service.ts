@@ -20,7 +20,7 @@ export class GameRouteService {
       route: '/klotski',
       color: '#84CC16',
       category: 'strategy',
-      description: 'Slide the blocks free and explore the puzzle\'s whole state graph.',
+      description: 'Slide the blocks free, and see every position as a map.',
     },
     {
       name: 'Unusual Chess',
