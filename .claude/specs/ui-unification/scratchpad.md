@@ -14,9 +14,9 @@ Plan: `~/.claude/plans/pasted-content-id-4447-create-scratchpa-swift-rain.md`. R
 ## Status
 | # | Piece | Was | Target | 1 | 2 | 3 | 4 | 5 | 6 |
 |---|-------|-----|--------|---|---|---|---|---|---|
-| 0 | Foundation | fonts Intel One Mono, `#121212`, global home-link header | tokens, `ui-*`, shell, modal, CanvasStage, ViewportService | | | | | | |
-| 1 | Starfield | 74 animated DOM nodes | one canvas | | | | | | |
-| 2 | Math Comparer + comparer | `100vh-88px`, `innerWidth` check, fixed OR badge | stacked on phones | | | | | | |
+| 0 | Foundation | fonts Intel One Mono, `#121212`, global home-link header | tokens, `ui-*`, shell, modal, CanvasStage, ViewportService | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| 1 | Starfield | 74 animated DOM nodes | one canvas | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| 2 | Math Comparer + comparer | `100vh-88px`, `innerWidth` check, fixed OR badge | stacked on phones | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | 3 | Color Reaction | 480px button, odd overlay, 100px cells | fitted grid, modal result | | | | | | |
 | 4 | Country Guesser | 480/360px min-widths | full-width flag, 2-col answers | | | | | | |
 | 5 | Guess Day of Week | gradient buttons, `100vh-88px` | 4+3 day grid | | | | | | |
@@ -33,3 +33,6 @@ Plan: `~/.claude/plans/pasted-content-id-4447-create-scratchpa-swift-rain.md`. R
 | 16 | Home + docs + release | home-link component | footer version, docs, v5.0.0 | | | | | | |
 
 ## Notes
+- Phone check: same-origin iframes at 360×640 / 390×844 / 844×390 (the browser window can't be resized).
+- Found while testing: math quiz estimation could freeze (endless distractor loop) and hard mode gave negative answers. Fixed in the foundation commit.
+- Math Comparer: `new Function` eval replaced by a small parser (`math-comparer.engine.ts`), best streak is now saved.

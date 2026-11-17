@@ -1,144 +1,76 @@
-import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
-import { LeftRightComparerComponent } from '../shared/components/left-right-comparer/left-right-comparer.component';
+import { Component, computed, inject, signal } from '@angular/core';
+import { LocalStorageConst } from '../core/constants/local-storage.const';
+import { ComparerSide, LeftRightComparerComponent } from '../shared/components/left-right-comparer/left-right-comparer.component';
+import { LocalStorageService } from '../shared/services/local-storage/local-storage.service';
 import { SoundService } from '../shared/services/sound/sound.service';
+import { GameShellComponent, StatBarComponent } from '../shared/ui';
+import { Pair, bigger, format, freshPair, nextPair } from './math-comparer.engine';
 
 @Component({
   selector: 'app-math-comparer',
   standalone: true,
-  imports: [CommonModule, LeftRightComparerComponent],
-  templateUrl: './math-comparer.component.html',
-  styleUrl: './math-comparer.component.scss',
+  imports: [GameShellComponent, StatBarComponent, LeftRightComparerComponent],
+  template: `
+    <app-game-shell layout="fill" [sound]="true" [help]="help">
+      <div class="game">
+        <div class="top">
+          <p class="ask">Which side is bigger?</p>
+          <ui-stat-bar [stats]="[{ label: 'Streak', value: streak(), hot: streak() > 0 && streak() >= best() }, { label: 'Best', value: best() }]" />
+        </div>
+        <app-left-right-comparer class="pick" [leftText]="leftText()" [rightText]="rightText()" [correctSide]="answer()" (picked)="pick($event)" />
+      </div>
+    </app-game-shell>
+  `,
+  styles: `
+    .game { display: flex; flex-direction: column; height: 100%; }
+    .top { flex: none; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px 20px; padding: 12px 16px 0; }
+    .ask { font-size: 18px; font-weight: 700; }
+    .pick { flex: 1; }
+  `,
 })
 export class MathComparerGameComponent {
-  leftExpression: string = '';
-  rightExpression: string = '';
-  nextToShow: string = '';
-  correctSide: 'left' | 'right' = 'left';
+  private readonly sound = inject(SoundService);
+  private readonly storage = inject(LocalStorageService);
 
-  streak: number = 0;
-  timesLeftSideWasCorrectInRow: number = 0;
-  timesRightSideWasCorrectInRow: number = 0;
+  readonly help = [
+    'Two sums show up. Tap the one with the bigger answer.',
+    '× and ÷ are worked out before + and −, like on a calculator.',
+    'Get it right and the winner stays. A new sum takes the other side.',
+    'Keyboard: ← or A for the first side, → or D for the second.',
+  ];
 
-  constructor(private soundService: SoundService) {
-    this.generateExpressions();
-  }
+  readonly pair = signal<Pair>(freshPair());
+  readonly streak = signal(0);
+  readonly best = signal(this.storage.getItem<number>(LocalStorageConst.MathComparerBest) ?? 0);
 
-  private generateExpression(): string {
-    const operators = ['+', '-', '*', '/'];
-    const length = Math.floor(Math.random() * 3) + 2;
-    let expression = `${this.getRandomNumber()}`;
+  readonly leftText = computed(() => format(this.pair().left));
+  readonly rightText = computed(() => format(this.pair().right));
+  readonly answer = computed(() => bigger(this.pair()));
 
-    for (let i = 0; i < length; i++) {
-      expression += ` ${operators[Math.floor(Math.random() * operators.length)]
-        } ${this.getRandomNumber()}`;
-    }
+  private lastWinner: ComparerSide | null = null;
+  private sameSideRun = 0;
 
-    return expression;
-  }
-
-  private getRandomNumber(): number {
-    return Math.floor(Math.random() * 9) + 1;
-  }
-
-  private evaluateExpression(expression: string): number {
-    try {
-      return new Function(`return ${expression}`)();
-    } catch {
-      return 0;
-    }
-  }
-
-  private generateExpressions(): void {
-    let left = this.generateExpression();
-    let right = this.generateExpression();
-
-    while (this.evaluateExpression(left) === this.evaluateExpression(right)) {
-      right = this.generateExpression();
-    }
-
-    this.leftExpression = left;
-    this.rightExpression = right;
-    this.correctSide =
-      this.evaluateExpression(left) > this.evaluateExpression(right)
-        ? 'left'
-        : 'right';
-    this.nextToShow = this.generateExpression();
-  }
-
-  handleLeftClick(): void {
-    if (this.correctSide === 'left') {
-      this.updateExpressions('right');
-      this.increaseStreak();
+  pick(side: ComparerSide): void {
+    const winner = this.answer();
+    if (side === winner) {
+      this.sound.playCorrect();
+      this.streak.update((s) => s + 1);
+      if (this.streak() > this.best()) {
+        this.best.set(this.streak());
+        this.storage.setItem(LocalStorageConst.MathComparerBest, this.best());
+      }
+      this.sameSideRun = winner === this.lastWinner ? this.sameSideRun + 1 : 1;
+      this.lastWinner = winner;
+      this.pair.set(nextPair(this.pair(), winner, this.sameSideRun));
+      if (this.sameSideRun >= 5) {
+        this.sameSideRun = 0;
+      }
     } else {
-      this.generateExpressions();
-      this.resetStreak();
+      this.sound.playWrong();
+      this.streak.set(0);
+      this.sameSideRun = 0;
+      this.lastWinner = null;
+      this.pair.set(freshPair());
     }
-
-    this.handleMultipleLeftSideCorrectness();
-  }
-
-  handleRightClick(): void {
-    if (this.correctSide === 'right') {
-      this.updateExpressions('left');
-      this.increaseStreak();
-    } else {
-      this.generateExpressions();
-      this.resetStreak();
-    }
-
-    this.handleMultipleRightSideCorrectness();
-  }
-
-  private updateExpressions(sideToUpdate: 'left' | 'right'): void {
-    if (sideToUpdate === 'left') {
-      this.leftExpression = this.nextToShow;
-    } else {
-      this.rightExpression = this.nextToShow;
-    }
-
-    while (
-      this.evaluateExpression(this.leftExpression) ===
-      this.evaluateExpression(this.rightExpression)
-    ) {
-      this.rightExpression = this.generateExpression();
-    }
-
-    this.correctSide =
-      this.evaluateExpression(this.leftExpression) >
-        this.evaluateExpression(this.rightExpression)
-        ? 'left'
-        : 'right';
-    this.nextToShow = this.generateExpression();
-  }
-
-  private handleMultipleLeftSideCorrectness(): void {
-    this.timesRightSideWasCorrectInRow = 0;
-    this.timesLeftSideWasCorrectInRow++;
-
-    if (this.timesLeftSideWasCorrectInRow > 5) {
-      this.generateExpressions();
-      this.timesLeftSideWasCorrectInRow = 0;
-    }
-  }
-
-  private handleMultipleRightSideCorrectness(): void {
-    this.timesLeftSideWasCorrectInRow = 0;
-    this.timesRightSideWasCorrectInRow++;
-
-    if (this.timesRightSideWasCorrectInRow > 5) {
-      this.generateExpressions();
-      this.timesRightSideWasCorrectInRow = 0;
-    }
-  }
-
-  private increaseStreak(): void {
-    this.soundService.playCorrect();
-    this.streak++;
-  }
-
-  private resetStreak(): void {
-    this.soundService.playWrong();
-    this.streak = 0;
   }
 }

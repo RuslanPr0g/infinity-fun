@@ -1,70 +1,59 @@
-import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, HostListener, input, output, signal } from '@angular/core';
 
-type Status = 'success' | 'fail' | 'no status';
+export type ComparerSide = 'left' | 'right';
+type Flash = 'ok' | 'bad' | null;
 
-type Side = 'left' | 'right';
-
+/**
+ * Two big options with "or" between them; side by side when wide, stacked when tall.
+ * Tap/click a side, or use ← → (↑ ↓ when stacked) and A / D. The parent says which side was right
+ * via `correctSide`, and the picked side flashes green or red.
+ */
 @Component({
   selector: 'app-left-right-comparer',
   standalone: true,
-  imports: [CommonModule],
-  templateUrl: './left-right-comparer.component.html',
+  template: `
+    <div class="pair">
+      <button type="button" class="side" [class.ok]="flash().left === 'ok'" [class.bad]="flash().left === 'bad'" (click)="pick('left')">
+        <span class="text">{{ leftText() }}</span>
+      </button>
+      <div class="or" aria-hidden="true">or</div>
+      <button type="button" class="side" [class.ok]="flash().right === 'ok'" [class.bad]="flash().right === 'bad'" (click)="pick('right')">
+        <span class="text">{{ rightText() }}</span>
+      </button>
+    </div>
+  `,
   styleUrl: './left-right-comparer.component.scss',
 })
 export class LeftRightComparerComponent {
-  @Input() leftText?: string;
-  @Input() rightText?: string;
-  @Input() nextToShow?: string;
-  @Input() correctSide?: Side;
-  @Input() tip: string = 'Left or right?';
-  @Input() score: number = -1;
+  readonly leftText = input<string>('');
+  readonly rightText = input<string>('');
+  readonly correctSide = input<ComparerSide | null>(null);
+  readonly picked = output<ComparerSide>();
 
-  @Output() leftClicked = new EventEmitter<void>();
-  @Output() rightClicked = new EventEmitter<void>();
+  readonly flash = signal<{ left: Flash; right: Flash }>({ left: null, right: null });
+  private timer?: ReturnType<typeof setTimeout>;
 
-  showLeftStatus: Status = 'no status';
-  showRightStatus: Status = 'no status';
-
-  isMobile: boolean = false;
-
-  constructor() {
-    this.isMobile = window.innerWidth <= 800;
-  }
-
-  leftClick(): void {
-    this.leftClicked.emit();
-
-    if (this.correctSide === 'left') {
-      this.showStatusForSide('left', 'success');
-    } else if (this.correctSide === 'right') {
-      this.showStatusForSide('left', 'fail');
+  pick(side: ComparerSide): void {
+    const correct = this.correctSide();
+    if (correct) {
+      const f = { left: null as Flash, right: null as Flash };
+      f[side] = side === correct ? 'ok' : 'bad';
+      this.flash.set(f);
+      clearTimeout(this.timer);
+      this.timer = setTimeout(() => this.flash.set({ left: null, right: null }), 450);
     }
+    this.picked.emit(side);
   }
 
-  rightClick(): void {
-    this.rightClicked.emit();
-
-    if (this.correctSide === 'right') {
-      this.showStatusForSide('right', 'success');
-    } else if (this.correctSide === 'left') {
-      this.showStatusForSide('right', 'fail');
-    }
-  }
-
-  private showStatusForSide(side: Side, status: Status): void {
-    if (side === 'left') {
-      this.showLeftStatus = status;
-
-      setTimeout(() => {
-        this.showLeftStatus = 'no status';
-      }, 500);
-    } else {
-      this.showRightStatus = status;
-
-      setTimeout(() => {
-        this.showRightStatus = 'no status';
-      }, 500);
+  @HostListener('document:keydown', ['$event'])
+  onKey(e: KeyboardEvent): void {
+    const k = e.key.toLowerCase();
+    if (k === 'arrowleft' || k === 'arrowup' || k === 'a') {
+      e.preventDefault();
+      this.pick('left');
+    } else if (k === 'arrowright' || k === 'arrowdown' || k === 'd') {
+      e.preventDefault();
+      this.pick('right');
     }
   }
 }

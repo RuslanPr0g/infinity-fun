@@ -5,6 +5,8 @@ export class LocalStorageConst {
 
   public static ColorGuessMaxScore: string = 'ColorGuessMaxScore';
 
+  public static MathComparerBest: string = 'MathComparerBest';
+
   public static OpeningTrainerPracticeSet: string = 'OpeningTrainerPracticeSet';
 
   public static ChessleDailyState: string = 'ChessleDailyState';
