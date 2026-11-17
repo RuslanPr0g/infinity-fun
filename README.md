@@ -2,7 +2,7 @@
 
 Welcome to **Infinity Fun**! 🚀 A collection of interactive web games and fun visualizations, built with Angular. Enjoy endless entertainment with each click! 🌍✨
 
-### What does it do?
+### What does it do?!
 
 Infinity Fun brings you a variety of playful games and interactive experiences, including:
 
