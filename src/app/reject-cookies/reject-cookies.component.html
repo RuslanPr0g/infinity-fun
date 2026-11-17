@@ -1,9 +1,0 @@
-<app-reject-cookies-website></app-reject-cookies-website>
-
-<app-cookie-consent-modal *ngIf="showConsentModal" (closed)="showConsentModal = false"></app-cookie-consent-modal>
-
-<div class="game-result" *ngIf="gameResult">
-  <div [ngClass]="gameResult === 'win' ? 'win' : 'lose'">
-    {{ gameResult === 'win' ? '🎉 WHY SO SERIOUS? 🎉' : '☠️ COOKIE ACCEPTED ☠️' }}
-  </div>
-</div>

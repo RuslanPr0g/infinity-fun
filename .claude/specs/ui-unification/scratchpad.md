@@ -24,7 +24,7 @@ Plan: `~/.claude/plans/pasted-content-id-4447-create-scratchpa-swift-rain.md`. R
 | 7 | Math Quiz | modern, own palette | tokens, stat bar | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | 8 | Months Left | ~1000 spans | canvas grid | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | 9 | Date Countdown | emoji edit span | scroll shell, real buttons | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| 10 | Reject Cookies | hover-only flee, 39 hex | touch flee, clean frame | | | | | | |
+| 10 | Reject Cookies | hover-only flee, 39 hex | touch flee, clean frame | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | 11 | Sea Battle | 50px cells, reversed breakpoints | fluid grid | | | | | | |
 | 12 | Chessle | own palette | tokens, modal | | | | | | |
 | 13 | Opening Trainer | hover-only preview | tap preview | | | | | | |
@@ -38,3 +38,4 @@ Plan: `~/.claude/plans/pasted-content-id-4447-create-scratchpa-swift-rain.md`. R
 - Math Comparer: `new Function` eval replaced by a small parser (`math-comparer.engine.ts`), best streak is now saved.
 - Math Quiz: medium division could throw after 1000 random tries (crash). Now built directly.
 - Date Countdown: dates were parsed as UTC midnight (off by the time-zone offset) and past times were off by one. Fixed in `countdown.engine.ts`; old stale specs replaced. iOS date/time input fix now lives in global `.ui-input`.
+- Reject Cookies: in-world site kept its own look on purpose, now inside a fake browser frame. Flee works on touch (jumps on press, gives up after 12 dodges / 15 s). Fake bank-details form says plainly nothing is sent and not to type real details.

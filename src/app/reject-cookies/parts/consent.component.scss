@@ -1,0 +1,96 @@
+// In-world look: a typical, slightly sneaky cookie banner on a light site.
+:host {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 12px;
+  overflow: hidden;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: #1c2033;
+}
+.dim { position: absolute; inset: 0; background: rgba(20, 22, 40, 0.45); }
+
+.card {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  text-align: left;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  h2 { font-size: 19px; }
+  p { font-size: 15px; line-height: 1.45; }
+  label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600; color: #3a405c; }
+  input[type='text'], input[type='number'], input[type='password'] {
+    font: inherit;
+    font-size: 16px;
+    padding: 9px 11px;
+    border: 1px solid #c9cede;
+    border-radius: 8px;
+    color: #1c2033;
+    background: #fff;
+    min-width: 0;
+  }
+}
+
+button { font: inherit; cursor: pointer; }
+.big {
+  min-height: 48px;
+  border: 0;
+  border-radius: 10px;
+  background: #2457f5;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 700;
+  &:hover { background: #1c46cc; }
+}
+.mid {
+  min-height: 42px;
+  border: 1px solid #2457f5;
+  border-radius: 10px;
+  background: #eef2ff;
+  color: #2457f5;
+  font-weight: 600;
+}
+.link {
+  align-self: center;
+  min-height: 40px;
+  padding: 6px 12px;
+  border: 0;
+  background: none;
+  color: #9aa0b8;
+  font-size: 13px;
+  text-decoration: underline;
+  touch-action: none;
+}
+.runner {
+  position: absolute;
+  z-index: 2;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  transition: left 0.18s ease-out, top 0.18s ease-out;
+}
+.legal { font-size: 10px !important; line-height: 1.35 !important; color: #9aa0b8; }
+.small { font-size: 13px !important; color: #5b6280; }
+.note { font-size: 12px !important; padding: 8px 10px; border-radius: 8px; background: #fff7e0; color: #7a5a00; }
+.error { color: #d0243c; font-weight: 600; }
+.hit { color: #12a150; }
+
+.opts {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  label { flex-direction: row; align-items: flex-start; gap: 10px; padding: 7px 0; font-weight: 400; font-size: 14px; color: #1c2033; line-height: 1.35; }
+  input { width: 20px; height: 20px; flex: none; accent-color: #2457f5; margin-top: 1px; }
+}

@@ -69,7 +69,7 @@ export class GameRouteService {
       route: '/reject-cookies',
       color: '#6366F1',
       category: 'reflex',
-      description: 'Fight your way through sneaky consent popups. Reject them all.',
+      description: 'A cookie banner from hell. Try to reject them all.',
     },
     {
       name: 'Country Guesser',

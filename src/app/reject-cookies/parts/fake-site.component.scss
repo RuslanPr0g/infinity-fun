@@ -1,0 +1,38 @@
+// In-world look: a bright, generic "corporate" site, nothing like Infinity Fun.
+:host {
+  display: block;
+  min-height: 100%;
+  background: #f6f7fb;
+  color: #1c2033;
+  font-family: Georgia, 'Times New Roman', serif;
+  text-align: left;
+}
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: #fff;
+  border-bottom: 1px solid #e4e7f0;
+  b { font-size: 20px; span { color: #f5a300; } }
+  nav { display: flex; gap: 16px; font-size: 14px; color: #5b6280; }
+}
+.hero {
+  padding: 36px 20px;
+  text-align: center;
+  background: linear-gradient(135deg, #2a2f8f, #6c3fd1);
+  color: #fff;
+  h1 { font-size: clamp(22px, 5vw, 34px); line-height: 1.2; }
+  p { margin: 10px 0 18px; opacity: 0.85; }
+}
+.cta { display: inline-block; padding: 10px 22px; border-radius: 999px; background: #f5a300; color: #1c2033; font-weight: 700; font-family: system-ui, sans-serif; }
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  padding: 20px;
+  article { background: #fff; border: 1px solid #e4e7f0; border-radius: 10px; padding: 14px; }
+  h2 { font-size: 16px; margin-bottom: 6px; }
+  p { font-size: 14px; color: #5b6280; line-height: 1.4; }
+}
+footer { padding: 16px 20px 28px; font-size: 13px; color: #8a90a8; text-align: center; }

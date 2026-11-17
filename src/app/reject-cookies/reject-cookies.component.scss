@@ -1,67 +1,60 @@
-@import "../../colors";
+@use 'tokens' as t;
+@use 'breakpoints' as bp;
 
-.game-result {
-  position: fixed;
-  inset: 0;
+.stage {
+  height: 100%;
+  padding: 14px;
+  display: flex;
+}
+.browser {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  max-width: 1100px;
+  margin: 0 auto;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  box-shadow: t.$shadow-modal;
+}
+.chrome {
+  flex: none;
   display: flex;
   align-items: center;
-  justify-content: center;
-  z-index: 10000;
-  pointer-events: none;
-
-  div {
-    font-size: 3rem;
-    padding: 1rem 2rem;
-    border-radius: 1rem;
-    color: #fff;
-    animation:
-      pop 0.6s ease,
-      fadeOut 3s 1s forwards;
-  }
-
-  .win {
-    background: linear-gradient(
-      45deg,
-      $color-reject-cookies,
-      lighten-color($color-reject-cookies, 0.15)
-    );
-  }
-
-  .lose {
-    background: linear-gradient(
-      45deg,
-      $color-months-left,
-      darken-color($color-months-left, 0.15)
-    );
-  }
+  gap: 6px;
+  padding: 8px 12px;
+  background: #1a2035;
+  i { width: 10px; height: 10px; border-radius: 50%; background: #3a4363; }
+  i:nth-child(1) { background: #ff5f57; }
+  i:nth-child(2) { background: #febc2e; }
+  i:nth-child(3) { background: #28c840; }
+}
+.url {
+  flex: 1;
+  margin-left: 10px;
+  padding: 4px 12px;
+  border-radius: 8px;
+  background: #0d1324;
+  color: var(--muted);
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.page { position: relative; flex: 1; min-height: 0; }
+.site {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  &.locked { overflow: hidden; }
 }
 
-@keyframes pop {
-  0% {
-    transform: scale(0.8);
-    opacity: 0;
-  }
+.end { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+.big { font-size: 26px; font-weight: 800; }
 
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-@keyframes fadeOut {
-  0% {
-    opacity: 1;
-  }
-
-  100% {
-    opacity: 0;
-  }
-}
-
-@media (max-width: 480px) {
-  .game-result div {
-    margin: 0 16px;
-    font-size: 2rem;
-    text-align: center;
-  }
+@include bp.phone {
+  .stage { padding: 8px; }
+  .chrome i { display: none; }
+  .url { margin-left: 0; }
 }
