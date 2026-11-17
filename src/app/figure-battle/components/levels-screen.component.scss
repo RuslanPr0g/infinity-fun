@@ -73,9 +73,82 @@ header {
 .st { font-size: 18px; }
 
 @media (max-width: 600px) {
+  header { gap: 8px 10px; margin-bottom: 14px; }
+  header .fb-title { font-size: 22px; }
+  .totals { order: 5; flex-basis: 100%; justify-content: space-between; }
   .grid { grid-template-columns: 1fr 1fr; gap: 10px; }
   .card { min-height: 0; padding: 12px; }
   .num { font-size: 22px; }
   .name { font-size: 16px; }
   .meta { font-size: 11px; }
+}
+
+.chapters {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin: 0 -4px 16px;
+  padding: 4px;
+}
+.chap {
+  appearance: none;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px 8px 10px;
+  color: #e6ecff;
+  background: rgba(18, 23, 41, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  cursor: pointer;
+  text-align: left;
+  &:hover:not(:disabled) { border-color: rgba(62, 197, 255, 0.45); }
+  &.on { background: rgba(62, 197, 255, 0.14); border-color: #3ec5ff; box-shadow: inset 0 0 0 1px #3ec5ff; }
+  &.locked { cursor: default; opacity: 0.5; }
+  .cn {
+    width: 30px;
+    height: 30px;
+    display: grid;
+    place-items: center;
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.06);
+    font-weight: 800;
+    font-size: 15px;
+  }
+  &.on .cn { background: #3ec5ff; color: #04121c; }
+  .ct { display: flex; flex-direction: column; }
+  .cname { font-size: 14px; font-weight: 700; white-space: nowrap; }
+  .cs { font-size: 12px; font-weight: 600; }
+}
+
+.chead {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 10px 24px;
+  margin-bottom: 16px;
+  .big { font-size: 24px; font-weight: 800; margin: 2px 0; }
+}
+.cprog {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 220px;
+  font-size: 13px;
+}
+
+.tag {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.boss-tag { color: #ff8399; }
+.card.boss:not(.locked) { border-color: rgba(255, 77, 109, 0.35); }
+
+@media (max-width: 600px) {
+  .chead .big { font-size: 20px; }
+  .cprog { width: 100%; }
 }

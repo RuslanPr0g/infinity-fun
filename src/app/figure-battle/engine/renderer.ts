@@ -1,4 +1,4 @@
-import { ARENA, Battlefield } from './battlefield';
+import { ARENA, Battlefield, airstrikeStats } from './battlefield';
 import { Mat, RGB, drawFigure, drawOutline, hex, lighten, rgba, teamColor } from './figures';
 import { Rect } from './levels';
 import { Unit } from './unit';
@@ -11,6 +11,7 @@ const TAU = Math.PI * 2;
 const SHELL_CORE = hex('#ffd08a');
 const SHELL_GLOW: RGB = [255, 179, 71];
 const BAD: RGB = hex('#ff5a5a');
+const WHITE_RGB: RGB = [255, 255, 255];
 const FONT = '600 13px Inter, "Segoe UI", Roboto, Cantarell, Ubuntu, "Noto Sans", sans-serif';
 
 /**
@@ -193,9 +194,52 @@ export class Renderer {
       }
     }
 
+    // Warden auras: a faint ring under the units.
+    for (const u of bf.units) {
+      if (u.alive && u.aura > 0) {
+        ctx.beginPath();
+        ctx.arc(u.x, u.y, u.auraR, 0, TAU);
+        ctx.fillStyle = rgba(teamColor(u.team), 0.04);
+        ctx.fill();
+        ctx.strokeStyle = rgba(teamColor(u.team), 0.18);
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+    }
+    for (const s of bf.strikes) {
+      const k = 1 - Math.max(0, s.t) / 0.8;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, TAU);
+      ctx.fillStyle = rgba(SHELL_GLOW, 0.08 + 0.2 * k);
+      ctx.fill();
+      ctx.strokeStyle = rgba(SHELL_GLOW, 0.5 + 0.5 * k);
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r * (1 - k), 0, TAU);
+      ctx.stroke();
+    }
+    if (bf.aiming === 'airstrike' && bf.mouse && showGhost) {
+      const r = airstrikeStats(bf.powers.airstrike.level).r;
+      ctx.beginPath();
+      ctx.arc(bf.mouse.x, bf.mouse.y, r, 0, TAU);
+      ctx.setLineDash([8, 6]);
+      ctx.strokeStyle = rgba(SHELL_GLOW, 0.8);
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
     for (const u of bf.units) {
       if (u.alive) {
         drawFigure(ctx, m, u.kind, u.x, u.y, u.r, u.rot, teamColor(u.team), u.flash * 6);
+      }
+    }
+    if (bf.rallyTime > 0) {
+      for (const u of bf.teamUnits[0]) {
+        if (u.alive) {
+          drawOutline(ctx, m, u.kind, u.x, u.y, u.r + 3, u.rot, rgba(WHITE_RGB, 0.35), 1.5);
+        }
       }
     }
     world();
@@ -373,7 +417,7 @@ export class Renderer {
     }
     const preview = new Unit(kind, bf.placeTeam, mo.x, mo.y);
     if (bf.placeTeam === 0) {
-      preview.applyMods(bf.upgrades[kind]);
+      preview.applyMods(bf.upgrades[kind], bf.globalMods);
     }
     if (preview.reach > 30) {
       this.rangeRing(m, mo.x, mo.y, preview.reach + r, col, 0, 0.22);

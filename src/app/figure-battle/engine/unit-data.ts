@@ -1,9 +1,11 @@
 /** All figure types. `reach` is the attack range measured edge to edge. */
 
-export const UNIT_ORDER = ['circle', 'triangle', 'square', 'diamond', 'pentagon', 'hexagon', 'star'] as const;
+export const UNIT_ORDER = [
+  'circle', 'triangle', 'square', 'diamond', 'pentagon', 'hexagon', 'star', 'cross', 'chevron', 'octagon', 'gear',
+] as const;
 
 export type UnitKind = (typeof UNIT_ORDER)[number];
-export type AttackType = 'melee' | 'bullet' | 'heal' | 'shell' | 'cleave';
+export type AttackType = 'melee' | 'bullet' | 'heal' | 'shell' | 'cleave' | 'blast' | 'spawn';
 export type AiType = 'nearest' | 'valuable' | 'backline' | 'support' | 'cluster';
 
 export interface UnitType {
@@ -21,6 +23,9 @@ export interface UnitType {
   ai: AiType;
   splash?: number;
   heal?: number;
+  /** Warden: armor given to nearby allies, and the aura radius. */
+  aura?: number;
+  auraR?: number;
   desc: string;
 }
 
@@ -59,6 +64,26 @@ export const UNIT_TYPES: Record<UnitKind, UnitType> = {
     name: 'Champion', role: 'Elite', cost: 150, hp: 1100, dmg: 45, reach: 10,
     speed: 72, cd: 1.1, r: 20, armor: 6, attack: 'cleave', ai: 'nearest',
     desc: 'A walking fortress. Every swing hits all enemies around it.',
+  },
+  cross: {
+    name: 'Bomber', role: 'Suicide', cost: 20, hp: 40, dmg: 70, reach: 4,
+    speed: 135, cd: 0.1, r: 10, armor: 0, attack: 'blast', ai: 'cluster', splash: 55,
+    desc: 'Runs at the thickest crowd and blows up, hurting everything nearby. One use.',
+  },
+  chevron: {
+    name: 'Gunner', role: 'Rapid fire', cost: 30, hp: 80, dmg: 9, reach: 230,
+    speed: 70, cd: 0.3, r: 11, armor: 1, attack: 'bullet', ai: 'nearest',
+    desc: 'Sprays fast, weak shots. Shreds swarms, but armor soaks most of each hit.',
+  },
+  octagon: {
+    name: 'Warden', role: 'Guard', cost: 45, hp: 320, dmg: 12, reach: 4,
+    speed: 50, cd: 0.9, r: 15, armor: 4, attack: 'melee', ai: 'nearest', aura: 3, auraR: 110,
+    desc: 'Tough and slow. Gives +3 armor to every ally close to it.',
+  },
+  gear: {
+    name: 'Hive', role: 'Spawner', cost: 70, hp: 200, dmg: 0, reach: 0,
+    speed: 35, cd: 4, r: 16, armor: 2, attack: 'spawn', ai: 'support',
+    desc: 'Stays back and builds a free Dot every 4 seconds, up to 6 at a time.',
   },
 };
 

@@ -12,7 +12,7 @@ export class GameRouteService {
       route: '/figure-battle',
       color: '#3EC5FF',
       category: 'strategy',
-      description: 'Place an army of shapes and win 12 battles.',
+      description: 'Place an army of shapes and win 62 battles.',
       isNew: true,
     },
     {

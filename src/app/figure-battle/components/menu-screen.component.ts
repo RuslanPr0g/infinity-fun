@@ -38,7 +38,7 @@ import { FigureIconComponent } from './figure-icon.component';
         </div>
       </div>
       <div class="foot fb-muted">
-        <span class="desk">LMB place · RMB remove · 1–7 pick unit · Q/W/E brush · X erase · Space start · M mute</span>
+        <span class="desk">LMB place · RMB remove · 1–0 pick unit · Q/W/E brush (powers in battle) · X erase · Space start · M mute</span>
         <span class="touch">Tap or drag to place troops · use Erase to remove · turn sideways for a wider field</span>
       </div>
     </div>

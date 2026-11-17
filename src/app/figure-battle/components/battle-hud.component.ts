@@ -1,4 +1,6 @@
 import { AfterViewInit, Component, ElementRef, NgZone, OnDestroy, computed, inject, viewChild } from '@angular/core';
+import { PowerId } from '../engine/battlefield';
+import { POWER_IDS, commandNode } from '../engine/progression';
 import { FigureBattleGameService, formatTime } from '../services/figure-battle-game.service';
 
 /** Battle top bar. Live numbers are written straight to the DOM from a rAF loop (no change detection). */
@@ -78,3 +80,71 @@ export class BattleHudComponent implements AfterViewInit, OnDestroy {
     }
   }
 }
+
+/** Once-per-battle powers, along the bottom so thumbs reach them on phones. */
+@Component({
+  selector: 'fb-powers',
+  standalone: true,
+  template: `
+    @if (powers().length) {
+      <div class="fb-panel pw">
+        @for (p of powers(); track p.id; let i = $index) {
+          <button class="fb-btn power" [class.primary]="p.aiming" [disabled]="p.used" (click)="game.usePower(p.id)">
+            <span class="g">{{ p.glyph }}</span>
+            <span class="t">
+              <span class="n">{{ p.aiming ? 'Tap the field' : p.name }}</span>
+              <span class="s">{{ p.used ? 'Used' : p.desc }}</span>
+            </span>
+            <span class="hk">{{ keys[i] }}</span>
+          </button>
+        }
+      </div>
+    }
+  `,
+  styles: `
+    :host { display: block; padding: 0 clamp(8px, 2vw, 30px) 10px; }
+    .pw { display: flex; justify-content: center; gap: 8px; padding: 8px; }
+    .power { flex: 0 1 220px; min-height: 52px; justify-content: flex-start; gap: 10px; text-align: left; }
+    .g { font-size: 22px; width: 24px; text-align: center; }
+    .t { display: flex; flex-direction: column; min-width: 0; }
+    .n { font-size: 14px; }
+    .s { font-size: 11px; opacity: 0.7; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .hk { margin-left: auto; font-size: 11px; opacity: 0.5; }
+    @media (pointer: coarse) { .hk { display: none; } }
+    @media (max-width: 520px) {
+      :host { padding: 0 8px 6px; }
+      .pw { padding: 6px; gap: 6px; }
+      .power { flex: 1; padding: 6px 8px; gap: 6px; min-height: 46px; }
+      .g { font-size: 18px; width: 18px; }
+      .s { display: none; }
+      .n { font-size: 13px; white-space: normal; line-height: 1.1; }
+    }
+    @media (max-height: 520px) {
+      :host { padding: 0 8px 6px; }
+      .pw { padding: 4px; gap: 6px; }
+      .power { min-height: 36px; padding: 4px 10px; }
+      .s, .hk { display: none; }
+    }
+  `,
+})
+export class PowersBarComponent {
+  readonly game = inject(FigureBattleGameService);
+  readonly keys = ['Q', 'W', 'E'];
+
+  readonly powers = computed(() => {
+    this.game.powerTick();
+    if (this.game.sandbox()) {
+      return [];
+    }
+    const bf = this.game.bf;
+    return POWER_IDS.filter((id) => bf.powers[id].level > 0).map((id) => {
+      const node = commandNode(id);
+      return {
+        id, name: node.name, glyph: POWER_GLYPHS[id], desc: node.effect(bf.powers[id].level),
+        used: bf.powers[id].used, aiming: bf.aiming === id,
+      };
+    });
+  });
+}
+
+const POWER_GLYPHS: Record<PowerId, string> = { airstrike: '✸', rally: '»', repair: '✚' };

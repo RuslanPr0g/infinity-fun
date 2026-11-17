@@ -1,6 +1,6 @@
 import { Component, computed, inject } from '@angular/core';
 import { ENEMY_HEX, PLAYER_HEX, teamHex } from '../engine/figures';
-import { PERKS } from '../engine/progression';
+import { PERKS, PERKS2 } from '../engine/progression';
 import { statLine } from '../engine/unit';
 import { UNIT_TYPES } from '../engine/unit-data';
 import { FigureBattleGameService } from '../services/figure-battle-game.service';
@@ -66,7 +66,9 @@ export class DeployTopComponent {
       <div class="units">
         @for (u of cards(); track u.kind; let i = $index) {
           <button class="unit" [class.on]="u.kind === game.selectedKind() && !game.eraseTool()" [title]="u.tip" (click)="game.selectKind(u.kind)">
-            <span class="hk">{{ i + 1 }}</span>
+            @if (i < 10) {
+              <span class="hk">{{ (i + 1) % 10 }}</span>
+            }
             <fb-icon [kind]="u.kind" [color]="color()" [radius]="13" />
             <span class="nm">{{ u.name }}</span>
             <span class="fb-gold cost">◆ {{ u.cost }}</span>
@@ -113,7 +115,7 @@ export class DeployBottomComponent {
     this.game.placeTeam();
     return this.game.allowed().map((kind) => {
       const d = UNIT_TYPES[kind];
-      return { kind, name: d.name, cost: d.cost, tip: `${d.name} · ${d.role}\n${statLine(kind, this.game.placingUps(kind))}` };
+      return { kind, name: d.name, cost: d.cost, tip: `${d.name} · ${d.role}\n${statLine(kind, this.game.placingUps(kind), this.game.placingGlobal())}` };
     });
   });
 
@@ -121,7 +123,8 @@ export class DeployBottomComponent {
     const kind = this.game.selectedKind();
     const ups = this.game.placingUps(kind);
     const d = UNIT_TYPES[kind];
-    const perk = (ups?.perk ?? 0) > 0 ? `   ★ ${PERKS[kind].name}` : '';
-    return { kind, name: d.name, role: d.role, cost: d.cost, desc: d.desc + perk, stats: statLine(kind, ups) };
+    const perks = [(ups?.perk ?? 0) > 0 ? PERKS[kind].name : '', (ups?.perk2 ?? 0) > 0 ? PERKS2[kind].name : ''].filter(Boolean);
+    const perk = perks.length ? `   ★ ${perks.join(', ')}` : '';
+    return { kind, name: d.name, role: d.role, cost: d.cost, desc: d.desc + perk, stats: statLine(kind, ups, this.game.placingGlobal()) };
   });
 }

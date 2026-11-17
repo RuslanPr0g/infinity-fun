@@ -3,7 +3,7 @@ import {
   computed, inject, viewChild,
 } from '@angular/core';
 import { ArmoryScreenComponent } from './components/armory-screen.component';
-import { BattleHudComponent } from './components/battle-hud.component';
+import { BattleHudComponent, PowersBarComponent } from './components/battle-hud.component';
 import { BriefModalComponent } from './components/brief-modal.component';
 import { DeployBottomComponent, DeployTopComponent } from './components/deploy-hud.component';
 import { LevelsScreenComponent } from './components/levels-screen.component';
@@ -21,7 +21,7 @@ import { FigureBattleGameService } from './services/figure-battle-game.service';
   standalone: true,
   imports: [
     MenuScreenComponent, LevelsScreenComponent, DeployTopComponent, DeployBottomComponent,
-    BattleHudComponent, ResultModalComponent, BriefModalComponent, ArmoryScreenComponent,
+    BattleHudComponent, PowersBarComponent, ResultModalComponent, BriefModalComponent, ArmoryScreenComponent,
   ],
   encapsulation: ViewEncapsulation.None,
   styleUrl: './figure-battle-game.component.scss',
@@ -40,6 +40,8 @@ import { FigureBattleGameService } from './services/figure-battle-game.service';
         <div class="fb-bottom" #bottom>
           @if (hud() === 'deploy') {
             <fb-deploy-bottom />
+          } @else if (game.screen() === 'battle') {
+            <fb-powers />
           }
         </div>
       </div>

@@ -1,6 +1,6 @@
 import { HEAL, RGB, SHELL, WHITE, teamColor } from './figures';
 import { Level, Rect } from './levels';
-import { Unit, UpgradeMap } from './unit';
+import { GlobalMods, Unit, UnitUps, UpgradeMap } from './unit';
 import { UNIT_ORDER, UNIT_TYPES, UnitKind } from './unit-data';
 
 /** Owns all units, runs the battle simulation and handles deployment input. Rendering lives in Renderer. */
@@ -8,11 +8,39 @@ import { UNIT_ORDER, UNIT_TYPES, UnitKind } from './unit-data';
 export const ARENA: Rect = { x: 30, y: 84, w: 1540, h: 676 };
 export const STEP = 1 / 60;
 const TIMEOUT = 180;
-const BACKLINE: UnitKind[] = ['triangle', 'pentagon', 'hexagon'];
+const BACKLINE: UnitKind[] = ['triangle', 'pentagon', 'hexagon', 'chevron', 'gear'];
+const BROOD_CAP = 6;
 const CELL = 48;
 
 export type Snapshot = [kind: UnitKind, team: number, x: number, y: number][];
 export type PlaceFail = 'zone' | 'overlap' | 'budget' | '';
+export type PowerId = 'airstrike' | 'rally' | 'repair';
+
+/** Once-per-battle powers for the player. Level 0 = not owned. */
+export interface PowerState {
+  level: number;
+  used: boolean;
+}
+
+export function airstrikeStats(level: number): { r: number; dmg: number } {
+  return { r: 80 + 20 * level, dmg: 80 + 40 * level };
+}
+
+export function rallyStats(level: number): { time: number; dmg: number; spd: number } {
+  return { time: 4 + 2 * level, dmg: 1.25, spd: 1.4 };
+}
+
+export function repairStats(level: number): number {
+  return 0.15 + 0.15 * level;
+}
+
+export interface Strike {
+  x: number;
+  y: number;
+  r: number;
+  dmg: number;
+  t: number;
+}
 
 export interface Proj {
   type: 'bullet' | 'shell';
@@ -31,6 +59,8 @@ export interface Proj {
   t: number;
   dur: number;
   splash: number;
+  pierce: number;
+  src: Unit | null;
   dead: boolean;
 }
 
@@ -116,7 +146,18 @@ export class Battlefield {
   brush = 0;
   eraseTool = false;
   upgrades: UpgradeMap = {};
+  globalMods: GlobalMods = {};
+  /** Veteran upgrades for every enemy unit in later chapters. */
+  enemyUps: UnitUps | undefined;
+  enemyGlobal: GlobalMods = {};
   paintMode = 0;
+
+  // powers
+  powers: Record<PowerId, PowerState> = { airstrike: { level: 0, used: false }, rally: { level: 0, used: false }, repair: { level: 0, used: false } };
+  aiming: PowerId | null = null;
+  strikes: Strike[] = [];
+  rallyTime = 0;
+  private spawnQueue: Unit[] = [];
   hover: Unit | null = null;
   mouse: { x: number; y: number } | null = null;
 
@@ -155,13 +196,33 @@ export class Battlefield {
     this.infinite = false;
     this.placeTeam = 0;
     this.upgrades = {};
+    this.globalMods = {};
+    this.enemyUps = undefined;
+    this.enemyGlobal = {};
     this.paintMode = 0;
+    this.aiming = null;
+    this.strikes = [];
+    this.rallyTime = 0;
+    this.spawnQueue = [];
+    for (const p of Object.values(this.powers)) {
+      p.level = 0;
+      p.used = false;
+    }
     this.events.armyChanged?.();
   }
 
-  setupLevel(level: Level, owned: readonly UnitKind[] = UNIT_ORDER, budgetMult = 1, ups: UpgradeMap = {}): void {
+  setupLevel(
+    level: Level, owned: readonly UnitKind[] = UNIT_ORDER, budgetMult = 1, ups: UpgradeMap = {},
+    global: GlobalMods = {}, powers: Partial<Record<PowerId, number>> = {},
+  ): void {
     this.clearAll();
     this.upgrades = ups;
+    this.globalMods = global;
+    this.enemyUps = level.vet?.ups;
+    this.enemyGlobal = level.vet?.global ?? {};
+    for (const [id, lvl] of Object.entries(powers)) {
+      this.powers[id as PowerId].level = lvl ?? 0;
+    }
     for (const z of level.zones) {
       this.zones[0].push({ x: ARENA.x + z.x, y: ARENA.y + z.y, w: z.w, h: z.h });
     }
@@ -191,7 +252,9 @@ export class Battlefield {
   spawn(kind: UnitKind, team: number, x: number, y: number): Unit {
     const u = new Unit(kind, team, x, y);
     if (team === 0) {
-      u.applyMods(this.upgrades[kind]);
+      u.applyMods(this.upgrades[kind], this.globalMods);
+    } else if (this.enemyUps) {
+      u.applyMods(this.enemyUps, this.enemyGlobal);
     }
     this.units.push(u);
     return u;
@@ -200,7 +263,7 @@ export class Battlefield {
   armyValue(team: number): number {
     let v = 0;
     for (const u of this.units) {
-      if (u.alive && u.team === team) {
+      if (u.alive && u.team === team && !u.free) {
         v += u.cost;
       }
     }
@@ -230,7 +293,7 @@ export class Battlefield {
   snapshot(team = -1): Snapshot {
     const out: Snapshot = [];
     for (const u of this.units) {
-      if (u.alive && (team < 0 || u.team === team)) {
+      if (u.alive && !u.free && (team < 0 || u.team === team)) {
         out.push([u.kind, u.team, u.x, u.y]);
       }
     }
@@ -257,8 +320,14 @@ export class Battlefield {
     this.startValue = [this.armyValue(0), this.armyValue(1)];
     this.lostValue = [0, 0];
     this.kills = [0, 0];
+    this.strikes = [];
+    this.rallyTime = 0;
+    this.aiming = null;
+    for (const p of Object.values(this.powers)) {
+      p.used = false;
+    }
     for (const u of this.units) {
-      u.cd = rand(0, u.cdMax * 0.6);
+      u.cd = u.attack === 'spawn' ? rand(0.5, 1.5) : rand(0, u.cdMax * 0.6);
     }
   }
 
@@ -329,13 +398,19 @@ export class Battlefield {
       }
     }
     this.teamUnits = tu;
+    this.applyAuras(dt);
     for (const u of this.units) {
       if (u.alive) {
         this.updateUnit(u, dt);
       }
     }
+    if (this.spawnQueue.length > 0) {
+      this.units.push(...this.spawnQueue);
+      this.spawnQueue = [];
+    }
     this.separate();
     this.updateProjectiles(dt);
+    this.updateStrikes(dt);
     if (this.someoneDied) {
       this.someoneDied = false;
       this.units = this.units.filter((x) => x.alive);
@@ -365,6 +440,47 @@ export class Battlefield {
     }
   }
 
+  /** Warden armor, Champion war cry and the Rally power. Recomputed every step. */
+  private applyAuras(dt: number): void {
+    this.rallyTime = Math.max(0, this.rallyTime - dt);
+    const rally = this.rallyTime > 0 ? rallyStats(this.powers.rally.level) : null;
+    for (let team = 0; team < 2; team++) {
+      const list = this.teamUnits[team];
+      for (const a of list) {
+        a.auraArmor = 0;
+        a.dmgMul = 1;
+        a.speedMul = 1;
+        if (team === 0 && rally) {
+          a.dmgMul = rally.dmg;
+          a.speedMul = rally.spd;
+        }
+      }
+      for (const src of list) {
+        const cry = src.kind === 'star' && src.perk2;
+        if (src.aura <= 0 && !cry) {
+          continue;
+        }
+        const r = cry ? 150 : src.auraR;
+        const r2 = r * r;
+        for (const a of list) {
+          if (a === src) {
+            continue;
+          }
+          const dx = a.x - src.x;
+          const dy = a.y - src.y;
+          if (dx * dx + dy * dy <= r2) {
+            if (src.aura > 0) {
+              a.auraArmor = Math.max(a.auraArmor, src.aura);
+            }
+            if (cry) {
+              a.dmgMul = Math.max(a.dmgMul, 1.2);
+            }
+          }
+        }
+      }
+    }
+  }
+
   private updateUnit(u: Unit, dt: number): void {
     u.cd -= dt;
     u.flash = Math.max(0, u.flash - dt);
@@ -372,6 +488,10 @@ export class Battlefield {
     const foes = this.teamUnits[1 - u.team];
     if (u.attack === 'heal') {
       this.updateMedic(u, dt, foes);
+      return;
+    }
+    if (u.attack === 'spawn') {
+      this.updateHive(u, dt, foes);
       return;
     }
     if (u.target === null || !u.target.alive || u.retarget <= 0) {
@@ -391,7 +511,7 @@ export class Battlefield {
     const gap = dist - u.r - tgt.r;
     u.rot = lerpAngle(u.rot, Math.atan2(dy, dx), Math.min(1, dt * 8));
     if (gap > u.reach) {
-      this.steer(u, dx * u.speed, dy * u.speed, dt);
+      this.steer(u, dx * u.speed * u.speedMul, dy * u.speed * u.speedMul, dt);
     } else {
       this.steer(u, 0, 0, dt);
       if (u.cd <= 0) {
@@ -444,8 +564,8 @@ export class Battlefield {
     const toward = (px: number, py: number): void => {
       const l = Math.hypot(px, py);
       if (l > 0) {
-        wx = (px / l) * u.speed;
-        wy = (py / l) * u.speed;
+        wx = (px / l) * u.speed * u.speedMul;
+        wy = (py / l) * u.speed * u.speedMul;
       }
     };
     if (foe !== null && fd < 60) {
@@ -472,13 +592,80 @@ export class Battlefield {
         healT2.hp = Math.min(healT2.maxHp, healT2.hp + u.heal);
         this.beam(u.x, u.y, healT2.x, healT2.y, HEAL, 0.25);
       }
+      if (u.perk2 && ++u.count % 4 === 0) {
+        for (const a of allies) {
+          if (a.alive && Math.hypot(a.x - u.x, a.y - u.y) - a.r <= u.reach) {
+            a.hp = Math.min(a.maxHp, a.hp + u.heal);
+          }
+        }
+        this.ring(u.x, u.y, u.r, u.reach, HEAL, 0.5, 3);
+      }
       u.cd = u.cdMax;
     } else if (foe !== null && fd <= u.reach) {
-      this.damage(foe, u.dmg);
+      this.damage(foe, u.dmg * u.dmgMul, 0, u);
       this.beam(u.x, u.y, foe.x, foe.y, teamColor(u.team), 0.15);
       this.sfx('zap', u.x, u.y, -14);
       u.cd = u.cdMax;
     }
+  }
+
+  /** Hive: keeps behind its own army and builds free Dots. */
+  private updateHive(u: Unit, dt: number, foes: Unit[]): void {
+    const allies = this.teamUnits[u.team];
+    let anchor: Unit | null = null;
+    let ad = Infinity;
+    for (const a of allies) {
+      if (a !== u && a.alive && a.kind !== 'gear' && a.parent !== u) {
+        const d = Math.hypot(a.x - u.x, a.y - u.y);
+        if (d < ad) {
+          ad = d;
+          anchor = a;
+        }
+      }
+    }
+    const foe = this.nearest(u, foes, null);
+    let wx = 0;
+    let wy = 0;
+    const sp = u.speed * u.speedMul;
+    if (foe !== null) {
+      const fx = u.x - foe.x;
+      const fy = u.y - foe.y;
+      const fd = Math.hypot(fx, fy);
+      if (fd < 160 && fd > 0) {
+        wx = (fx / fd) * sp;
+        wy = (fy / fd) * sp;
+      } else if (anchor !== null && ad > 110) {
+        wx = ((anchor.x - u.x) / ad) * sp;
+        wy = ((anchor.y - u.y) / ad) * sp;
+      }
+      u.rot = lerpAngle(u.rot, Math.atan2(-fy, -fx), Math.min(1, dt * 3));
+    }
+    this.steer(u, wx, wy, dt);
+    if (u.cd > 0 || u.count >= BROOD_CAP || foe === null) {
+      return;
+    }
+    u.cd = u.cdMax;
+    const dir = u.team === 0 ? 1 : -1;
+    const a = rand(-0.9, 0.9);
+    const bx = u.x + Math.cos(a) * dir * (u.r + 12);
+    const by = u.y + Math.sin(a) * (u.r + 12);
+    const b = new Unit('circle', u.team, bx, by);
+    if (u.team === 0) {
+      b.applyMods(this.upgrades.circle, this.globalMods);
+    } else if (this.enemyUps) {
+      b.applyMods(this.enemyUps, this.enemyGlobal);
+    }
+    if (u.perk2) {
+      b.armor += 3;
+    }
+    b.free = true;
+    b.cost = 0;
+    b.parent = u;
+    b.cd = 0.4;
+    u.count++;
+    this.spawnQueue.push(b);
+    this.ring(bx, by, 3, 18, teamColor(u.team), 0.3, 2);
+    this.sfx('place', bx, by, -14, 1.3);
   }
 
   private pickTarget(u: Unit, foes: Unit[]): Unit | null {
@@ -518,7 +705,7 @@ export class Battlefield {
         let bc = -1;
         const sp2 = u.splash * u.splash;
         for (const e of foes) {
-          if (!e.alive || Math.hypot(e.x - u.x, e.y - u.y) - e.r > u.reach) {
+          if (!e.alive || (u.attack !== 'blast' && Math.hypot(e.x - u.x, e.y - u.y) - e.r > u.reach)) {
             continue;
           }
           let c = 0;
@@ -572,8 +759,12 @@ export class Battlefield {
   private attack(u: Unit, tgt: Unit, dx: number, dy: number, dist: number): void {
     const col = teamColor(u.team);
     switch (u.attack) {
+      case 'blast':
+        this.blastAt(u.x, u.y, u.splash, u.dmg * u.dmgMul, u.team, u.pierce, u);
+        this.selfDestruct(u);
+        break;
       case 'melee': {
-        let dm = u.dmg;
+        let dm = u.dmg * u.dmgMul;
         if (u.charge) {
           dm *= 3;
           u.charge = false;
@@ -581,7 +772,7 @@ export class Battlefield {
           this.sfx('charge', tgt.x, tgt.y, -4);
         }
         this.sfx('hit', tgt.x, tgt.y, -7, 1.35 - u.r / 40);
-        this.damage(tgt, dm, u.pierce);
+        this.damage(tgt, dm, u.pierce, u);
         u.vx += dx * 70;
         u.vy += dy * 70;
         this.burst(u.x + dx * u.r, u.y + dy * u.r, col, 3, 80, 0.25, 2);
@@ -590,7 +781,7 @@ export class Battlefield {
       case 'cleave':
         for (const e of this.teamUnits[1 - u.team]) {
           if (e.alive && Math.hypot(e.x - u.x, e.y - u.y) - u.r - e.r <= u.reach + 14) {
-            this.damage(e, u.dmg);
+            this.damage(e, u.dmg * u.dmgMul, 0, u);
           }
         }
         this.ring(u.x, u.y, u.r, u.r + u.reach + 30, col, 0.3, 3);
@@ -601,15 +792,23 @@ export class Battlefield {
       case 'bullet': {
         const px = u.x + dx * (u.r + 4);
         const py = u.y + dy * (u.r + 4);
-        this.projectiles.push(this.proj('bullet', u.team, u.dmg, px, py, dx, dy, tgt));
-        u.vx -= dx * 40;
-        u.vy -= dy * 40;
-        this.burst(px, py, WHITE, 4, 120, 0.15, 2);
-        this.sfx('shot', u.x, u.y, -8);
+        let dm = u.dmg * u.dmgMul;
+        if (u.kind === 'triangle' && u.perk2 && Math.random() < 0.2) {
+          dm *= 3;
+        }
+        const b = this.proj('bullet', u.team, dm, px, py, dx, dy, tgt);
+        b.pierce = u.pierce;
+        b.src = u;
+        this.projectiles.push(b);
+        const kick = u.kind === 'chevron' ? 8 : 40;
+        u.vx -= dx * kick;
+        u.vy -= dy * kick;
+        this.burst(px, py, WHITE, u.kind === 'chevron' ? 2 : 4, 120, 0.15, 2);
+        this.sfx('shot', u.x, u.y, u.kind === 'chevron' ? -15 : -8, u.kind === 'chevron' ? 1.5 : 1);
         break;
       }
       case 'shell': {
-        const p = this.proj('shell', u.team, u.dmg, u.x, u.y, 0, 0, null);
+        const p = this.proj('shell', u.team, u.dmg * u.dmgMul, u.x, u.y, 0, 0, null);
         p.toX = tgt.x;
         p.toY = tgt.y;
         p.dur = Math.min(Math.max(dist / 480, 0.7), 1.3);
@@ -625,19 +824,51 @@ export class Battlefield {
   }
 
   private proj(type: Proj['type'], team: number, dmg: number, x: number, y: number, dx: number, dy: number, target: Unit | null): Proj {
-    return { type, x, y, dx, dy, target, team, dmg, life: 1.2, fromX: x, fromY: y, toX: x, toY: y, t: 0, dur: 1, splash: 0, dead: false };
+    return {
+      type, x, y, dx, dy, target, team, dmg, life: 1.2, fromX: x, fromY: y, toX: x, toY: y, t: 0, dur: 1, splash: 0,
+      pierce: 0, src: null, dead: false,
+    };
   }
 
-  private damage(tgt: Unit, amount: number, pierce = 0): void {
+  private damage(tgt: Unit, amount: number, pierce = 0, src: Unit | null = null): void {
     if (!tgt.alive) {
       return;
     }
-    const eff = Math.max(amount - Math.max(0, tgt.armor - pierce), amount * 0.25);
+    const eff = Math.max(amount - Math.max(0, tgt.armor + tgt.auraArmor - pierce), amount * 0.25);
     tgt.hp -= eff;
     tgt.flash = 0.12;
     if (tgt.hp <= 0) {
       this.kill(tgt);
+      if (src !== null && src.alive && src.kind === 'diamond' && src.perk2) {
+        src.hp = Math.min(src.maxHp, src.hp + 30);
+        this.burst(src.x, src.y, HEAL, 4, 50, 0.4, 2);
+      }
+    } else if (src !== null && src.alive && tgt.kind === 'square' && tgt.perk2 && src.reach < 20) {
+      this.damage(src, 5);
     }
+  }
+
+  /** Area damage to the other team (shells, Bombers, airstrikes). */
+  private blastAt(x: number, y: number, r: number, dmg: number, team: number, pierce: number, src: Unit | null): void {
+    for (const e of this.teamUnits[1 - team]) {
+      if (e.alive && Math.hypot(e.x - x, e.y - y) <= r + e.r) {
+        this.damage(e, dmg, pierce, src);
+      }
+    }
+    this.ring(x, y, 6, r, SHELL, 0.45, 3);
+    this.ring(x, y, 2, r * 0.6, WHITE, 0.25, 2);
+    this.burst(x, y, SHELL, 16, 220, 0.6, 3.5);
+    this.shake = Math.min(this.shake + 3, 9);
+    this.sfx('boom', x, y, -3);
+  }
+
+  /** A Bomber going off: it dies, but the enemy gets no kill for it. */
+  private selfDestruct(u: Unit): void {
+    if (!u.alive) {
+      return;
+    }
+    this.kills[1 - u.team]--;
+    this.kill(u);
   }
 
   private kill(u: Unit): void {
@@ -646,6 +877,18 @@ export class Battlefield {
     this.someoneDied = true;
     this.lostValue[u.team] += u.cost;
     this.kills[1 - u.team]++;
+    if (u.parent !== null) {
+      u.parent.count--;
+      u.parent = null;
+    }
+    if (u.kind === 'circle' && u.perk2) {
+      for (const e of this.teamUnits[1 - u.team]) {
+        if (e.alive && Math.hypot(e.x - u.x, e.y - u.y) <= 40 + e.r) {
+          this.damage(e, 12);
+        }
+      }
+      this.ring(u.x, u.y, 4, 40, SHELL, 0.3, 2);
+    }
     const col = teamColor(u.team);
     this.burst(u.x, u.y, col, 10 + Math.trunc(u.r), 160, 0.7, 3.5);
     this.ring(u.x, u.y, u.r, u.r * 3, col, 0.4, 2);
@@ -725,7 +968,7 @@ export class Battlefield {
           const ty = p.target.y - p.y;
           const tl = Math.hypot(tx, ty);
           if (tl <= stepLen + p.target.r * 0.5) {
-            this.damage(p.target, p.dmg);
+            this.damage(p.target, p.dmg, p.pierce, p.src);
             this.burst(p.target.x, p.target.y, WHITE, 5, 140, 0.25, 2);
             p.dead = true;
             continue;
@@ -757,16 +1000,62 @@ export class Battlefield {
   }
 
   private explode(p: Proj): void {
-    for (const e of this.teamUnits[1 - p.team]) {
-      if (e.alive && Math.hypot(e.x - p.toX, e.y - p.toY) <= p.splash + e.r) {
-        this.damage(e, p.dmg);
+    this.blastAt(p.toX, p.toY, p.splash, p.dmg, p.team, 0, null);
+  }
+
+  // ───────────────────────────── powers ─────────────────────────────
+
+  canUsePower(id: PowerId): boolean {
+    const p = this.powers[id];
+    return this.running && !this.demo && p.level > 0 && !p.used && this.winner < 0 && this.endTimer < 0;
+  }
+
+  /** Airstrike needs a target point; the others fire at once. */
+  usePower(id: PowerId, x = 0, y = 0): boolean {
+    if (!this.canUsePower(id)) {
+      return false;
+    }
+    const p = this.powers[id];
+    p.used = true;
+    this.aiming = null;
+    if (id === 'airstrike') {
+      const s = airstrikeStats(p.level);
+      this.strikes.push({ x, y, r: s.r, dmg: s.dmg, t: 0.8 });
+      this.sfx('launch', x, y, -2, 0.7);
+    } else if (id === 'rally') {
+      this.rallyTime = rallyStats(p.level).time;
+      for (const u of this.units) {
+        if (u.alive && u.team === 0) {
+          this.ring(u.x, u.y, u.r, u.r + 16, WHITE, 0.4, 2);
+        }
+      }
+      this.sfx('start', ARENA.x + ARENA.w / 2, ARENA.y + ARENA.h / 2, -6, 1.2);
+    } else {
+      const k = repairStats(p.level);
+      for (const u of this.units) {
+        if (u.alive && u.team === 0) {
+          u.hp = Math.min(u.maxHp, u.hp + u.maxHp * k);
+          this.burst(u.x, u.y, HEAL, 3, 50, 0.5, 2.5);
+        }
+      }
+      this.sfx('heal', ARENA.x + ARENA.w / 2, ARENA.y + ARENA.h / 2, -4);
+    }
+    return true;
+  }
+
+  private updateStrikes(dt: number): void {
+    if (this.strikes.length === 0) {
+      return;
+    }
+    for (const s of this.strikes) {
+      s.t -= dt;
+      if (s.t <= 0) {
+        this.blastAt(s.x, s.y, s.r, s.dmg, 0, 4, null);
+        this.burst(s.x, s.y, WHITE, 20, 300, 0.5, 3);
+        this.shake = Math.min(this.shake + 5, 12);
       }
     }
-    this.ring(p.toX, p.toY, 6, p.splash, SHELL, 0.45, 3);
-    this.ring(p.toX, p.toY, 2, p.splash * 0.6, WHITE, 0.25, 2);
-    this.burst(p.toX, p.toY, SHELL, 16, 220, 0.6, 3.5);
-    this.shake = Math.min(this.shake + 3, 9);
-    this.sfx('boom', p.toX, p.toY, -3);
+    this.strikes = this.strikes.filter((s) => s.t > 0);
   }
 
   // ───────────────────────────── effects ─────────────────────────────
@@ -916,6 +1205,16 @@ export class Battlefield {
   /** button: 0 primary (place, or erase with the erase tool), 2 secondary (erase). */
   pointerDown(x: number, y: number, button: number): void {
     this.mouse = { x, y };
+    if (this.aiming !== null && this.running) {
+      if (button === 0 && inRect(ARENA, x, y)) {
+        this.usePower(this.aiming, x, y);
+        this.events.armyChanged?.();
+      } else {
+        this.aiming = null;
+        this.events.armyChanged?.();
+      }
+      return;
+    }
     if (!this.deploying) {
       return;
     }

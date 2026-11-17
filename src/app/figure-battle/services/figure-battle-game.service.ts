@@ -1,17 +1,19 @@
 import { Injectable, NgZone, computed, inject, signal } from '@angular/core';
 import { LocalStorageService } from '../../shared/services/local-storage/local-storage.service';
-import { Battlefield, Snapshot } from '../engine/battlefield';
+import { Battlefield, PowerId, Snapshot } from '../engine/battlefield';
 import { ENEMY_HEX, PLAYER_HEX } from '../engine/figures';
-import { LEVELS } from '../engine/levels';
+import { CHAPTERS, LEVELS, chapterOf } from '../engine/levels';
 import {
-  MAX_LEVEL, PERKS, TREE, TrackId, WARCHEST_COST, budgetMult, perkCost, reward, trackCost,
+  COMMAND, CommandId, MAX_LEVEL, PERKS, PERKS2, POWER_IDS, TREE, TrackId, budgetMult, bountyMult, commandNode, perk2Cost,
+  perkCost, reward, trackCost,
 } from '../engine/progression';
 import { Sfx } from '../engine/sfx';
-import { UnitUps, UpgradeMap } from '../engine/unit';
+import { GlobalMods, UnitUps, UpgradeMap } from '../engine/unit';
 import { UNIT_TYPES, UnitKind, isUnitKind } from '../engine/unit-data';
 
 export type Screen = 'menu' | 'levels' | 'deploy' | 'battle' | 'result' | 'armory';
-export type ArmorySel = UnitKind | 'warchest';
+export type ArmorySel = UnitKind | CommandId;
+export type ArmoryTab = 'troops' | 'command';
 type ArmoryFrom = 'menu' | 'levels' | 'result' | 'brief';
 
 export interface SaveData {
@@ -20,7 +22,7 @@ export interface SaveData {
   money: number;
   owned: UnitKind[];
   ups: UpgradeMap;
-  warchest: number;
+  command: Partial<Record<CommandId, number>>;
   muted: boolean;
 }
 
@@ -83,6 +85,11 @@ export class FigureBattleGameService {
   readonly result = signal<ResultView | null>(null);
   readonly toast = signal<{ id: number; text: string } | null>(null);
   readonly armorySel = signal<ArmorySel>('circle');
+  readonly armoryTab = signal<ArmoryTab>('troops');
+  readonly chapters = CHAPTERS;
+  readonly chapterSel = signal(0);
+  /** Bumped when a power is armed or used, so the battle HUD redraws its buttons. */
+  readonly powerTick = signal(0);
 
   readonly money = computed(() => this.save().money);
   readonly muted = computed(() => this.save().muted);
@@ -97,7 +104,10 @@ export class FigureBattleGameService {
     this.sfx.muted = this.save().muted;
     this.bf.events = {
       finished: (w) => this.zone.run(() => this.onFinished(w)),
-      armyChanged: () => this.zone.run(() => this.armyVersion.update((v) => v + 1)),
+      armyChanged: () => this.zone.run(() => {
+        this.armyVersion.update((v) => v + 1);
+        this.powerTick.update((v) => v + 1);
+      }),
       placeFailed: (r) => this.zone.run(() => this.toastError(r)),
       sfx: (n, x, y, v, p) => this.sfx.play(n, this.panOf(x, y), v, p),
     };
@@ -106,7 +116,7 @@ export class FigureBattleGameService {
   // ───────────────────────────── save ─────────────────────────────
 
   private load(): SaveData {
-    const data: SaveData = { unlocked: 1, stars: {}, money: 0, owned: ['circle'], ups: {}, warchest: 0, muted: false };
+    const data: SaveData = { unlocked: 1, stars: {}, money: 0, owned: ['circle'], ups: {}, command: {}, muted: false };
     const raw = this.storage.getItem<Partial<SaveData>>(SAVE_KEY);
     if (!raw || typeof raw !== 'object') {
       return data;
@@ -114,10 +124,29 @@ export class FigureBattleGameService {
     const num = (v: unknown, d: number): number => (typeof v === 'number' && isFinite(v) ? Math.trunc(v) : d);
     data.unlocked = Math.max(1, num(raw.unlocked, 1));
     data.money = Math.max(0, num(raw.money, 0));
-    data.warchest = Math.min(WARCHEST_COST.length, Math.max(0, num(raw.warchest, 0)));
     data.muted = raw.muted === true;
     if (raw.stars && typeof raw.stars === 'object') {
       data.stars = { ...raw.stars };
+    }
+    if (raw.command && typeof raw.command === 'object') {
+      for (const c of COMMAND) {
+        const v = num((raw.command as Record<string, unknown>)[c.id], 0);
+        if (v > 0) {
+          data.command[c.id] = Math.min(c.costs.length, v);
+        }
+      }
+    }
+    // Saves from before the Command branch kept the War Chest level on its own.
+    const oldChest = num((raw as { warchest?: unknown }).warchest, 0);
+    if (oldChest > 0) {
+      data.command.warchest = Math.max(data.command.warchest ?? 0, Math.min(3, oldChest));
+    }
+    // A save that finished the old last mission should open the next one.
+    for (const k of Object.keys(data.stars)) {
+      const i = Number(k);
+      if (Number.isInteger(i) && (data.stars[k] ?? 0) > 0) {
+        data.unlocked = Math.max(data.unlocked, Math.min(i + 2, LEVELS.length));
+      }
     }
     if (raw.ups && typeof raw.ups === 'object') {
       data.ups = { ...raw.ups };
@@ -150,7 +179,24 @@ export class FigureBattleGameService {
     return this.save().ups[kind] ?? {};
   }
 
+  cmd(id: CommandId): number {
+    return id === 'hq' ? 1 : this.save().command[id] ?? 0;
+  }
+
+  globalMods(): GlobalMods {
+    return { drill: this.cmd('drill') };
+  }
+
+  /** The chapter the player is up to. */
+  currentChapter(): number {
+    return chapterOf(Math.min(this.save().unlocked, LEVELS.length) - 1);
+  }
+
   /** Upgrades that apply to the unit being placed right now (enemy/sandbox-red units get none). */
+  placingGlobal(): GlobalMods | undefined {
+    return this.placeTeam() === 0 && !this.sandbox() ? this.bf.globalMods : undefined;
+  }
+
   placingUps(kind: UnitKind): UnitUps | undefined {
     return this.placeTeam() === 0 ? this.bf.upgrades[kind] : undefined;
   }
@@ -206,6 +252,9 @@ export class FigureBattleGameService {
   }
 
   showLevels(): void {
+    if (this.screen() !== 'levels' && this.screen() !== 'armory') {
+      this.chapterSel.set(this.screen() === 'menu' ? this.currentChapter() : chapterOf(this.levelIdx()));
+    }
     this.sandbox.set(false);
     this.ensureDemo();
     this.go('levels');
@@ -224,7 +273,11 @@ export class FigureBattleGameService {
     const s = this.save();
     this.sandbox.set(false);
     this.levelIdx.set(i);
-    this.bf.setupLevel(this.levels[i], s.owned, budgetMult(s.warchest), s.ups);
+    const powers: Partial<Record<PowerId, number>> = {};
+    for (const id of POWER_IDS) {
+      powers[id] = this.cmd(id);
+    }
+    this.bf.setupLevel(this.levels[i], s.owned, budgetMult(this.cmd('warchest')), s.ups, this.globalMods(), powers);
     this.bf.speed = 1;
     this.bf.restore(snap ?? this.deploySnaps.get(i) ?? []);
     this.syncDeploy();
@@ -318,6 +371,7 @@ export class FigureBattleGameService {
     this.setSpeed(0);
     this.paused.set(false);
     bf.startBattle();
+    this.powerTick.update((v) => v + 1);
     this.sfx.play('start', null, -4);
     this.go('battle');
   }
@@ -327,6 +381,23 @@ export class FigureBattleGameService {
   setSpeed(i: number): void {
     this.bf.speed = SPEEDS[i];
     this.speedIdx.set(i);
+  }
+
+  /** Airstrike waits for a tap on the field; the other powers fire at once. */
+  usePower(id: PowerId): void {
+    const bf = this.bf;
+    if (!bf.canUsePower(id)) {
+      return;
+    }
+    if (id === 'airstrike') {
+      bf.aiming = bf.aiming === id ? null : id;
+      if (bf.aiming) {
+        this.showToast('Tap the field to drop the bomb');
+      }
+    } else {
+      bf.usePower(id);
+    }
+    this.powerTick.update((v) => v + 1);
   }
 
   togglePause(): void {
@@ -382,7 +453,7 @@ export class FigureBattleGameService {
     let earned: number;
     let note: string;
     if (win) {
-      const r = reward(i);
+      const r = Math.round(reward(i) * bountyMult(this.cmd('bounty')));
       earned = oldStars === 0 ? r : Math.trunc(r * 0.3);
       note = oldStars === 0 ? 'first clear' : 'replay';
       const newStars = Math.max(0, stars - oldStars);
@@ -402,9 +473,13 @@ export class FigureBattleGameService {
       s.money += earned;
     });
     const last = i + 1 >= this.levels.length;
+    const ch = chapterOf(i);
+    const chapterDone = win && oldStars === 0 && i + 1 === CHAPTERS[ch].end;
     this.result.set({
       ...base,
-      sub: `MISSION ${pad2(i + 1)}  ·  ${L.name.toUpperCase()}`,
+      sub: chapterDone
+        ? `CHAPTER ${ch + 1} DONE  ·  ${CHAPTERS[ch].name.toUpperCase()}`
+        : `MISSION ${pad2(i + 1)}  ·  ${L.name.toUpperCase()}`,
       title: win ? 'VICTORY' : bf.timedOut ? 'TIME UP' : 'DEFEAT',
       titleColor: win ? PLAYER_HEX : ENEMY_HEX,
       stars,
@@ -522,16 +597,39 @@ export class FigureBattleGameService {
     this.showToast(`${PERKS[kind].name} perk unlocked!`);
   }
 
-  buyWarchest(): void {
-    const lvl = this.save().warchest;
-    if (lvl >= WARCHEST_COST.length || !this.spend(WARCHEST_COST[lvl])) {
+  buyPerk2(kind: UnitKind): void {
+    const cost = perk2Cost(kind);
+    if ((this.unitUps(kind).perk2 ?? 0) > 0 || !this.spend(cost)) {
       return;
     }
     this.mutate((s) => {
-      s.money -= WARCHEST_COST[lvl];
-      s.warchest = lvl + 1;
+      s.money -= cost;
+      s.ups[kind] = { ...s.ups[kind], perk2: 1 };
     });
-    this.sfx.play('coin', null, -5, 0.9 + 0.1 * lvl);
+    this.sfx.play('unlock', null, -3, 1.2);
+    this.showToast(`${PERKS2[kind].name} perk unlocked!`);
+  }
+
+  buyCommand(id: CommandId): void {
+    const node = commandNode(id);
+    const lvl = this.cmd(id);
+    if (lvl >= node.costs.length || (node.parent !== '' && this.cmd(node.parent) === 0)) {
+      return;
+    }
+    const cost = node.costs[lvl];
+    if (!this.spend(cost)) {
+      return;
+    }
+    this.mutate((s) => {
+      s.money -= cost;
+      s.command[id] = lvl + 1;
+    });
+    if (lvl === 0) {
+      this.sfx.play('unlock', null, -3, 1.05);
+      this.showToast(`${node.name} unlocked!`);
+    } else {
+      this.sfx.play('coin', null, -5, 0.9 + 0.1 * lvl);
+    }
   }
 
   // ───────────────────────────── keys ─────────────────────────────
@@ -556,8 +654,8 @@ export class FigureBattleGameService {
           }
           return false;
         }
-        if (k >= '1' && k <= '7') {
-          const kind = this.bf.allowed[Number(k) - 1];
+        if (k >= '0' && k <= '9') {
+          const kind = this.bf.allowed[k === '0' ? 9 : Number(k) - 1];
           if (kind) {
             this.selectKind(kind);
           }
@@ -580,6 +678,11 @@ export class FigureBattleGameService {
           this.togglePause();
         } else if (k >= '1' && k <= '3') {
           this.setSpeed(Number(k) - 1);
+        } else if (!this.sandbox() && (k === 'q' || k === 'w' || k === 'e')) {
+          this.usePower(POWER_IDS['qwe'.indexOf(k)]);
+        } else if (k === 'Escape' && this.bf.aiming) {
+          this.bf.aiming = null;
+          this.powerTick.update((v) => v + 1);
         } else if (k === 'Escape') {
           this.retreat();
         } else {

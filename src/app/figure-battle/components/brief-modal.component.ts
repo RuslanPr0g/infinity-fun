@@ -37,6 +37,9 @@ import { FigureIconComponent } from './figure-icon.component';
             <div class="fb-kicker fb-muted">Intel</div>
             <p class="intel">{{ v.intel }}</p>
             <div class="fb-kicker fb-muted">Enemy forces</div>
+            @if (v.vet) {
+              <div class="vet">{{ v.vet }}</div>
+            }
             <div class="enemies">
               @for (e of v.enemies; track e.kind) {
                 <span class="fb-row en"><fb-icon [kind]="e.kind" [color]="enemy" [radius]="10" />×{{ e.n }}</span>
@@ -60,11 +63,12 @@ import { FigureIconComponent } from './figure-icon.component';
     .desc { font-size: 13px; color: rgba(230, 236, 255, 0.8); margin: 2px 0; }
     .tag { font-size: 13px; font-weight: 600; margin-top: 4px; }
     .intel { font-size: 16px; color: rgba(230, 236, 255, 0.92); line-height: 1.4; }
+    .vet { font-size: 13px; font-weight: 600; color: #ff8399; }
     .enemies { display: flex; flex-wrap: wrap; gap: 8px 16px; }
     .en { gap: 4px; font-weight: 600; font-size: 15px; }
     .foot { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 6px; font-weight: 600; }
     .go { min-height: 48px; min-width: 210px; }
-    @media (max-width: 520px) { .new { flex-wrap: wrap; } .go { flex: 1; min-width: 0; } .intel { font-size: 14px; } }
+    @media (max-width: 520px) { .new { flex-wrap: wrap; } .go { flex: 1; min-width: 0; padding: 8px 10px; } .intel { font-size: 14px; } }
   `,
 })
 export class BriefModalComponent {
@@ -85,7 +89,7 @@ export class BriefModalComponent {
         kind: k,
         head: `${have ? 'KEY UNIT' : 'RECOMMENDED UNIT'} · ${d.name} (${d.role})`,
         desc: d.desc,
-        stats: statLine(k, save.ups[k]),
+        stats: statLine(k, save.ups[k], this.game.globalMods()),
         tag: have ? '' : `Not unlocked yet. Buy it in the Armory for $${TREE[k].price} (you have $${save.money}).`,
       };
     }
@@ -93,7 +97,21 @@ export class BriefModalComponent {
     for (const [k] of L.enemies) {
       counts.set(k, (counts.get(k) ?? 0) + 1);
     }
+    let vet = '';
+    if (L.vet) {
+      const u = L.vet.ups;
+      const drill = L.vet.global.drill ?? 0;
+      const parts = [`+${Math.round(((u.hp ?? 0) * 15 + drill * 5))}% health`, `+${Math.round(((u.dmg ?? 0) * 15 + drill * 5))}% damage`];
+      if (u.spd) {
+        parts.push(`+${u.spd * 10}% speed`);
+      }
+      if (u.perk) {
+        parts.push(u.perk2 ? 'both perks' : 'first perk');
+      }
+      vet = `Veterans: ${parts.join(', ')}.`;
+    }
     return {
+      vet,
       kicker: `MISSION ${String(i + 1).padStart(2, '0')} · BRIEFING`,
       title: L.name,
       intel: L.intel,

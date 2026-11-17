@@ -105,6 +105,25 @@ function shapePoints(kind: UnitKind, r: number): number[] {
         pts.push(Math.cos(a) * rr, Math.sin(a) * rr);
       }
       break;
+    case 'cross': {
+      const a = r * 1.15;
+      const b = r * 0.42;
+      pts.push(a, -b, a, b, b, b, b, a, -b, a, -b, b, -a, b, -a, -b, -b, -b, -b, -a, b, -a, b, -b);
+      break;
+    }
+    case 'chevron':
+      pts.push(r * 1.3, 0, -r * 0.9, r * 1.05, -r * 0.35, 0, -r * 0.9, -r * 1.05);
+      break;
+    case 'octagon':
+      ring(8, r * 1.08, Math.PI / 8);
+      break;
+    case 'gear':
+      for (let i = 0; i < 16; i++) {
+        const rr = i % 4 < 2 ? r * 1.18 : r * 0.88;
+        const a = (TAU * (i + 0.5)) / 16;
+        pts.push(Math.cos(a) * rr, Math.sin(a) * rr);
+      }
+      break;
     default:
       ring(24, r);
   }
