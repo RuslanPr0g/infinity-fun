@@ -42,17 +42,6 @@ img, svg, canvas {
   max-width: 100%;
 }
 
-// TEMP: old games still use this. Removed once every game is in <app-game-shell>.
-.game-container {
-  display: flex;
-  justify-content: center;
-  text-align: center;
-  flex-direction: column;
-  padding: 20px;
-  color: t.$text;
-  width: 100%;
-}
-
 // Visible to screen readers only.
 .sr-only {
   position: absolute;

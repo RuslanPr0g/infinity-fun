@@ -49,7 +49,7 @@ const MAX_RECENT = 4;
             <span class="badge">NEW</span>
             <h2>{{ f.name }}</h2>
             <p>{{ f.description }}</p>
-            <span class="play">Play now <b>→</b></span>
+            <span class="play">Play <b>→</b></span>
           </div>
         </a>
       }

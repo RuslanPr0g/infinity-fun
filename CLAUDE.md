@@ -22,25 +22,31 @@ src/app/
   home/                   data-driven dashboard listing all games
   core/                   GameRoute model, localStorage key constants
   shared/
-    services/             game-route, local-storage, sound, scroll, periodic-table (root singletons)
-    components/           home-link, left-right-comparer (reusable)
-    directives/           appTypewriter (via DirectiveModule)
+    ui/                   GameShell, UiModal, StatBar, Segmented, color helpers (barrel: shared/ui)
+    canvas/               CanvasStage: HiDPI canvas + rAF loop + pointer helpers
+    services/             game-route, local-storage, sound, viewport, periodic-table (root singletons)
+    components/           left-right-comparer (reusable)
   app.routes.ts           flat, eager routes; wildcard redirect MUST stay last
   app.config.ts           bootstrap providers (zone-based CD, router, animations)
-src/_colors.scss          dark-theme palette + per-game accent colors
+src/styles/               _tokens.scss (design tokens), _ui.scss (global ui-* classes), _breakpoints.scss
+src/styles.scss           global base styles; imports tokens + ui
 ```
 
 ## Architecture at a glance
 
 - **Standalone components everywhere**; bootstrapped via `bootstrapApplication`. Zone-based change detection, default strategy (no OnPush).
-- **Two code generations coexist.** Older games: separate templates, plain class fields, constructor DI, `*ngIf`/`*ngFor`. Newer `math-quiz`: inline templates, signals + `computed`, `inject()`, `@if`/`@for`/`@switch`. **Prefer the modern style for new work**; match the file when editing existing code.
-- **Adding a game** touches three things: a route in `app.routes.ts`, a `GameRoute` entry in `game-route.service.ts`, and a matching `$color-<game>` in `_colors.scss` (the color is duplicated in both the service and the SCSS — keep them in sync). The home page needs no edits.
-- **Persistence** goes through `LocalStorageService` (typed wrapper) — never `window.localStorage` directly. Audio via `SoundService.playCorrect()` / `playWrong()`.
+- **One look everywhere, taken from Figure Battle** (the reference game): dark navy, Inter, rounded panels, `ui-*` buttons. Every game sits in `<app-game-shell>` (full screen, top bar with Back / title / sound / help). Figure Battle keeps its own full-screen canvas shell but reads the same tokens.
+- **Modern Angular style only**: inline templates, signals + `computed`, `inject()`, `@if`/`@for`/`@switch`. Game logic lives in pure `*.engine.ts` files with `fast-check` property tests; components stay thin.
+- **Mobile first**: every game is checked at 360×640, 390×844, 844×390 (landscape) and desktop. No hover-only or keyboard-only actions.
+- **Adding a game** touches two things: a route in `app.routes.ts` and a `GameRoute` entry in `game-route.service.ts` (its `color` is the game's only accent color; the shell and home read it from there). The home page needs no edits.
+- **Wording** follows `.claude/rules/copy-style.md`: plain, short, no AI-isms.
+- **Persistence** goes through `LocalStorageService` (typed wrapper) — never `window.localStorage` directly. Audio via `SoundService.playCorrect()` / `playWrong()` (site-wide mute, toggled from the shell). Media queries via `ViewportService` signals, never `window.innerWidth`.
 - **Testing** leans on **property-based tests with `fast-check`** for pure logic (see `math-quiz` service specs), alongside standard Jasmine TestBed.
 
 Full detail — component/service/styling/testing/CI conventions and the step-by-step "add a game" guide — is in the imported rule below.
 
 @.claude/rules/angular-conventions.md
+@.claude/rules/copy-style.md
 
 ## Deploying (push to `master`)
 
@@ -52,7 +58,7 @@ Bump rule: a **new game** is a MINOR bump (`vX.Y.0`, e.g. `v4.10.8` → `v4.11.0
 
 ## Specs
 
-Feature specs live under `.claude/specs/`. Current: [`math-quiz-game`](.claude/specs/math-quiz-game/README.md) (requirements, design, tasks).
+Feature specs live under `.claude/specs/`. Current: [`math-quiz-game`](.claude/specs/math-quiz-game/README.md) (requirements, design, tasks), [`ui-unification`](.claude/specs/ui-unification/scratchpad.md) (the v5 redesign checklist).
 
 ## Skills
 

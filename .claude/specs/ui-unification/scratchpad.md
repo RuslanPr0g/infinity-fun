@@ -30,7 +30,7 @@ Plan: `~/.claude/plans/pasted-content-id-4447-create-scratchpa-swift-rain.md`. R
 | 13 | Opening Trainer | hover-only preview | tap preview | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | 14 | Unusual Chess | 5 copied overlays | UiModal, fluid board | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | 15 | Klotski | own canvas loop, 24 hex | CanvasStage, tokens | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| 16 | Home + docs + release | home-link component | footer version, docs, v5.0.0 | | | | | | |
+| 16 | Home + docs + release | home-link component | footer version, docs, v5.0.0 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 
 ## Notes
 - Phone check: same-origin iframes at 360×640 / 390×844 / 844×390 (the browser window can't be resized).
@@ -39,3 +39,6 @@ Plan: `~/.claude/plans/pasted-content-id-4447-create-scratchpa-swift-rain.md`. R
 - Math Quiz: medium division could throw after 1000 random tries (crash). Now built directly.
 - Date Countdown: dates were parsed as UTC midnight (off by the time-zone offset) and past times were off by one. Fixed in `countdown.engine.ts`; old stale specs replaced. iOS date/time input fix now lives in global `.ui-input`.
 - Reject Cookies: in-world site kept its own look on purpose, now inside a fake browser frame. Flee works on touch (jumps on press, gives up after 12 dodges / 15 s). Fake bank-details form says plainly nothing is sent and not to type real details.
+- Wrap-up: removed `_colors.scss`, `.game-container`, unused `appTypewriter` directive; docs + `copy-style.md` updated.
+- Caught at the end: home content was hidden under the starfield canvas (stacking context) and the chips bled 6px past the phone gutter. Fixed.
+- Final check: no sideways scroll on any route at 360×640 and 844×390; 451/451 tests pass; prod build has budget warnings only (initial bundle ~898 kB vs 819 kB warning, all routes are eager).

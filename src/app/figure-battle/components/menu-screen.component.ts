@@ -21,12 +21,12 @@ import { FigureIconComponent } from './figure-icon.component';
           </div>
           <h1>TOTAL FIGURE</h1>
           <div class="sub">B A T T L E &nbsp; S I M U L A T O R</div>
-          <p class="fb-muted tag">Command the shapes. Break the formation. Win with tactics.</p>
+          <p class="fb-muted tag">Place your army of shapes, then watch the battle play out.</p>
           <div class="buttons">
             <button class="fb-btn primary" (click)="game.showLevels()">Campaign</button>
             <button class="fb-btn" (click)="game.showArmory('menu')">Armory</button>
             <button class="fb-btn" (click)="game.enterSandbox()">Sandbox</button>
-            <a class="fb-btn ghost" routerLink="/">Exit to Infinity Fun</a>
+            <a class="fb-btn ghost" routerLink="/">Back to all games</a>
           </div>
           <div class="fb-gold money">$ {{ game.money() }}</div>
           <div class="extras">

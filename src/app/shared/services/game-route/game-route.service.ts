@@ -12,7 +12,7 @@ export class GameRouteService {
       route: '/figure-battle',
       color: '#3EC5FF',
       category: 'strategy',
-      description: 'Deploy shapes, out-think the enemy army, win 12 tactical missions.',
+      description: 'Place an army of shapes and win 12 battles.',
       isNew: true,
     },
     {
@@ -27,14 +27,14 @@ export class GameRouteService {
       route: '/chess',
       color: '#14B8A6',
       category: 'strategy',
-      description: 'Chess with a twist: simultaneous moves, burning boards and a bot.',
+      description: 'Chess where both sides move at once, or the board burns away.',
     },
     {
       name: 'Opening Trainer',
       route: '/chess-openings',
       color: '#A855F7',
       category: 'strategy',
-      description: 'Learn real openings move by move from the lichess database.',
+      description: 'Learn real chess openings, one move at a time.',
     },
     {
       name: 'Chessle',
@@ -83,7 +83,7 @@ export class GameRouteService {
       route: '/math-comparer',
       color: '#8B5CF6',
       category: 'brain',
-      description: 'Which side is bigger? Compare expressions at a glance.',
+      description: 'Two sums, one tap: which one is bigger?',
     },
     {
       name: 'Color Reaction',
@@ -119,12 +119,12 @@ export class GameRouteService {
       color: '#6B7280',
       isExternal: true,
       category: 'brain',
-      description: 'Watch graph algorithms explore, step by step.',
+      description: 'Watch graph algorithms search, step by step.',
     },
   ];
 
   private categories: GameCategoryInfo[] = [
-    { id: 'strategy', name: 'Strategy & Board', blurb: 'Tactics, chess and puzzles' },
+    { id: 'strategy', name: 'Strategy & Board', blurb: 'Chess, tactics and puzzles' },
     { id: 'brain', name: 'Brain & Quiz', blurb: 'Facts, numbers and memory' },
     { id: 'reflex', name: 'Reflex & Fun', blurb: 'Quick hands, quick laughs' },
     { id: 'life', name: 'Life & Time', blurb: 'Dates, countdowns and perspective' },

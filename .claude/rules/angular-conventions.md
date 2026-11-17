@@ -1,50 +1,56 @@
 # Angular Conventions — Infinity Fun
 
-Concrete patterns actually used in this repo. Two generations of code coexist; **prefer the modern (`math-quiz`) style for new features**, but match the surrounding file when editing existing code.
+Concrete patterns used in this repo. Since v5.0.0 there is one style (the modern one) and one look (Figure Battle's).
 
 ## Components
 
-- **Standalone everywhere.** `standalone: true` with an explicit `imports` array. No component `NgModule`s. The only module is `src/app/shared/directives/directive.module.ts` (directive-only).
+- **Standalone everywhere.** `standalone: true` with an explicit `imports` array. No `NgModule`s.
 - **Bootstrap** is `bootstrapApplication(AppComponent, appConfig)` in `src/main.ts`; providers live in `src/app/app.config.ts` (`provideZoneChangeDetection({ eventCoalescing: true })`, `provideRouter` with `withInMemoryScrolling`, `provideAnimations`). Zone-based change detection — **not** zoneless.
 - **Change detection**: default everywhere. No `ChangeDetectionStrategy.OnPush` in the codebase.
 - **Routing**: flat `Routes` array in `src/app/app.routes.ts`, eager component references (no `loadComponent` lazy loading). The wildcard `{ path: '**', redirectTo: '' }` MUST stay last.
 
-### Modern style (use for new features — see `src/app/math-quiz/`)
-- **Inline `template:` string literals** in the `.ts`, with a separate `styleUrl` `.scss` file.
-- **Signals for state**: `signal<T>(...)`, `computed(...)`, `.set()`, `.update()`. Services too (`readonly state = signal<...>(null)`).
-- **`inject()`** for DI in components (e.g. `private readonly engine = inject(QuestionEngine)`).
-- **New control flow** in templates: `@if` / `@for` (always with `track`) / `@switch`.
-- Note existing inconsistency: math-quiz leaf components still use classic `@Input()` / `@Output() EventEmitter` decorators (not `input()`/`output()` signal APIs) — the signal input/output functions are not used anywhere yet.
+### Component style
+- **Inline `template:` string literals** in the `.ts`, with a separate `styleUrl` `.scss` file (tiny styles may be inline `styles:`).
+- **Signals for state**: `signal<T>(...)`, `computed(...)`, `effect(...)`, `.set()`, `.update()`. Store-like state for one game goes in an `@Injectable()` provided by the game component (see `reject-cookies.store.ts`).
+- **`inject()`** for DI. New components use `input()` / `output()` / `model()`; some older leaf components (math-quiz, chess) still use `@Input()` / `@Output()`, which is fine to leave.
+- **New control flow** in templates: `@if` / `@for` (always with `track`) / `@switch`. No `CommonModule` for control flow.
+- **Pure logic in `<game>.engine.ts`** (no Angular imports): random generation, scoring, rules. Pass an `rng` parameter so tests can seed it. Components only wire signals to the engine.
 
-### Legacy style (dominant in older games — e.g. `src/app/country-guesser/`)
-- Separate `templateUrl` + `styleUrls`/`styleUrl` files.
-- Plain typed class fields with initializers (`score: number = 0;`), mutable public properties.
-- **Constructor injection** with `private`/`protected` params.
-- Old control flow `*ngIf` / `*ngFor` / `[ngClass]`, importing `CommonModule`; `FormsModule` + `[(ngModel)]` for forms.
-- `implements OnInit`, init logic in `ngOnInit()`.
+### Game screen
+- Every game template starts with `<app-game-shell>` from `src/app/shared/ui` (`layout="page"` for quizzes/forms, `layout="fill"` for boards/canvases; `[help]` lines; `[sound]` for a mute button; extra bar buttons via `shellActions`).
+- Dialogs, results and confirmations use `<ui-modal>` (`[closable]`, `[opaque]`, `size`), shown with `@if`.
+- Scores use `<ui-stat-bar [stats]>`; mode pickers use `<ui-segmented [options] [(value)]>`.
+- Canvas work goes through `CanvasStage` (`src/app/shared/canvas/canvas-stage.ts`): DPR-capped sizing, rAF loop outside the zone, `listen()` with cleanup, `invalidate()` for static drawings.
+- Short landscape phones: use `@media (min-aspect-ratio: 4/3) and (max-height: 560px)` to put the board/picture beside the controls.
 
 ## Services
 
 - All shared/feature services are `@Injectable({ providedIn: 'root' })` singletons.
-- Reactivity is mixed: some services expose RxJS `Observable`s (`scroll`, `periodic-table`), math-quiz services use signals. No single mandate — follow the feature's style.
+- Prefer signals in services. `PeriodicTableService` still returns an `Observable` (it wraps `fetch`).
+- `ViewportService` exposes media queries as signals (`isPhone`, `coarsePointer`, `canHover`, `reducedMotion`). Never read `window.innerWidth` for layout.
+- `SoundService` has a site-wide `muted` signal (persisted); the shell toggles it.
 - `LocalStorageService` is the typed wrapper for persistence — do not touch `window.localStorage` directly. Keys: prefer `src/app/core/constants/local-storage.const.ts` (`LocalStorageConst`) though newer code sometimes inlines keys.
 
 ## Styling / Theme
 
-- Dark theme palette in `src/_colors.scss`: `$primary-bg-color: #121212`, `$primary-text-color: #f0f0f0`, `$button-bg-color: #008cba`, plus per-game accent vars (`$color-*`). Helper fns `lighten-color()` / `darken-color()`.
-- Global `src/styles.scss` sets the mono font stack, `box-sizing: border-box`, body background, and a reusable `.game-container`.
-- **New component SCSS: use `@use '../../colors' as colors;` then `colors.$var`** (modern). Legacy files use the deprecated `@import "../../colors";` with bare `$var` — don't copy that into new code.
-- Per-game accent color is duplicated in **two places that must stay in sync**: `src/_colors.scss` (`$color-<game>`) and the `color` field in `GameRouteService`. Home binds it via `[style.--game-color]` → consumed as `var(--game-color)` for glow/hover.
+- **Tokens** live in `src/styles/_tokens.scss` (Sass values for maths, emitted as CSS custom properties on `:root`): `--bg`, `--surface`, `--panel`, `--card`, `--line`, `--text`, `--muted`, `--danger`, `--gold`, `--ok`, `--accent`. They are Figure Battle's values; `figure-battle-game.component.scss` reads them too.
+- **Global `ui-*` classes** in `src/styles/_ui.scss`: `ui-btn` (`primary`, `ghost`, `danger`, `ok`, `seg` + `on`, `small`, `big`, `block`, `icon`), `ui-panel`, `ui-card`, `ui-input`, `ui-label`, `ui-chip`, `ui-stats`/`ui-stat`, `ui-bar`, `ui-kicker`, `ui-muted`, `ui-toast`, `ui-shake`, `sr-only`. Use them before writing component CSS. Don't name component classes after `ui-btn` modifiers (`.big`, `.small`, `.on`, `.block`): they collide.
+- **Component SCSS**: `@use 'tokens' as t;` and `@use 'breakpoints' as bp;` (resolved via `stylePreprocessorOptions.includePaths: ["src/styles"]`). Prefer `var(--…)` in rules and `t.$…` only for Sass maths like `rgba(t.$danger, 0.2)`.
+- **Accent color**: `--accent` follows `--game-color`, which `GameShellComponent` sets from `GameRouteService` (the single source of each game's color). `--on-accent` (text on accent) is picked automatically for contrast.
+- **Breakpoints**: `bp.phone` (≤480), `bp.tablet` (≤760), `bp.short` (height ≤520), `bp.touch`, `bp.hover`. Use `dvh`, never `vh`.
+- **Font**: Inter (loaded in `index.html`), with system fallbacks.
+- Hex colors in component styles are only for game content (board squares, element tiles, the fake site in Reject Cookies).
 
 ## Adding a new game (end-to-end)
 
-1. Create `src/app/<game-name>/` with a standalone component (flat folder for simple games; add `components/`, `models/`, `services/` for complex ones like `math-quiz/`).
-2. Register the route in `src/app/app.routes.ts` (before the wildcard).
-3. Add a `GameRoute` entry to the private `games` array in `src/app/shared/services/game-route/game-route.service.ts` (`name`, `route`, `color`; external links use a full URL + `isExternal: true`).
-4. Add the matching `$color-<game>` to `src/_colors.scss` (keep it in sync with the service entry).
-5. Reuse shared building blocks where useful: `LocalStorageService`, `SoundService` (`playCorrect()`/`playWrong()`), `LeftRightComparerComponent`, `appTypewriter` directive (via `DirectiveModule`).
+1. Create `src/app/<game-name>/` with a standalone component and a pure `<game>.engine.ts` (add `components/`, `models/`, `services/` for bigger games).
+2. Wrap the template in `<app-game-shell>` with `[help]` lines. Build the UI from `ui-*` classes and `shared/ui` components.
+3. Register the route in `src/app/app.routes.ts` (before the wildcard).
+4. Add a `GameRoute` entry to the private `games` array in `src/app/shared/services/game-route/game-route.service.ts` (`name`, `route`, `color`, `category`, `description`; external links use a full URL + `isExternal: true`). Optionally add cover art in `src/app/home/game-art/game-art.component.ts`.
+5. Reuse shared pieces: `LocalStorageService` (keys in `LocalStorageConst`), `SoundService`, `ViewportService`, `CanvasStage`, `LeftRightComparerComponent`.
+6. Check it at 360×640, 390×844, 844×390 and desktop; write text per `copy-style.md`; add `fast-check` tests for the engine.
 
-The home dashboard is data-driven from `GameRouteService.getGames()` — no home/router edits beyond steps 2–3.
+The home dashboard is data-driven from `GameRouteService.getGames()`: no home edits needed.
 
 ## TypeScript / Formatting
 
@@ -57,7 +63,7 @@ The home dashboard is data-driven from `GameRouteService.getGames()` — no home
 - **Jasmine + Karma** (`ChromeHeadless`, deterministic order). Run with `npm test` (`ng test`). Coverage → `./coverage/infinityfun`.
 - **Property-based testing with `fast-check`** is the norm for pure logic (see `src/app/math-quiz/services/*.spec.ts`): `fc.assert(fc.property(...))`, `fc.constantFrom`, re-implemented oracles for invariants. Tag tests back to the spec: `// Feature: <name>, Property N: ...`.
 - TestBed: `configureTestingModule` in `beforeEach`, `TestBed.inject(Service)`; mock deps with `jasmine.createSpyObj` + `{ provide, useValue }`.
-- Specs co-located as `*.spec.ts`. Coverage is uneven — math-quiz is well-tested; several older games have no specs.
+- Specs co-located as `*.spec.ts`. Every game has engine or service specs (property tests); most also have a small component spec. Components that use `<app-game-shell>` need `provideRouter([])` in TestBed, and a `SoundService` mock needs `muted: () => false`.
 
 ## Build / Deploy / CI
 
