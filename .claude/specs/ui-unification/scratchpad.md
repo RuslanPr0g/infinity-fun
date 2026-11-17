@@ -17,7 +17,7 @@ Plan: `~/.claude/plans/pasted-content-id-4447-create-scratchpa-swift-rain.md`. R
 | 0 | Foundation | fonts Intel One Mono, `#121212`, global home-link header | tokens, `ui-*`, shell, modal, CanvasStage, ViewportService | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | 1 | Starfield | 74 animated DOM nodes | one canvas | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | 2 | Math Comparer + comparer | `100vh-88px`, `innerWidth` check, fixed OR badge | stacked on phones | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| 3 | Color Reaction | 480px button, odd overlay, 100px cells | fitted grid, modal result | | | | | | |
+| 3 | Color Reaction | 480px button, odd overlay, 100px cells | fitted grid, modal result | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | 4 | Country Guesser | 480/360px min-widths | full-width flag, 2-col answers | | | | | | |
 | 5 | Guess Day of Week | gradient buttons, `100vh-88px` | 4+3 day grid | | | | | | |
 | 6 | Periodic Quiz | `min-width:500px` card | modal detail sheet | | | | | | |

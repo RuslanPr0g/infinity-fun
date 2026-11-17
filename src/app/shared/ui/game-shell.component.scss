@@ -2,6 +2,10 @@
 @use 'breakpoints' as bp;
 
 :host {
+  // Re-declared here: a var() inside a custom property resolves where it is declared, so :root's
+  // --accent would stay the default blue instead of following this game's --game-color.
+  --accent: var(--game-color);
+  --accent-soft: color-mix(in srgb, var(--game-color) 20%, transparent);
   position: fixed;
   inset: 0;
   z-index: 10;

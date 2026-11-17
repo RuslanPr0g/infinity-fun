@@ -90,7 +90,7 @@ export class GameRouteService {
       route: '/color-click',
       color: '#EC4899',
       category: 'reflex',
-      description: 'Click the moment the color changes. Test your reaction time.',
+      description: 'Tap the matching color as fast as you can. 60 seconds.',
     },
     {
       name: 'Months Left',
