@@ -1,5 +1,4 @@
 import { Component, computed, inject, input, signal } from '@angular/core';
-import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { GameRouteService } from '../services/game-route/game-route.service';
 import { SoundService } from '../services/sound/sound.service';
@@ -9,6 +8,7 @@ import { UiModalComponent } from './ui-modal.component';
 /**
  * The frame around every game: full screen, a slim top bar (Back, title, actions) and the play area.
  * Title and accent color come from GameRouteService for the current route, so the color has one home.
+ * (The browser tab title is set by GameTitleStrategy on navigation.)
  *
  * - `layout="page"`: padded, centered column that scrolls when needed (quizzes, forms, tools).
  * - `layout="fill"`: the play area gets the whole space with no padding (boards, canvases).
@@ -88,8 +88,4 @@ export class GameShellComponent {
   readonly name = computed(() => this.title() || this.game?.name || 'Infinity Fun');
   readonly color = computed(() => this.game?.color ?? '#3ec5ff');
   readonly onAccent = computed(() => textOn(this.color()));
-
-  constructor() {
-    inject(Title).setTitle(`${this.name()} · Infinity Fun`);
-  }
 }
