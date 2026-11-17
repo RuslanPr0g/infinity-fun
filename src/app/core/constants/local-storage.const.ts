@@ -7,6 +7,8 @@ export class LocalStorageConst {
 
   public static MathComparerBest: string = 'MathComparerBest';
 
+  public static GuessDayBest: string = 'GuessDayBest';
+
   public static OpeningTrainerPracticeSet: string = 'OpeningTrainerPracticeSet';
 
   public static ChessleDailyState: string = 'ChessleDailyState';

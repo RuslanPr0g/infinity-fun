@@ -62,7 +62,7 @@ export class GameRouteService {
       route: '/guess-day-of-week',
       color: '#F59E0B',
       category: 'brain',
-      description: 'Which weekday was that date? Train your calendar brain.',
+      description: 'See a date, pick its day of the week.',
     },
     {
       name: 'Reject All Cookies',

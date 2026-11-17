@@ -1,366 +1,65 @@
-@import "../../colors";
+@use 'tokens' as t;
+@use 'breakpoints' as bp;
 
-.game-container {
-  color: $primary-text-color;
+.setup {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  min-height: calc(100vh - 88px);
-  padding: 40px 20px;
-  user-select: none;
+  gap: 14px;
+  padding: clamp(18px, 4vw, 28px);
 }
-
-.range-selection {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 40px;
-  max-width: 600px;
-  width: 100%;
-}
-
-.title {
-  font-size: clamp(24px, 6vw, 48px);
-  margin: 0;
-  background: linear-gradient(
-    135deg,
-    $color-guess-day,
-    lighten-color($color-guess-day, 0.15)
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  font-weight: bold;
-}
-
-.instructions {
-  font-size: clamp(12px, 3vw, 18px);
-  color: rgba($primary-text-color, 0.8);
-  line-height: 1.6;
-
-  p {
-    margin: 10px 0;
-  }
-}
-
-.date-input-group {
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-  justify-content: center;
-  width: 100%;
-}
-
-.date-input {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  flex: 1;
-  min-width: 180px;
-
-  label {
-    font-size: clamp(12px, 2vw, 16px);
-    color: rgba($primary-text-color, 0.9);
-  }
-
-  input {
-    padding: 12px;
-    font-size: 14px;
-    border: 2px solid rgba($primary-text-color, 0.3);
-    border-radius: 8px;
-    background-color: rgba(#fff, 0.05);
-    color: $primary-text-color;
-    font-family: inherit;
-    transition: all 0.3s ease;
-
-    &:hover {
-      border-color: rgba($primary-text-color, 0.6);
-    }
-
-    &:focus {
-      outline: none;
-      border-color: $color-guess-day;
-      background-color: rgba(#fff, 0.1);
-      box-shadow: 0 0 10px rgba($color-guess-day, 0.3);
-    }
-  }
-}
-
-.start-button,
-.end-button {
-  padding: 14px 32px;
-  font-size: clamp(12px, 2vw, 16px);
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-family: inherit;
-  font-weight: bold;
-  transition: all 0.3s ease;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.start-button {
-  background: linear-gradient(
-    135deg,
-    $color-guess-day,
-    darken-color($color-guess-day, 0.1)
-  );
-  color: $button-text-color;
-  min-width: 200px;
-
-  &:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba($color-guess-day, 0.4);
-  }
-
-  &:disabled {
-    background: linear-gradient(135deg, #555, #777);
-    cursor: not-allowed;
-    opacity: 0.5;
-  }
-
-  &:active:not(:disabled) {
-    transform: translateY(0);
-  }
-}
-
-.end-button {
-  background-color: rgba($color-months-left, 0.6);
-  color: $button-text-color;
-  min-width: 120px;
-
-  &:hover {
-    background-color: rgba($color-months-left, 0.8);
-    transform: translateY(-2px);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
-}
-
-.game-screen {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  max-width: 800px;
-  width: 100%;
-}
-
-.game-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  padding: 20px;
-  min-height: 130px;
-  background-color: rgba(#333, 0.5);
-  border-radius: 12px;
-}
-
-.streak {
-  font-size: clamp(16px, 3vw, 24px);
-  font-weight: bold;
-  color: $color-guess-day;
-}
-
-.date-display {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding: 30px;
-  background: linear-gradient(
-    135deg,
-    rgba($color-guess-day, 0.15),
-    rgba($color-guess-day, 0.1)
-  );
-  border: 2px solid rgba($color-guess-day, 0.3);
-  border-radius: 12px;
-
-  .label {
-    font-size: clamp(14px, 2vw, 18px);
-    color: rgba($primary-text-color, 0.8);
-    margin: 0;
-  }
-
-  .date {
-    font-size: clamp(20px, 4vw, 32px);
-    font-weight: bold;
-    color: $color-guess-day;
-    margin: 0;
-    letter-spacing: 0.5px;
-  }
-}
-
-.days-grid {
+.lead { font-size: 17px; line-height: 1.5; }
+.small { font-size: 13px; }
+.custom {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-  gap: 12px;
-  width: 100%;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  input { min-width: 0; color-scheme: dark; }
 }
 
-.day-button {
-  padding: 16px 12px;
-  border: 2px solid rgba($primary-text-color, 0.3);
-  border-radius: 8px;
-  background-color: rgba(#333, 0.5);
-  color: $primary-text-color;
-  cursor: pointer;
-  font-family: inherit;
-  font-weight: bold;
-  transition: all 0.3s ease;
-  text-transform: capitalize;
-
-  &:hover:not(:disabled) {
-    background-color: rgba($color-guess-day, 0.3);
-    border-color: $color-guess-day;
-    transform: translateY(-2px);
-  }
-
-  &:active:not(:disabled) {
-    transform: translateY(0);
-  }
-
-  &:disabled {
-    cursor: not-allowed;
-  }
-
-  &.selected {
-    background-color: rgba($color-guess-day, 0.5);
-    border-color: $color-guess-day;
-  }
-
-  &.correct {
-    background-color: rgba($color-country-guesser, 0.8);
-    border-color: $color-country-guesser;
-    color: #fff;
-    box-shadow: 0 0 15px rgba($color-country-guesser, 0.5);
-  }
-
-  &.incorrect {
-    background-color: rgba($color-months-left, 0.8);
-    border-color: $color-months-left;
-    color: #fff;
-    box-shadow: 0 0 15px rgba($color-months-left, 0.5);
-  }
+.date {
+  padding: clamp(18px, 4vw, 28px) 16px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  &.ok { border-color: t.$ok; box-shadow: 0 0 0 1px t.$ok; }
+  &.bad { border-color: t.$danger; box-shadow: 0 0 0 1px t.$danger; animation: ui-shake 0.35s; }
+}
+.when {
+  margin: 8px 0 4px;
+  font-size: clamp(26px, 7vw, 42px);
+  font-weight: 800;
+  line-height: 1.15;
+}
+.note {
+  min-height: 1.4em;
+  color: var(--muted);
+  visibility: hidden;
+  &.show { visibility: visible; }
 }
 
-.feedback {
-  padding: 16px;
-  font-size: clamp(14px, 2vw, 20px);
-  font-weight: bold;
-  border-radius: 8px;
-  animation: slideIn 0.3s ease;
-  flex: 1;
-  margin-left: 16px;
-
-  &.correct {
-    background-color: rgba($color-country-guesser, 0.3);
-    color: $color-country-guesser;
-    border: 2px solid $color-country-guesser;
-  }
-
-  &.incorrect {
-    background-color: rgba($color-months-left, 0.3);
-    color: $color-months-left;
-    border: 2px solid $color-months-left;
-  }
+.days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
 }
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.day {
+  min-height: 52px;
+  padding: 8px 4px;
+  &.right { background: rgba(t.$ok, 0.16); border-color: t.$ok; color: t.$ok; opacity: 1; }
+  &.wrong { background: rgba(t.$danger, 0.16); border-color: t.$danger; color: #ff8399; opacity: 1; }
 }
+.full { display: none; }
 
-@media (max-width: 600px) {
-  .game-container {
-    padding: 20px;
-    min-height: calc(100vh - 88px);
-  }
+.change { align-self: center; color: var(--muted); }
 
-  .date-input-group {
-    flex-direction: column;
-    gap: 15px;
-  }
-
-  .date-input {
-    min-width: 100%;
-  }
-
-  .days-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-  }
-
-  .day-button {
-    padding: 12px 8px;
-    font-size: 14px;
-  }
-
-  .game-header {
-    flex-direction: column;
-    gap: 12px;
-  }
+@include bp.tablet {
+  // 4 + 3, full names fit
+  .days { grid-template-columns: repeat(12, 1fr); }
+  .day { grid-column: span 3; }
+  .day:nth-child(n + 5) { grid-column: span 4; }
+  .full { display: inline; }
+  .short { display: none; }
 }
-
-@media (max-width: 480px) {
-  // 16px prevents iOS Safari auto-zoom when focusing the date inputs
-  .date-input input {
-    font-size: 16px;
-    min-height: 44px;
-  }
-
-  .range-selection {
-    gap: 28px;
-  }
-
-  // Header is stacked here; drop the side margin so the feedback stays centered
-  .feedback {
-    flex: none;
-    margin-left: 0;
-    width: 100%;
-    padding: 12px;
-  }
-
-  .game-header {
-    justify-content: center;
-    padding: 16px;
-  }
-
-  .date-display {
-    padding: 20px 16px;
-    gap: 12px;
-
-    .date {
-      overflow-wrap: anywhere;
-    }
-  }
-
-  .start-button {
-    min-width: 0;
-    width: 100%;
-    max-width: 280px;
-  }
-
-  .day-button,
-  .start-button {
-    min-height: 44px;
-    touch-action: manipulation;
-  }
-}
-
-// Phones in landscape: still avoid iOS focus auto-zoom
-@media (max-height: 500px) and (orientation: landscape) {
-  .date-input input {
-    font-size: 16px;
-  }
+@include bp.phone {
+  .custom { grid-template-columns: 1fr; }
+  .full { display: none; }
+  .short { display: inline; }
 }
