@@ -23,7 +23,7 @@ Plan: `~/.claude/plans/pasted-content-id-4447-create-scratchpa-swift-rain.md`. R
 | 6 | Periodic Quiz | `min-width:500px` card | modal detail sheet | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | 7 | Math Quiz | modern, own palette | tokens, stat bar | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | 8 | Months Left | ~1000 spans | canvas grid | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| 9 | Date Countdown | emoji edit span | scroll shell, real buttons | | | | | | |
+| 9 | Date Countdown | emoji edit span | scroll shell, real buttons | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | 10 | Reject Cookies | hover-only flee, 39 hex | touch flee, clean frame | | | | | | |
 | 11 | Sea Battle | 50px cells, reversed breakpoints | fluid grid | | | | | | |
 | 12 | Chessle | own palette | tokens, modal | | | | | | |
@@ -37,3 +37,4 @@ Plan: `~/.claude/plans/pasted-content-id-4447-create-scratchpa-swift-rain.md`. R
 - Found while testing: math quiz estimation could freeze (endless distractor loop) and hard mode gave negative answers. Fixed in the foundation commit.
 - Math Comparer: `new Function` eval replaced by a small parser (`math-comparer.engine.ts`), best streak is now saved.
 - Math Quiz: medium division could throw after 1000 random tries (crash). Now built directly.
+- Date Countdown: dates were parsed as UTC midnight (off by the time-zone offset) and past times were off by one. Fixed in `countdown.engine.ts`; old stale specs replaced. iOS date/time input fix now lives in global `.ui-input`.

@@ -1,229 +1,159 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
-import { interval, Subscription } from 'rxjs';
+import { DatePipe, Location } from '@angular/common';
+import { Component, DestroyRef, ElementRef, computed, effect, inject, signal, viewChild } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { GameShellComponent, SegmentOption, SegmentedComponent } from '../shared/ui';
+import { CountdownSetup, DEFAULT_TITLE, WEEKDAYS, formatLeft, fromQuery, targetOf, timeLeft, toQuery } from './countdown.engine';
 
-interface TimeLeft {
-  days: number;
-  hours: number;
-  minutes: number;
-  seconds: number;
-  isPast: boolean;
-}
+type Copied = 'link' | 'time' | null;
 
 @Component({
   selector: 'app-date-countdown',
   standalone: true,
-  imports: [CommonModule, FormsModule],
-  templateUrl: './date-countdown.component.html',
+  imports: [GameShellComponent, SegmentedComponent, DatePipe],
+  template: `
+    <app-game-shell [help]="help" maxWidth="720px">
+      <div class="title">
+        @if (editing()) {
+          <input #titleInput class="ui-input title-input" [value]="setup().title" maxlength="60" aria-label="Countdown name"
+            (keydown.enter)="saveTitle(titleInput.value)" (keydown.escape)="editing.set(false)" (blur)="saveTitle(titleInput.value)" />
+        } @else {
+          <h2>{{ setup().title }}</h2>
+          <button type="button" class="ui-btn ghost icon" aria-label="Rename countdown" (click)="startEdit()">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z" /><path d="M14 6l4 4" /></svg>
+          </button>
+        }
+      </div>
+
+      @if (left(); as t) {
+        <p class="target ui-muted">{{ t.isPast ? 'Since' : 'Until' }} {{ target() | date: 'EEEE, d MMMM y, HH:mm' }}</p>
+        <div class="tiles">
+          <div class="tile ui-card"><b>{{ t.days }}</b><span>{{ t.days === 1 ? 'day' : 'days' }}</span></div>
+          <div class="tile ui-card"><b>{{ pad(t.hours) }}</b><span>hours</span></div>
+          <div class="tile ui-card"><b>{{ pad(t.minutes) }}</b><span>minutes</span></div>
+          <div class="tile ui-card"><b>{{ pad(t.seconds) }}</b><span>seconds</span></div>
+        </div>
+        <div class="share">
+          <button type="button" class="ui-btn primary" (click)="share()">{{ copied() === 'link' ? 'Link copied' : canShare ? 'Share' : 'Copy link' }}</button>
+          <button type="button" class="ui-btn" (click)="copyTime()">{{ copied() === 'time' ? 'Copied' : 'Copy time left' }}</button>
+        </div>
+      } @else {
+        <p class="ui-muted empty">Pick a date below to start the countdown.</p>
+      }
+
+      <div class="setup ui-panel">
+        <ui-segmented label="Count down to" [options]="kinds" [value]="setup().kind" (valueChange)="patch({ kind: $event })" />
+        <div class="fields">
+          @if (setup().kind === 'date') {
+            <label class="ui-label">Date
+              <input class="ui-input" type="date" [value]="setup().date" (change)="patch({ date: $any($event.target).value })" />
+            </label>
+          } @else {
+            <label class="ui-label">Day
+              <select class="ui-input" [value]="setup().day" (change)="patch({ day: $any($event.target).value })">
+                <option value="">Pick a day</option>
+                @for (d of weekdays; track d) { <option [value]="d" [selected]="d === setup().day">{{ d }}</option> }
+              </select>
+            </label>
+          }
+          <label class="ui-label"><span>Time <small>(optional)</small></span>
+            <input class="ui-input" type="time" [value]="setup().time" (change)="patch({ time: $any($event.target).value })" />
+          </label>
+        </div>
+      </div>
+    </app-game-shell>
+  `,
   styleUrl: './date-countdown.component.scss',
 })
-export class DateCountdownComponent implements OnInit, OnDestroy {
-  selectedDate: string = '';
-  selectedDayOfWeek: string = '';
-  selectedTimeOfDayOfWeek: string = '';
-  targetDate: Date | null = null;
-  timeLeft: TimeLeft | null = null;
-  private intervalSub: Subscription | null = null;
-  title: string = 'Date Countdown';
-  isEditingTitle: boolean = false;
-  copied: boolean = false;
+export class DateCountdownComponent {
+  private readonly location = inject(Location);
+  private readonly titleInput = viewChild<ElementRef<HTMLInputElement>>('titleInput');
 
-  minDate: string;
-  maxDate: string;
-
-  daysOfWeek = [
-    'Sunday',
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday',
+  readonly help = [
+    'Pick a date, or a day of the week for a countdown that repeats every week.',
+    'Add a time if it matters. Without one, it counts to midnight.',
+    'Tap the pencil to give it a name.',
+    'Share sends a link that opens this exact countdown.',
   ];
+  readonly kinds: SegmentOption<CountdownSetup['kind']>[] = [
+    { value: 'date', label: 'A date' },
+    { value: 'weekday', label: 'Next weekday' },
+  ];
+  readonly weekdays = WEEKDAYS;
+  readonly canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-  ) {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    this.minDate = tomorrow.toISOString().split('T')[0];
+  readonly setup = signal<CountdownSetup>(fromQuery(new URLSearchParams(inject(ActivatedRoute).snapshot.queryParams as Record<string, string>)));
+  readonly now = signal(new Date());
+  readonly editing = signal(false);
+  readonly copied = signal<Copied>(null);
 
-    const oneYearFromNow = new Date();
-    oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
-    this.maxDate = oneYearFromNow.toISOString().split('T')[0];
-  }
+  /** Recomputed every minute at most for weekdays (the next one only moves once it has passed). */
+  readonly target = computed(() => targetOf(this.setup(), this.now()));
+  readonly left = computed(() => {
+    const t = this.target();
+    return t ? timeLeft(t, this.now()) : null;
+  });
 
-  ngOnInit(): void {
-    this.route.queryParams.subscribe((params) => {
-      if (params['title']) {
-        this.title = decodeURIComponent(params['title']);
-      }
-      if (params['date']) {
-        this.selectedDate = params['date'];
-        this.selectedDayOfWeek = '';
-        this.selectedTimeOfDayOfWeek = '';
-        this.setTargetDate(new Date(this.selectedDate));
-      } else if (params['day']) {
-        this.selectedDayOfWeek = params['day'];
-        this.selectedTimeOfDayOfWeek = params['time'] ?? '';
-        this.selectedDate = '';
-        this.calculateNextDayOfWeek(this.selectedDayOfWeek, this.selectedTimeOfDayOfWeek);
-      }
+  private copyTimer?: ReturnType<typeof setTimeout>;
+
+  constructor() {
+    const tick = setInterval(() => this.now.set(new Date()), 1000);
+    inject(DestroyRef).onDestroy(() => {
+      clearInterval(tick);
+      clearTimeout(this.copyTimer);
     });
-
-    this.startCountdown();
+    // Keep the address bar in sync, so the page can be bookmarked or shared as is.
+    effect(() => this.location.replaceState('/date-countdown', toQuery(this.setup())));
   }
 
-  ngOnDestroy(): void {
-    if (this.intervalSub) {
-      this.intervalSub.unsubscribe();
+  patch(p: Partial<CountdownSetup>): void {
+    this.setup.update((s) => ({ ...s, ...p }));
+  }
+
+  pad(n: number): string {
+    return String(n).padStart(2, '0');
+  }
+
+  startEdit(): void {
+    this.editing.set(true);
+    setTimeout(() => this.titleInput()?.nativeElement.select());
+  }
+
+  saveTitle(v: string): void {
+    if (this.editing()) {
+      this.patch({ title: v.trim() || DEFAULT_TITLE });
+      this.editing.set(false);
     }
   }
 
-  onDateChange(): void {
-    if (this.selectedDate) {
-      this.selectedDayOfWeek = '';
-      this.selectedTimeOfDayOfWeek = '';
-      this.targetDate = null;
-      this.timeLeft = null;
-      this.setTargetDate(new Date(this.selectedDate));
-      this.updateUrl();
-    } else {
-      this.targetDate = null;
-      this.timeLeft = null;
-      this.updateUrl();
+  shareUrl(): string {
+    const q = toQuery(this.setup());
+    return location.origin + this.location.prepareExternalUrl('/date-countdown') + (q ? `?${q}` : '');
+  }
+
+  async share(): Promise<void> {
+    const url = this.shareUrl();
+    if (this.canShare) {
+      await navigator.share({ title: this.setup().title, url }).catch(() => undefined);
+      return;
+    }
+    await this.copy(url, 'link');
+  }
+
+  async copyTime(): Promise<void> {
+    const t = this.left();
+    if (t) {
+      await this.copy(formatLeft(t), 'time');
     }
   }
 
-  onDayOfWeekChange(): void {
-    if (this.selectedDayOfWeek || this.selectedTimeOfDayOfWeek) {
-      this.selectedDate = '';
-      this.targetDate = null;
-      if (this.selectedTimeOfDayOfWeek && !this.selectedDayOfWeek) {
-        this.timeLeft = null;
-      } else {
-        this.calculateNextDayOfWeek(this.selectedDayOfWeek, this.selectedTimeOfDayOfWeek);
-      }
-      this.updateUrl();
-    } else {
-      this.targetDate = null;
-      this.timeLeft = null;
-      this.updateUrl();
-    }
-  }
-
-  onTitleBlur(): void {
-    this.isEditingTitle = false;
-    this.updateUrl();
-  }
-
-  toggleTitleEdit(): void {
-    this.isEditingTitle = !this.isEditingTitle;
-  }
-
-  private setTargetDate(date: Date): void {
-    this.targetDate = date;
-    this.calculateTimeLeft();
-  }
-
-  private parseTimePart(part: string): number {
-    const number = Number.parseInt(part);
-    return Number.isNaN(number) ? 0 : number;
-  }
-
-  private calculateNextDayOfWeek(dayName: string, timeOfDay: string): void {
-    const today = new Date();
-    const dayIndex = this.daysOfWeek.indexOf(dayName);
-    const currentDayIndex = today.getDay();
-    let daysUntil = (dayIndex - currentDayIndex + 7) % 7;
-    if (daysUntil === 0) daysUntil = 7;
-    const target = new Date(today);
-    target.setDate(today.getDate() + daysUntil);
-    const [hours, minutes] = !!timeOfDay ? timeOfDay.split(":").map(this.parseTimePart) : [0, 0];
-    target.setHours(hours, minutes, 0, 0);
-    this.setTargetDate(target);
-  }
-
-  private calculateTimeLeft(): void {
-    if (!this.targetDate) return;
-
-    const now = new Date().getTime();
-    const target = this.targetDate.getTime();
-    const difference = target - now;
-
-    this.timeLeft = {
-      days: Math.abs(Math.floor(difference / (1000 * 60 * 60 * 24))),
-      hours: Math.abs(
-        Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-      ),
-      minutes: Math.abs(
-        Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60)),
-      ),
-      seconds: Math.abs(Math.floor((difference % (1000 * 60)) / 1000)),
-      isPast: difference < 0,
-    };
-  }
-
-  private startCountdown(): void {
-    this.intervalSub = interval(1000).subscribe(() => {
-      this.calculateTimeLeft();
-    });
-  }
-
-  private updateUrl(): void {
-    const url = this.getShareUrl();
-    window.history.replaceState({}, '', url);
-  }
-
-  getCountdownText(): string {
-    if (!this.timeLeft) return '';
-    const { days, hours, minutes, seconds, isPast } = this.timeLeft;
-    const timeStr = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-    return `${timeStr}`;
-  }
-
-  getShareUrl(): string {
-    const baseUrl = window.location.origin + window.location.pathname;
-
-    const queryParams = new URLSearchParams();
-    if (this.selectedDate) queryParams.set('date', this.selectedDate);
-    if (this.selectedDayOfWeek) queryParams.set('day', this.selectedDayOfWeek);
-    if (this.selectedTimeOfDayOfWeek) queryParams.set('time', this.selectedTimeOfDayOfWeek);
-    if (this.title && this.title !== 'Date Countdown')
-      queryParams.set('title', this.title);
-    const query = queryParams.toString();
-
-    return query
-      ? `${baseUrl}?${query}`
-      : baseUrl;
-  }
-
-  copyToClipboard(): void {
-    const shareUrl = this.getShareUrl();
-    navigator.clipboard.writeText(shareUrl).catch(() => {
-      const tempInput = document.createElement('input');
-      tempInput.value = shareUrl;
-      document.body.appendChild(tempInput);
-      tempInput.select();
-      document.body.removeChild(tempInput);
-      alert('URL copied to clipboard (fallback method)');
-    });
-  }
-
-  copyCountdownText(): void {
-    if (this.timeLeft) {
-      navigator.clipboard
-        .writeText(this.getCountdownText())
-        .then(() => {
-          this.copied = true;
-          setTimeout(() => (this.copied = false), 2000);
-        })
-        .catch(() => {
-          alert('Failed to copy countdown text');
-        });
+  private async copy(text: string, what: Copied): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(text);
+      this.copied.set(what);
+      clearTimeout(this.copyTimer);
+      this.copyTimer = setTimeout(() => this.copied.set(null), 1800);
+    } catch {
+      // Clipboard blocked (e.g. not https): nothing useful to do.
     }
   }
 }

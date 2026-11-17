@@ -104,7 +104,7 @@ export class GameRouteService {
       route: '/date-countdown',
       color: '#FB7185',
       category: 'life',
-      description: 'Count down to any date and share the countdown.',
+      description: 'Count down to a date and share the link.',
     },
     {
       name: 'Math Quiz',

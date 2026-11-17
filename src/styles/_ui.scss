@@ -199,3 +199,29 @@
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
+
+// Native date/time fields: dark picker, and stop iOS WebKit from sizing them by the picker
+// (it ignores width: 100%, overflows the card and collapses when empty).
+.ui-input[type='date'], .ui-input[type='time'], .ui-input[type='datetime-local'] {
+  color-scheme: dark;
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+}
+@supports (-webkit-touch-callout: none) {
+  .ui-input[type='date'], .ui-input[type='time'], .ui-input[type='datetime-local'] {
+    -webkit-appearance: none;
+    appearance: none;
+    text-align: left;
+    &::-webkit-date-and-time-value { text-align: left; min-height: 1.2em; }
+  }
+}
+
+select.ui-input {
+  padding-right: 36px;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 20px) 50%, calc(100% - 15px) 50%;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+  option { background: #0d1324; }
+}
