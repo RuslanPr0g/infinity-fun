@@ -17,41 +17,25 @@ import { TypedAnswerComponent } from '../typed-answer/typed-answer.component';
     FeedbackOverlayComponent,
   ],
   template: `
-    <div class="game-screen">
-      <div class="game-header">
-        <span class="question-counter">
-          {{ sessionSnapshot.questionIndex + 1 }} / 10
-        </span>
-        <span class="score">Score: {{ sessionSnapshot.score }}</span>
-      </div>
+    <div class="top">
+      <span class="question-counter">{{ sessionSnapshot.questionIndex + 1 }} / 10</span>
+      <span class="score">{{ sessionSnapshot.score }} points</span>
+    </div>
 
-      <app-timer-bar
-        [remainingMs]="sessionSnapshot.timerRemainingMs"
-        [totalMs]="sessionSnapshot.totalMs"
-      />
+    <app-timer-bar [remainingMs]="sessionSnapshot.timerRemainingMs" [totalMs]="sessionSnapshot.totalMs" />
 
-      <p class="question-text">{{ question.text }}</p>
+    <p class="question">{{ question.text }}</p>
 
-      @if (question.answerType === 'typed') {
-        <app-typed-answer
-          [disabled]="gameState === 'feedback'"
-          [inputMode]="typedInputMode"
-          (answered)="answerSubmitted.emit($event)"
-        />
-      } @else {
-        <app-multiple-choice
-          [options]="question.options ?? []"
-          [disabled]="gameState === 'feedback'"
-          (answered)="answerSubmitted.emit($event)"
-        />
-      }
+    @if (question.answerType === 'typed') {
+      <app-typed-answer [disabled]="gameState === 'feedback'" [inputMode]="typedInputMode" (answered)="answerSubmitted.emit($event)" />
+    } @else {
+      <app-multiple-choice [options]="question.options ?? []" [disabled]="gameState === 'feedback'"
+        [correct]="gameState === 'feedback' ? lastCorrectAnswer : null" (answered)="answerSubmitted.emit($event)" />
+    }
 
+    <div class="feedback">
       @if (gameState === 'feedback') {
-        <app-feedback-overlay
-          [isCorrect]="isLastAnswerCorrect ?? false"
-          [correctAnswer]="lastCorrectAnswer"
-          (next)="nextQuestion.emit()"
-        />
+        <app-feedback-overlay [isCorrect]="isLastAnswerCorrect ?? false" [correctAnswer]="lastCorrectAnswer" (next)="nextQuestion.emit()" />
       }
     </div>
   `,

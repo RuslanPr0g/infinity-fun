@@ -21,7 +21,7 @@ Plan: `~/.claude/plans/pasted-content-id-4447-create-scratchpa-swift-rain.md`. R
 | 4 | Country Guesser | 480/360px min-widths | full-width flag, 2-col answers | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | 5 | Guess Day of Week | gradient buttons, `100vh-88px` | 4+3 day grid | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | 6 | Periodic Quiz | `min-width:500px` card | modal detail sheet | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| 7 | Math Quiz | modern, own palette | tokens, stat bar | | | | | | |
+| 7 | Math Quiz | modern, own palette | tokens, stat bar | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | 8 | Months Left | ~1000 spans | canvas grid | | | | | | |
 | 9 | Date Countdown | emoji edit span | scroll shell, real buttons | | | | | | |
 | 10 | Reject Cookies | hover-only flee, 39 hex | touch flee, clean frame | | | | | | |
@@ -36,3 +36,4 @@ Plan: `~/.claude/plans/pasted-content-id-4447-create-scratchpa-swift-rain.md`. R
 - Phone check: same-origin iframes at 360×640 / 390×844 / 844×390 (the browser window can't be resized).
 - Found while testing: math quiz estimation could freeze (endless distractor loop) and hard mode gave negative answers. Fixed in the foundation commit.
 - Math Comparer: `new Function` eval replaced by a small parser (`math-comparer.engine.ts`), best streak is now saved.
+- Math Quiz: medium division could throw after 1000 random tries (crash). Now built directly.

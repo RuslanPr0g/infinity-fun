@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import {
   Component,
   computed,
@@ -21,7 +20,7 @@ import {
 import { PersonalBestService } from './services/personal-best.service';
 import { QuestionEngine } from './services/question-engine.service';
 import { SessionService } from './services/session.service';
-import { SoundService } from '../shared/services/sound/sound.service';
+import { GameShellComponent } from '../shared/ui';
 
 type TransitionAction =
   | 'selectMode'
@@ -37,70 +36,57 @@ type TransitionAction =
   selector: 'app-math-quiz-game',
   standalone: true,
   imports: [
-    CommonModule,
+    GameShellComponent,
     ModeSelectComponent,
     DifficultySelectComponent,
     GameScreenComponent,
     ResultsComponent,
   ],
   template: `
-    <div class="math-quiz-container">
+    <app-game-shell [sound]="true" [help]="help" maxWidth="760px">
       @switch (gameState()) {
         @case ('lobby') {
           <app-mode-select (modeSelected)="onModeSelected($event)" />
         }
         @case ('difficulty-select') {
           @if (selectedMode()) {
-            <app-difficulty-select
-              [mode]="selectedMode()!"
-              (difficultySelected)="onDifficultySelected($event)"
-              (back)="onBack()"
-            />
-          }
-        }
-        @case ('playing') {
-          @if (currentQuestion() && sessionSnapshot()) {
-            <app-game-screen
-              [question]="currentQuestion()!"
-              [sessionSnapshot]="sessionSnapshot()!"
-              [gameState]="'playing'"
-              [isLastAnswerCorrect]="null"
-              [lastCorrectAnswer]="''"
-              (answerSubmitted)="onAnswerSubmitted($event)"
-            />
-          }
-        }
-        @case ('feedback') {
-          @if (currentQuestion() && sessionSnapshot()) {
-            <app-game-screen
-              [question]="currentQuestion()!"
-              [sessionSnapshot]="sessionSnapshot()!"
-              [gameState]="'feedback'"
-              [isLastAnswerCorrect]="lastAnswerCorrect()"
-              [lastCorrectAnswer]="currentQuestion()!.correctAnswer"
-              (nextQuestion)="onNext()"
-            />
+            <app-difficulty-select [mode]="selectedMode()!" (difficultySelected)="onDifficultySelected($event)" (back)="onBack()" />
           }
         }
         @case ('results') {
           @if (sessionResult()) {
-            <app-results
-              [result]="sessionResult()!"
-              (playAgain)="onPlayAgain()"
-              (changeMode)="onChangeMode()"
+            <app-results [result]="sessionResult()!" (playAgain)="onPlayAgain()" (changeMode)="onChangeMode()" />
+          }
+        }
+        @default {
+          <!-- 'playing' and 'feedback' share one screen so the picked answer stays marked. -->
+          @if (currentQuestion() && sessionSnapshot()) {
+            <app-game-screen
+              [question]="currentQuestion()!"
+              [sessionSnapshot]="sessionSnapshot()!"
+              [gameState]="gameState() === 'feedback' ? 'feedback' : 'playing'"
+              [isLastAnswerCorrect]="gameState() === 'feedback' ? lastAnswerCorrect() : null"
+              [lastCorrectAnswer]="gameState() === 'feedback' ? currentQuestion()!.correctAnswer : ''"
+              (answerSubmitted)="onAnswerSubmitted($event)"
+              (nextQuestion)="onNext()"
             />
           }
         }
       }
-    </div>
+    </app-game-shell>
   `,
-  styleUrl: './math-quiz-game.component.scss',
 })
 export class MathQuizGameComponent implements OnDestroy {
   private readonly questionEngine = inject(QuestionEngine);
   private readonly session = inject(SessionService);
   private readonly personalBest = inject(PersonalBestService);
-  private readonly sound = inject(SoundService);
+
+  readonly help = [
+    'Pick a kind of sum and how hard you want it.',
+    'Each round has 10 questions, and each one has a timer.',
+    'Right answers give points, and fast ones give extra.',
+    'Keyboard: type the answer and press Enter, or use 1 to 4 to pick.',
+  ];
 
   gameState = signal<GameState>('lobby');
   selectedMode = signal<GameMode | null>(null);

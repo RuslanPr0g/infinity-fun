@@ -89,6 +89,10 @@ export class QuestionEngine {
     });
   }
 
+  private gcd(a: number, b: number): number {
+    return b === 0 ? a : this.gcd(b, a % b);
+  }
+
   private generateDivision(diff: Difficulty, id: number): Question {
     if (diff === 'easy') {
       const m = this.randInt(1, 9);
@@ -102,27 +106,22 @@ export class QuestionEngine {
     }
 
     if (diff === 'medium') {
-      for (let attempt = 0; attempt < MAX_GENERATION_ATTEMPTS; attempt++) {
-        const m = this.randInt(1, 999);
-        const n = this.randInt(1, 999);
-        if (m === 0) continue;
-
-        const result = n / m;
-        const rounded = Math.round(result * 10) / 10;
-        const hasOneDecimal =
-          rounded !== Math.floor(rounded) &&
-          Math.abs(result - rounded) < 0.0001;
-
-        if (hasOneDecimal) {
-          return this.buildQuestion(id, 'division', diff, {
-            text: `${n} ÷ ${m} = ?`,
-            correctAnswer: String(rounded),
-            answerType: 'typed',
-            tolerance: 0.05,
-          });
-        }
+      // Built directly instead of by trial and error (which could give up and throw):
+      // pick an answer with exactly one decimal, then a divisor that makes n a whole number ≤ 999.
+      for (;;) {
+        const tenths = this.randInt(1, 99) * 10 + this.randInt(1, 9); // e.g. 237 → 23.7
+        const step = 10 / this.gcd(tenths, 10); // smallest m with tenths·m/10 whole: 10, 5 or 2
+        const maxK = Math.floor(9990 / (tenths * step));
+        if (maxK < 1) continue;
+        const m = step * this.randInt(1, maxK);
+        const n = (tenths * m) / 10;
+        return this.buildQuestion(id, 'division', diff, {
+          text: `${n} ÷ ${m} = ?`,
+          correctAnswer: String(tenths / 10),
+          answerType: 'typed',
+          tolerance: 0.05,
+        });
       }
-      throw new Error('Failed to generate division medium question');
     }
 
     const n = this.randInt(1, 9999);

@@ -1,86 +1,40 @@
-@use '../../../../colors' as colors;
+@use 'breakpoints' as bp;
 
-.mode-select {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 1.5rem;
-  text-align: center;
-}
-
-.title {
-  color: colors.$primary-text-color;
-  margin-bottom: 0.5rem;
-}
-
-.subtitle {
-  color: rgba(colors.$primary-text-color, 0.7);
-  margin-bottom: 2rem;
-}
-
-.mode-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1rem;
-
-  @media (max-width: 480px) {
-    grid-template-columns: 1fr;
-  }
-}
-
-.mode-card {
+:host { display: flex; flex-direction: column; gap: 14px; }
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.card {
+  appearance: none;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 1.5rem 1rem;
-  border: 2px solid rgba(colors.$primary-text-color, 0.15);
-  border-radius: 12px;
-  background: rgba(colors.$primary-text-color, 0.05);
-  color: colors.$primary-text-color;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 18px;
+  color: var(--text);
+  text-align: left;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-
-  &:hover {
-    transform: scale(1.03);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-    border-color: colors.$color-math-quiz;
-  }
-
-  .mode-icon {
-    font-size: 2rem;
-  }
-
-  .mode-name {
-    font-size: 1.1rem;
-    font-weight: 600;
-  }
-
-  .mode-desc {
-    font-size: 0.85rem;
-    opacity: 0.8;
-  }
+  transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+  &:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 12px 30px -16px var(--accent); }
+  &:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 }
+.icon {
+  display: grid;
+  place-items: center;
+  min-width: 44px;
+  height: 44px;
+  padding: 0 10px;
+  border-radius: 12px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 20px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.name { font-size: 17px; font-weight: 700; margin-top: 4px; }
+.desc { font-size: 13px; line-height: 1.45; color: var(--muted); }
 
-@media (max-width: 480px) {
-  .mode-select {
-    padding: 1rem;
-  }
-
-  .subtitle {
-    margin-bottom: 1.25rem;
-  }
-
-  .mode-grid {
-    gap: 0.75rem;
-  }
-
-  .mode-card {
-    padding: 1rem;
-    gap: 0.35rem;
-    touch-action: manipulation;
-
-    .mode-icon {
-      font-size: 1.6rem;
-    }
-  }
+@include bp.tablet { .grid { grid-template-columns: 1fr 1fr; } }
+@include bp.phone {
+  .grid { gap: 8px; }
+  .card { padding: 14px; }
+  .desc { display: none; }
 }

@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import {
   DIFFICULTY_DESCRIPTIONS,
+  GAME_MODE_CONFIG,
   Difficulty,
   GameMode,
   TIMER_MS,
@@ -12,22 +13,18 @@ import {
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="difficulty-select">
-      <button type="button" class="back-btn" (click)="back.emit()">← Back</button>
-      <h2 class="title">Choose Difficulty</h2>
-      <div class="difficulty-grid">
-        @for (diff of difficulties; track diff) {
-          <button
-            type="button"
-            class="difficulty-card"
-            (click)="difficultySelected.emit(diff)"
-          >
-            <span class="diff-label">{{ diffLabels[diff] }}</span>
-            <span class="diff-desc">{{ descriptions[diff] }}</span>
-            <span class="diff-time">{{ timerSeconds[diff] }}s per question</span>
-          </button>
-        }
-      </div>
+    <div class="head">
+      <button type="button" class="ui-btn ghost small" (click)="back.emit()">← Back</button>
+      <p class="ui-kicker">{{ modeLabel }} · how hard?</p>
+    </div>
+    <div class="grid">
+      @for (diff of difficulties; track diff) {
+        <button type="button" class="card ui-panel" (click)="difficultySelected.emit(diff)">
+          <span class="name">{{ diffLabels[diff] }}</span>
+          <span class="desc">{{ descriptions[diff] }}</span>
+          <span class="time">{{ timerSeconds[diff] }} seconds a question</span>
+        </button>
+      }
     </div>
   `,
   styleUrl: './difficulty-select.component.scss',
@@ -43,6 +40,10 @@ export class DifficultySelectComponent {
     medium: 'Medium',
     hard: 'Hard',
   };
+
+  get modeLabel(): string {
+    return GAME_MODE_CONFIG[this.mode].label;
+  }
 
   get descriptions() {
     return DIFFICULTY_DESCRIPTIONS[this.mode];

@@ -13,15 +13,11 @@ import {
   standalone: true,
   imports: [CommonModule],
   template: `
-    <p
-      class="feedback-line"
-      [class.feedback-correct]="isCorrect"
-      [class.feedback-incorrect]="!isCorrect"
-    >
+    <p class="line" [class.ok]="isCorrect" [class.bad]="!isCorrect">
       @if (isCorrect) {
-        Correct!
+        Right!
       } @else {
-        Wrong — correct answer: {{ correctAnswer }}
+        The answer is {{ correctAnswer }}
       }
     </p>
   `,

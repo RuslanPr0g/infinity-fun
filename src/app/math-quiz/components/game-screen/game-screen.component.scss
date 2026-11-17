@@ -1,35 +1,5 @@
-@use '../../../../colors' as colors;
-
-.game-screen {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 1.5rem;
-}
-
-.game-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-  color: colors.$primary-text-color;
-  font-size: 1.1rem;
-}
-
-.question-text {
-  font-size: 1.75rem;
-  text-align: center;
-  margin: 2rem 0;
-  color: colors.$primary-text-color;
-  word-break: break-word;
-}
-
-@media (max-width: 480px) {
-  .game-screen {
-    padding: 1rem;
-  }
-
-  .question-text {
-    font-size: clamp(1.25rem, 7vw, 1.75rem);
-    margin: 1.5rem 0;
-    overflow-wrap: anywhere;
-  }
-}
+:host { display: flex; flex-direction: column; gap: 16px; }
+.top { display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; color: var(--muted); }
+.score { color: var(--accent); }
+.question { font-size: clamp(28px, 8vw, 48px); font-weight: 800; line-height: 1.2; font-variant-numeric: tabular-nums; padding: clamp(8px, 4vh, 32px) 0; overflow-wrap: anywhere; }
+.feedback { min-height: 28px; }

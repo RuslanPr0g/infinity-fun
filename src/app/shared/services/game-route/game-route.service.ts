@@ -111,7 +111,7 @@ export class GameRouteService {
       route: '/math-quiz',
       color: '#f97316',
       category: 'brain',
-      description: 'Quick-fire arithmetic rounds against the clock.',
+      description: 'Ten quick sums against the clock.',
     },
     {
       name: 'Algorithms Graph',

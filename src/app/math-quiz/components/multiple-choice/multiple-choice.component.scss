@@ -1,43 +1,15 @@
-@use '../../../../colors' as colors;
+@use 'tokens' as t;
+@use 'breakpoints' as bp;
 
-.mc-options {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem;
-  max-width: 400px;
-  margin: 0 auto;
-
-  @media (max-width: 360px) {
-    grid-template-columns: 1fr;
-  }
-
-  button {
-    padding: 1rem;
-    font-size: 1.1rem;
-    border: 2px solid rgba(colors.$primary-text-color, 0.2);
-    border-radius: 8px;
-    background: rgba(colors.$primary-text-color, 0.05);
-    color: colors.$primary-text-color;
-    cursor: pointer;
-    transition: transform 0.15s, border-color 0.15s;
-
-    &:hover:not(:disabled) {
-      transform: scale(1.03);
-      border-color: colors.$button-bg-color;
-    }
-
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-  }
+.options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.option {
+  min-height: 60px;
+  font-size: 22px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  position: relative;
+  kbd { position: absolute; left: 10px; top: 8px; font: inherit; font-size: 11px; color: var(--muted); }
+  &.right { background: rgba(t.$ok, 0.16); border-color: t.$ok; color: t.$ok; opacity: 1; }
+  &.wrong { background: rgba(t.$danger, 0.16); border-color: t.$danger; color: #ff8399; opacity: 1; }
 }
-
-@media (max-width: 480px) {
-  .mc-options button {
-    min-height: 48px;
-    min-width: 0;
-    overflow-wrap: anywhere;
-    touch-action: manipulation;
-  }
-}
+@include bp.touch { .option kbd { display: none; } }

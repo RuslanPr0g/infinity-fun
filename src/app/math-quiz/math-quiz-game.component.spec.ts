@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { SoundService } from '../shared/services/sound/sound.service';
 import { MathQuizGameComponent } from './math-quiz-game.component';
 import { GameMode, Question, QUESTIONS_PER_ROUND } from './models/math-quiz.models';
@@ -36,15 +37,13 @@ describe('MathQuizGameComponent', () => {
     await TestBed.configureTestingModule({
       imports: [MathQuizGameComponent],
       providers: [
+        provideRouter([]),
         SessionService,
         { provide: QuestionEngine, useValue: questionEngine },
         { provide: PersonalBestService, useValue: personalBest },
         {
           provide: SoundService,
-          useValue: jasmine.createSpyObj('SoundService', [
-            'playCorrect',
-            'playWrong',
-          ]),
+          useValue: jasmine.createSpyObj('SoundService', ['playCorrect', 'playWrong', 'toggleMute'], { muted: () => false }),
         },
       ],
     }).compileComponents();

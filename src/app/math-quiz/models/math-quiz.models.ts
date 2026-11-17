@@ -83,33 +83,33 @@ export const GAME_MODE_CONFIG: Record<
 > = {
   multiplication: {
     label: 'Multiplication',
-    description: 'Multiply numbers — get faster with every round.',
-    icon: '✖️',
+    description: 'Times tables and bigger numbers.',
+    icon: '×',
   },
   division: {
     label: 'Division',
-    description: 'Divide precisely — integers and decimals await.',
-    icon: '➗',
+    description: 'Split numbers, sometimes with decimals.',
+    icon: '÷',
   },
   mixed: {
-    label: 'Mixed Operations',
-    description: 'All four operators, watch your precedence.',
-    icon: '🔢',
+    label: 'Mixed',
+    description: 'Plus, minus, times and divide together.',
+    icon: '±',
   },
   'power-roots': {
-    label: 'Power & Roots',
-    description: 'Squares, cubes, and radicals at speed.',
-    icon: '√',
+    label: 'Powers & roots',
+    description: 'Squares, cubes and square roots.',
+    icon: 'x²',
   },
   sequence: {
-    label: 'Number Sequence',
-    description: 'Spot the pattern, fill the blank.',
-    icon: '🔁',
+    label: 'Number patterns',
+    description: 'Find the missing number in a row.',
+    icon: '1 2 _',
   },
   estimation: {
-    label: 'Mental Estimation',
-    description: 'Pick the closest answer — precision not required.',
-    icon: '🎯',
+    label: 'Estimate',
+    description: 'Pick the answer closest to the real one.',
+    icon: '≈',
   },
 };
 
@@ -118,33 +118,33 @@ export const DIFFICULTY_DESCRIPTIONS: Record<
   Record<Difficulty, string>
 > = {
   multiplication: {
-    easy: 'Single-digit × single-digit (1–9)',
-    medium: 'At least one two-digit operand (1–99)',
-    hard: 'Three operands, all up to 99',
+    easy: 'One digit × one digit (1 to 9)',
+    medium: 'Numbers up to 99',
+    hard: 'Three numbers, each up to 99',
   },
   division: {
-    easy: 'Integer results, divisor 1–9',
-    medium: 'Results with one decimal place, up to 999',
-    hard: 'Round to nearest integer, numbers up to 9999',
+    easy: 'Whole-number answers, divide by 1 to 9',
+    medium: 'Answers with one decimal, up to 999',
+    hard: 'Round to a whole number, up to 9999',
   },
   mixed: {
-    easy: 'Two operands, + and − only, numbers 1–20',
-    medium: 'Two operands, all operators, numbers 1–100',
-    hard: 'Three operands, all operators, PEMDAS, up to 1000',
+    easy: 'Two numbers, + and − only, up to 20',
+    medium: 'Two numbers, any sign, up to 100',
+    hard: 'Three numbers, any sign, × and ÷ first, up to 1000',
   },
   'power-roots': {
-    easy: 'Squares of 1–12',
-    medium: 'Cubes 1–10 or square roots of perfect squares ≤144',
-    hard: 'Cube roots of perfect cubes ≤1000 or n⁴/n⁵',
+    easy: 'Squares of 1 to 12',
+    medium: 'Cubes of 1 to 10, or square roots up to 144',
+    hard: 'Cube roots up to 1000, or powers of 4 and 5',
   },
   sequence: {
-    easy: 'Arithmetic sequences, step 1–10',
-    medium: 'Geometric sequences (×2, ×3, ×0.5, ÷2)',
-    hard: 'Fibonacci-like or alternating-step patterns',
+    easy: 'Add the same number each time (1 to 10)',
+    medium: 'Multiply or divide each time (×2, ×3, ÷2)',
+    hard: 'Add the last two, or steps that switch',
   },
   estimation: {
-    easy: 'Estimate a × b, operands 1–50',
-    medium: 'Estimate (a×b)+c or (a+b)×c, up to 200',
-    hard: 'Estimate (a×b)−(c×d), up to 500',
+    easy: 'a × b, numbers up to 50',
+    medium: '(a × b) + c or (a + b) × c, up to 200',
+    hard: '(a × b) − (c × d), up to 500',
   },
 };

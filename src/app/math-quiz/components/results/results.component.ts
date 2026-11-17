@@ -10,49 +10,19 @@ import {
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="results">
-      <h2 class="title">Round Complete!</h2>
-
-      @if (result.isNewPersonalBest) {
-        <div class="new-best-badge">🏆 New Personal Best!</div>
-      }
-
-      <div class="stats">
-        <div class="stat">
-          <span class="stat-label">Score</span>
-          <span class="stat-value">{{ result.score }}</span>
-        </div>
-        <div class="stat">
-          <span class="stat-label">Accuracy</span>
-          <span class="stat-value">{{ result.accuracy.toFixed(0) }}%</span>
-        </div>
-        <div class="stat">
-          <span class="stat-label">Avg Time</span>
-          <span class="stat-value">{{
-            (result.averageTimingMs / 1000).toFixed(1)
-          }}s</span>
-        </div>
-        <div class="stat">
-          <span class="stat-label">Mode</span>
-          <span class="stat-value">{{ modeLabel }}</span>
-        </div>
-        <div class="stat">
-          <span class="stat-label">Difficulty</span>
-          <span class="stat-value">{{ diffLabel }}</span>
-        </div>
-        <div class="stat">
-          <span class="stat-label">Personal Best</span>
-          <span class="stat-value">{{ result.personalBest }}</span>
-        </div>
+    <div class="results ui-panel">
+      <p class="ui-kicker">Round over · {{ modeLabel }}, {{ diffLabel }}</p>
+      <p class="final">{{ result.score }}</p>
+      <p class="best" [class.new]="result.isNewPersonalBest">
+        {{ result.isNewPersonalBest ? 'New best score!' : 'Your best: ' + result.personalBest }}
+      </p>
+      <div class="ui-stats">
+        <div class="ui-stat"><b>{{ result.accuracy.toFixed(0) }}%</b><span>Right</span></div>
+        <div class="ui-stat"><b>{{ (result.averageTimingMs / 1000).toFixed(1) }}s</b><span>Per answer</span></div>
       </div>
-
       <div class="actions">
-        <button type="button" class="primary-btn" (click)="playAgain.emit()">
-          Play Again
-        </button>
-        <button type="button" class="secondary-btn" (click)="changeMode.emit()">
-          Change Mode
-        </button>
+        <button type="button" class="ui-btn primary big" (click)="playAgain.emit()">Play again</button>
+        <button type="button" class="ui-btn" (click)="changeMode.emit()">Other game</button>
       </div>
     </div>
   `,

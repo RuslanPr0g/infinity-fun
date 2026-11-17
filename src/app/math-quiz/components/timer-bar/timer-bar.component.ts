@@ -6,16 +6,9 @@ import { Component, Input } from '@angular/core';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="timer-bar-track">
-      <div
-        class="timer-bar-fill"
-        role="progressbar"
-        [attr.aria-valuenow]="remainingMs"
-        aria-valuemin="0"
-        [attr.aria-valuemax]="totalMs"
-        [style.width.%]="pct"
-        [ngClass]="colorClass"
-      ></div>
+    <div class="ui-bar">
+      <div role="progressbar" [attr.aria-valuenow]="remainingMs" aria-valuemin="0" [attr.aria-valuemax]="totalMs"
+        [style.width.%]="pct" [ngClass]="colorClass"></div>
     </div>
   `,
   styleUrl: './timer-bar.component.scss',

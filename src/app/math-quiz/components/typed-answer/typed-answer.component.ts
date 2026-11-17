@@ -15,22 +15,12 @@ import { FormsModule } from '@angular/forms';
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="typed-answer">
-      <input
-        #answerInput
-        type="text"
-        [attr.inputmode]="inputMode"
-        [attr.pattern]="inputMode === 'decimal' ? '[0-9]*[.,]?[0-9]*' : '[0-9]*'"
-        autocomplete="off"
-        [(ngModel)]="value"
-        (keyup.enter)="submit()"
-        [disabled]="disabled"
-        aria-label="Your answer"
-      />
-      <button type="button" (click)="submit()" [disabled]="disabled">
-        Submit
-      </button>
-    </div>
+    <form class="typed" (submit)="$event.preventDefault(); submit()">
+      <input #answerInput class="ui-input" type="text" [attr.inputmode]="inputMode"
+        [attr.pattern]="inputMode === 'decimal' ? '[0-9]*[.,]?[0-9]*' : '[0-9]*'" autocomplete="off" enterkeyhint="done"
+        [(ngModel)]="value" name="answer" [disabled]="disabled" placeholder="Your answer" aria-label="Your answer" />
+      <button type="submit" class="ui-btn primary" [disabled]="disabled">Check</button>
+    </form>
   `,
   styleUrl: './typed-answer.component.scss',
 })
