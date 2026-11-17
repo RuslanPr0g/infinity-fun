@@ -7,6 +7,7 @@ import { Opening } from '../../models/opening.model';
 import { OpeningDisplay, OpeningDisplayService } from '../../services/opening-display.service';
 import { OpeningLibraryService } from '../../services/opening-library.service';
 import { buildNotableOpenings } from '../../services/notable-openings.util';
+import { SegmentOption, SegmentedComponent, UiModalComponent } from '../../../shared/ui';
 import { OpeningPreviewComponent } from '../opening-preview/opening-preview.component';
 
 type Tab = 'popular' | 'search';
@@ -44,117 +45,62 @@ const VIEWPORT_MARGIN = 8;
 @Component({
   selector: 'app-opening-picker',
   standalone: true,
-  imports: [CommonModule, FormsModule, OpeningPreviewComponent],
+  imports: [CommonModule, FormsModule, OpeningPreviewComponent, SegmentedComponent, UiModalComponent],
   template: `
     <div class="picker">
-      <h1 class="title">Opening Trainer</h1>
-      <p class="subtitle">Pick the openings you want to practice.</p>
-
-      <div class="tabs" role="tablist">
-        <button
-          type="button"
-          role="tab"
-          class="tab"
-          [class.active]="tab() === 'popular'"
-          (click)="tab.set('popular')"
-        >
-          Popular
-        </button>
-        <button
-          type="button"
-          role="tab"
-          class="tab"
-          [class.active]="tab() === 'search'"
-          (click)="tab.set('search')"
-        >
-          Search all ({{ library.openings().length }})
-        </button>
-      </div>
+      <ui-segmented label="Openings to show" [options]="tabs" [value]="tab()" (valueChange)="tab.set($event)" />
 
       @if (tab() === 'search') {
-        <input
-          class="search-input"
-          type="text"
-          placeholder="Search by name or ECO code (e.g. 'Sicilian', 'B20')…"
-          [ngModel]="searchTerm()"
-          (ngModelChange)="searchTerm.set($event)"
-        />
+        <input class="ui-input" type="search" placeholder="Name or ECO code, e.g. Sicilian or B20" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)" />
       }
 
       <div class="selected-bar">
-        <span class="selected-count">{{ selectedIds().size }} selected</span>
+        <span>{{ selectedIds().size }} picked</span>
         @if (selectedIds().size > 0) {
-          <button type="button" class="clear-button" (click)="clearSelection()">Clear</button>
+          <button type="button" class="ui-btn ghost small" (click)="clearSelection()">Clear</button>
         }
       </div>
 
       <ul class="opening-list" (scroll)="hidePreview()">
         @for (row of visibleRows(); track row.opening.id) {
-          <li
-            class="opening-item"
-            (mouseenter)="showPreview(row.opening, $event)"
-            (mouseleave)="hidePreview()"
-          >
+          <li class="opening-item" (mouseenter)="showPreview(row.opening, $event)" (mouseleave)="hidePreview()">
             <label class="opening-row" [class.checked]="isSelected(row.opening.id)">
-              <input
-                type="checkbox"
-                [checked]="isSelected(row.opening.id)"
-                (change)="toggle(row.opening.id)"
-              />
+              <input type="checkbox" [checked]="isSelected(row.opening.id)" (change)="toggle(row.opening.id)" />
               <span class="eco">{{ row.opening.eco }}</span>
-              <span
-                class="side"
-                [class.black]="row.display.side === 'black'"
-                [attr.aria-label]="
-                  row.display.side === 'white' ? 'White opening' : 'Black opening'
-                "
-                [title]="row.display.side === 'white' ? 'White opening' : 'Black opening'"
-                >{{ row.display.side === 'white' ? 'W' : 'B' }}</span
-              >
+              <span class="side" [class.black]="row.display.side === 'black'"
+                [attr.aria-label]="row.display.side === 'white' ? 'White opening' : 'Black opening'"
+                [title]="row.display.side === 'white' ? 'White opening' : 'Black opening'">{{ row.display.side === 'white' ? 'W' : 'B' }}</span>
               <span class="name-block">
                 <span class="name">{{ row.display.title }}</span>
-                @if (row.display.variation) {
-                  <span class="variation">{{ row.display.variation }}</span>
-                }
-                @if (row.display.moveLine) {
-                  <span class="move-line">{{ row.display.moveLine }}</span>
-                }
+                @if (row.display.variation) { <span class="variation">{{ row.display.variation }}</span> }
+                @if (row.display.moveLine) { <span class="move-line">{{ row.display.moveLine }}</span> }
               </span>
             </label>
+            <button type="button" class="ui-btn ghost small peek" [attr.aria-label]="'Preview ' + row.display.title" (click)="openPreview(row.opening)">Preview</button>
           </li>
         } @empty {
-          <li class="empty">
-            {{ tab() === 'search' && searchTerm().length === 0
-              ? 'Type to search the full dataset.'
-              : 'No openings found.' }}
-          </li>
+          <li class="empty ui-muted">{{ tab() === 'search' && searchTerm().length === 0 ? 'Type to search all openings.' : 'No openings found.' }}</li>
         }
       </ul>
 
-      <!--
-        Rendered outside .opening-list on purpose: that list is a scroll
-        container, which clips both axes, so an absolutely positioned preview
-        inside it would be cut off. Fixed positioning against the hovered
-        row's viewport rect escapes the clip entirely.
-      -->
+      <!-- Hover preview (mouse only). Fixed position so the scrolling list can't clip it. -->
       @if (preview(); as p) {
-        <div
-          class="preview-container"
-          [style.left.px]="p.left"
-          [style.top.px]="p.top"
-          [style.bottom.px]="p.bottom"
-        >
+        <div class="preview-container" [style.left.px]="p.left" [style.top.px]="p.top" [style.bottom.px]="p.bottom">
           <app-opening-preview [opening]="p.opening" [name]="formatDisplayName(p.opening)" />
         </div>
       }
 
-      <button
-        type="button"
-        class="start-button"
-        [disabled]="selectedIds().size === 0"
-        (click)="onStart()"
-      >
-        Start practicing ({{ selectedIds().size }})
+      @if (tapped(); as o) {
+        <ui-modal size="sm" (closed)="tapped.set(null)">
+          <app-opening-preview [opening]="o" [name]="formatDisplayName(o)" />
+          <button type="button" class="ui-btn block" [class.primary]="!isSelected(o.id)" (click)="toggle(o.id); tapped.set(null)">
+            {{ isSelected(o.id) ? 'Remove from practice' : 'Add to practice' }}
+          </button>
+        </ui-modal>
+      }
+
+      <button type="button" class="ui-btn primary big block start" [disabled]="selectedIds().size === 0" (click)="onStart()">
+        Practice {{ selectedIds().size || '' }} {{ selectedIds().size === 1 ? 'opening' : 'openings' }}
       </button>
     </div>
   `,
@@ -171,6 +117,17 @@ export class OpeningPickerComponent implements OnInit {
   readonly searchTerm = signal('');
   readonly selectedIds = signal<Set<string>>(new Set());
   readonly preview = signal<PreviewAnchor | null>(null);
+  /** Preview opened with the button (works on touch too). */
+  readonly tapped = signal<Opening | null>(null);
+  readonly tabs: SegmentOption<'popular' | 'search'>[] = [
+    { value: 'popular', label: 'Popular' },
+    { value: 'search', label: 'Search all' },
+  ];
+
+  openPreview(o: Opening): void {
+    this.hidePreview();
+    this.tapped.set(o);
+  }
 
   readonly visibleOpenings = computed<Opening[]>(() => {
     if (this.tab() === 'popular') return buildNotableOpenings(this.library.openings());

@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { SegmentOption, SegmentedComponent } from '../../../shared/ui';
 import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
 import { BotReplyMode } from '../../services/opening-drill.service';
 
@@ -16,86 +17,45 @@ export interface PlayConfig {
 @Component({
   selector: 'app-drill-mode-select',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, SegmentedComponent],
   template: `
     <div class="mode-select">
-      <h2 class="heading">{{ practiceCount }} opening{{ practiceCount === 1 ? '' : 's' }} ready</h2>
+      <p class="ui-kicker">{{ practiceCount }} {{ practiceCount === 1 ? 'opening' : 'openings' }} picked</p>
+      <ui-segmented label="Practice type" [options]="tabs" [value]="tab()" (valueChange)="tab.set($event)" />
 
-      <div class="tabs" role="tablist">
-        <button
-          type="button"
-          role="tab"
-          class="tab"
-          [class.active]="tab() === 'play'"
-          (click)="tab.set('play')"
-        >
-          ♟ Play it
-        </button>
-        <button
-          type="button"
-          role="tab"
-          class="tab"
-          [class.active]="tab() === 'quiz'"
-          (click)="tab.set('quiz')"
-        >
-          🔎 Name it
-        </button>
-      </div>
-
-      @if (tab() === 'play') {
-        <p class="hint">
-          Play the opening out on the board against a bot. You'll play whichever side the
-          opening belongs to.
-        </p>
-
-        <div class="option-group">
-          <span class="option-label">Opponent replies</span>
-          <div class="option-row">
-            <button
-              type="button"
-              class="option-button"
-              [class.active]="botReplyMode() === 'predefined'"
-              (click)="botReplyMode.set('predefined')"
-            >
-              📖 Book moves
-            </button>
-            <button
-              type="button"
-              class="option-button"
-              [class.active]="botReplyMode() === 'free'"
-              (click)="botReplyMode.set('free')"
-            >
-              🤖 Free (Stockfish)
-            </button>
-          </div>
-          <p class="option-desc">
+      <div class="ui-panel card">
+        @if (tab() === 'play') {
+          <p>Play the opening on the board against a bot. You play the side the opening belongs to.</p>
+          <p class="label">The bot plays</p>
+          <ui-segmented label="Bot replies" [options]="replyModes" [value]="botReplyMode()" (valueChange)="botReplyMode.set($event)" />
+          <p class="ui-muted small">
             @if (botReplyMode() === 'predefined') {
-              The opponent always plays the opening's known moves — a pure memory drill.
+              The book moves of the opening, every time. Good for learning it by heart.
             } @else {
-              The opponent plays real moves via Stockfish — tests whether you really know the line.
+              Its own moves (Stockfish). Shows whether you know the ideas, not just the moves.
             }
           </p>
-        </div>
+          <button type="button" class="ui-btn primary big block" (click)="startPlay()">Start</button>
+        } @else {
+          <p>You see the moves of an opening. Find its name among the {{ practiceCount }} you picked.</p>
+          <button type="button" class="ui-btn primary big block" (click)="quizChosen.emit()">Start</button>
+        }
+      </div>
 
-        <button type="button" class="start-button" (click)="startPlay()">
-          Start playing
-        </button>
-      } @else {
-        <p class="hint">
-          You'll see an opening's moves and search for its name among the
-          {{ practiceCount }} openings you picked.
-        </p>
-        <button type="button" class="start-button" (click)="quizChosen.emit()">
-          Start quiz
-        </button>
-      }
-
-      <button type="button" class="back-button" (click)="back.emit()">← Change openings</button>
+      <button type="button" class="ui-btn ghost back" (click)="back.emit()">← Pick other openings</button>
     </div>
   `,
   styleUrl: './drill-mode-select.component.scss',
 })
 export class DrillModeSelectComponent {
+  readonly tabs: SegmentOption<'play' | 'quiz'>[] = [
+    { value: 'play', label: 'Play it' },
+    { value: 'quiz', label: 'Name it' },
+  ];
+  readonly replyModes: SegmentOption<'predefined' | 'free'>[] = [
+    { value: 'predefined', label: 'Book moves' },
+    { value: 'free', label: 'Its own moves' },
+  ];
   @Input() practiceCount = 0;
   @Output() playChosen = new EventEmitter<PlayConfig>();
   @Output() quizChosen = new EventEmitter<void>();

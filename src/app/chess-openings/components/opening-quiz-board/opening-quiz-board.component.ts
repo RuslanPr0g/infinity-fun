@@ -28,93 +28,61 @@ interface CandidateRow {
   imports: [CommonModule, FormsModule, ChessBoardComponent, ChessPieceComponent],
   template: `
     @if (quiz.finished()) {
-      <div class="summary">
-        <h2 class="summary-title">Quiz complete!</h2>
-        <p class="summary-score">{{ quiz.score() }} / {{ quiz.answered() }} correct</p>
-        <button type="button" class="exit-button" (click)="exit.emit()">Done</button>
+      <div class="summary ui-panel">
+        <p class="ui-kicker">Quiz done</p>
+        <p class="big">{{ quiz.score() }} / {{ quiz.answered() }}</p>
+        <p class="ui-muted">named right</p>
+        <button type="button" class="ui-btn primary big block" (click)="exit.emit()">Done</button>
       </div>
     } @else {
       <div class="quiz">
-        <div class="top-bar">
-          <span class="progress">
-            {{ quiz.currentIndex() + 1 }} / {{ quiz.practiceSet().length }}
-          </span>
-          <span class="score">{{ quiz.score() }} / {{ quiz.answered() }}</span>
-          <button type="button" class="exit-button" (click)="exit.emit()">Exit</button>
+        <div class="top">
+          <span class="ui-muted">{{ quiz.currentIndex() + 1 }} of {{ quiz.practiceSet().length }} · {{ quiz.score() }} right</span>
+          <button type="button" class="ui-btn ghost small" (click)="exit.emit()">Stop</button>
         </div>
 
-        <p class="hint">What opening is this?</p>
+        <p class="ui-kicker">Which opening is this?</p>
 
         <div class="board-wrap">
-          <app-chess-board
-            [board]="currentBoard()"
-            perspective="white"
-            [selectedSquare]="null"
-            [targetSquares]="[]"
-            (squareTapped)="noop()"
-          />
+          <app-chess-board [board]="currentBoard()" perspective="white" [selectedSquare]="null" [targetSquares]="[]" (squareTapped)="noop()" />
         </div>
 
         <div class="move-log">
           @for (san of quiz.revealedMoves(); track $index) {
-            <span class="move-token">
-              @if ($index % 2 === 0) {
-                <span class="move-number">{{ $index / 2 + 1 }}.</span>
-              }
-              {{ san }}
-            </span>
+            <span>@if ($index % 2 === 0) { <i>{{ $index / 2 + 1 }}.</i> }{{ san }}</span>
           }
         </div>
 
-        @if (quiz.canRevealMore() && quiz.lastResult() === null) {
-          <button type="button" class="reveal-button" (click)="onRevealNextMove()">
-            Reveal next move
-          </button>
-        }
-
         @if (quiz.lastResult() === null) {
-          <input
-            class="search-input"
-            type="text"
-            placeholder="Search opening name…"
-            [ngModel]="searchTerm()"
-            (ngModelChange)="searchTerm.set($event)"
-          />
+          @if (quiz.canRevealMore()) {
+            <button type="button" class="ui-btn small reveal" (click)="onRevealNextMove()">Show one more move</button>
+          }
+          <input class="ui-input" type="search" placeholder="Search the openings you picked" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)" />
           <ul class="candidate-list">
             @for (row of candidateRows(); track row.opening.id) {
               <li>
-                <button type="button" class="candidate-button" (click)="guess(row.opening.id)">
+                <button type="button" class="candidate" (click)="guess(row.opening.id)">
                   <span class="eco">{{ row.opening.eco }}</span>
                   <span class="name-block">
                     <span class="name">{{ row.display.title }}</span>
-                    @if (row.display.variation) {
-                      <span class="variation">{{ row.display.variation }}</span>
-                    }
-                    @if (row.display.moveLine) {
-                      <span class="move-line">{{ row.display.moveLine }}</span>
-                    }
+                    @if (row.display.variation) { <span class="variation">{{ row.display.variation }}</span> }
                   </span>
                 </button>
               </li>
             }
           </ul>
-
-          <button type="button" class="skip-button" (click)="quiz.skip()">Not sure — skip</button>
+          <button type="button" class="ui-btn ghost small" (click)="quiz.skip()">Not sure, skip</button>
         } @else {
-          <div class="feedback" [class.correct]="quiz.lastResult() === 'correct'">
-            @switch (quiz.lastResult()) {
-              @case ('correct') {
-                <p class="feedback-line">✅ Correct — {{ currentName() }}</p>
+          <div class="feedback ui-panel" [class.ok]="quiz.lastResult() === 'correct'">
+            <p>
+              @switch (quiz.lastResult()) {
+                @case ('correct') { Right: <b>{{ currentName() }}</b> }
+                @case ('incorrect') { Not quite. It was <b>{{ currentName() }}</b> }
+                @case ('skipped') { Skipped. It was <b>{{ currentName() }}</b> }
               }
-              @case ('incorrect') {
-                <p class="feedback-line">❌ It was {{ currentName() }}</p>
-              }
-              @case ('skipped') {
-                <p class="feedback-line">⏭ Skipped — it was {{ currentName() }}</p>
-              }
-            }
+            </p>
           </div>
-          <button type="button" class="next-button" (click)="onNext()">Next</button>
+          <button type="button" class="ui-btn primary big block" (click)="onNext()">Next</button>
         }
       </div>
     }

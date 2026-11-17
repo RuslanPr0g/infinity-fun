@@ -14,12 +14,10 @@ import { Board } from '../../../chess/engine/core/board';
   standalone: true,
   imports: [ChessBoardComponent],
   template: `
-    <div class="preview-popup">
-      <div class="board-wrap">
-        <app-chess-board [board]="board()" perspective="white" />
-      </div>
-      <p class="preview-name">{{ name }}</p>
-      <p class="preview-moves">{{ movesLine() }}</p>
+    <div class="preview">
+      <div class="board-wrap"><app-chess-board [board]="board()" perspective="white" /></div>
+      <p class="name">{{ name }}</p>
+      <p class="moves">{{ movesLine() }}</p>
     </div>
   `,
   styleUrl: './opening-preview.component.scss',

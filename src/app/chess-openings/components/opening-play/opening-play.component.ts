@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, computed, inject, signal } from '@angular/core';
 import { ChessBoardComponent } from '../../../chess/components/board/chess-board.component';
 import { ChessPieceComponent } from '../../../chess/components/piece/chess-piece.component';
+import { UiModalComponent } from '../../../shared/ui';
 import { StockfishLoaderComponent } from '../../../chess/components/stockfish-loader/stockfish-loader.component';
 import { PieceColor, Square, opponentOf } from '../../../chess/engine/core/board';
 import { hasBookMoveFor, openingSide } from '../../models/opening-side';
@@ -20,75 +21,63 @@ import { PlayConfig } from '../drill-mode-select/drill-mode-select.component';
 @Component({
   selector: 'app-opening-play',
   standalone: true,
-  imports: [CommonModule, ChessBoardComponent, ChessPieceComponent, StockfishLoaderComponent],
+  imports: [CommonModule, ChessBoardComponent, ChessPieceComponent, StockfishLoaderComponent, UiModalComponent],
   template: `
     @if (showLoader()) {
       <app-stockfish-loader (ready)="onLoaderReady()" />
     } @else {
       <div class="play">
-        <div class="top-bar">
-          <span class="progress">Opening {{ currentIndex() + 1 }} / {{ openings.length }}</span>
-          <button type="button" class="exit-button" (click)="exit.emit()">Exit</button>
+        <div class="top">
+          <span class="ui-muted">Opening {{ currentIndex() + 1 }} of {{ openings.length }}</span>
+          <button type="button" class="ui-btn ghost small" (click)="exit.emit()">Stop</button>
         </div>
 
-        <h2 class="opening-name">{{ currentDisplay()?.title }}</h2>
-        @if (currentDisplay()?.variation) {
-          <p class="opening-variation">{{ currentDisplay()?.variation }}</p>
-        }
-        <p class="opening-eco">{{ currentOpening()?.eco }}</p>
-        <p class="side-note">
+        <div class="head">
+          <h2>{{ currentDisplay()?.title }}</h2>
+          <p class="ui-muted">
+            @if (currentDisplay()?.variation) { {{ currentDisplay()?.variation }} · }{{ currentOpening()?.eco }}
+          </p>
+        </div>
+
+        <div class="board-wrap">
+          <app-chess-board [board]="drill.board()" [perspective]="drill.humanColorInUse()" [selectedSquare]="selectedSquare()"
+            [targetSquares]="targetSquares()" (squareTapped)="onSquareTapped($event)" />
+        </div>
+
+        <p class="status">{{ statusText() }}</p>
+
+        <p class="side ui-muted">
           @if (sideForced()) {
-            This opening only has book moves for {{ drill.humanColorInUse() }} — you're playing
-            {{ drill.humanColorInUse() | titlecase }}.
+            You play {{ drill.humanColorInUse() }}: the book only has moves for that side.
           } @else {
-            Playing as {{ drill.humanColorInUse() | titlecase }}
-            <button type="button" class="flip-button" (click)="onFlipSide()">
-              ⇄ Play the other side
-            </button>
+            You play {{ drill.humanColorInUse() }}.
+            <button type="button" class="ui-btn ghost small" (click)="onFlipSide()">Switch sides</button>
           }
         </p>
 
-        <div class="board-wrap">
-          <app-chess-board
-            [board]="drill.board()"
-            [perspective]="drill.humanColorInUse()"
-            [selectedSquare]="selectedSquare()"
-            [targetSquares]="targetSquares()"
-            (squareTapped)="onSquareTapped($event)"
-          />
-        </div>
-
-        <p class="status-line">{{ statusText() }}</p>
-
-        <div class="move-log">
-          @for (san of drill.moveHistory(); track $index) {
-            <span class="move-token">{{ san }}</span>
-          }
-        </div>
+        @if (drill.moveHistory().length) {
+          <div class="move-log">
+            @for (san of drill.moveHistory(); track $index) {
+              <span>@if ($index % 2 === 0) { <i>{{ $index / 2 + 1 }}.</i> }{{ san }}</span>
+            }
+          </div>
+        }
 
         @if (promptVisible()) {
-          <div class="prompt-overlay">
-            <div class="prompt-card">
-              <p class="prompt-title">{{ promptTitle() }}</p>
-              <p class="prompt-desc">{{ promptDesc() }}</p>
-              <div class="prompt-actions">
-                @if (drill.phase() !== 'game-over') {
-                  <button type="button" class="prompt-button continue" (click)="onContinueFreeplay()">
-                    Continue playing
-                  </button>
-                }
-                @if (!isLastOpening()) {
-                  <button type="button" class="prompt-button next" (click)="onNextOpening()">
-                    Next opening
-                  </button>
-                } @else {
-                  <button type="button" class="prompt-button next" (click)="exit.emit()">
-                    Finish
-                  </button>
-                }
-              </div>
+          <ui-modal size="sm" [closable]="false">
+            <p class="prompt-title">{{ promptTitle() }}</p>
+            <p class="ui-muted prompt-desc">{{ promptDesc() }}</p>
+            <div class="prompt-actions">
+              @if (drill.phase() !== 'game-over') {
+                <button type="button" class="ui-btn" (click)="onContinueFreeplay()">Keep playing</button>
+              }
+              @if (!isLastOpening()) {
+                <button type="button" class="ui-btn primary" (click)="onNextOpening()">Next opening</button>
+              } @else {
+                <button type="button" class="ui-btn primary" (click)="exit.emit()">Finish</button>
+              }
             </div>
-          </div>
+          </ui-modal>
         }
       </div>
     }
@@ -146,18 +135,18 @@ export class OpeningPlayComponent implements OnInit, OnDestroy {
   });
 
   readonly statusText = computed<string>(() => {
-    if (this.drill.thinking()) return 'Opponent is thinking…';
+    if (this.drill.thinking()) return 'The bot is thinking…';
     switch (this.drill.phase()) {
       case 'deviated':
-        return 'Off the known line.';
+        return 'That move leaves the book line.';
       case 'line-complete':
-        return 'Opening complete!';
+        return 'You played the whole opening.';
       case 'game-over':
         return 'Game over.';
       case 'freeplay':
-        return this.drill.isHumanTurn ? 'Your move' : "Opponent's move";
+        return this.drill.isHumanTurn ? 'Your move' : 'Bot’s move';
       default:
-        return this.drill.isHumanTurn ? 'Your move' : "Opponent's move";
+        return this.drill.isHumanTurn ? 'Your move' : 'Bot’s move';
     }
   });
 
@@ -217,11 +206,11 @@ export class OpeningPlayComponent implements OnInit, OnDestroy {
   promptTitle(): string {
     switch (this.drill.phase()) {
       case 'line-complete':
-        return '✅ Opening complete!';
+        return 'Opening done';
       case 'deviated':
-        return '📍 Off the book line';
+        return 'Off the book line';
       case 'game-over':
-        return '🏁 Game over';
+        return 'Game over';
       default:
         return '';
     }
@@ -230,11 +219,11 @@ export class OpeningPlayComponent implements OnInit, OnDestroy {
   promptDesc(): string {
     switch (this.drill.phase()) {
       case 'line-complete':
-        return "You've played every move of this opening. Keep playing the position out, or move on.";
+        return 'You played every move of this opening. Play on from here, or go to the next one.';
       case 'deviated':
-        return 'The last move played a different line than the known theory. Keep playing this position, or move on.';
+        return 'The last move isn’t part of this opening. Play on from here, or go to the next one.';
       case 'game-over':
-        return 'The game has ended.';
+        return 'The game is over.';
       default:
         return '';
     }

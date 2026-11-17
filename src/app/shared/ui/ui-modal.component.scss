@@ -42,8 +42,10 @@
 
 .x {
   position: absolute;
+  z-index: 2;
   top: 10px;
   right: 10px;
+  background: rgba(13, 19, 36, 0.85);
   color: var(--muted);
 }
 

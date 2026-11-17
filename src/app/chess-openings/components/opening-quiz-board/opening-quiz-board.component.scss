@@ -1,271 +1,61 @@
-@use '../../../../_colors' as colors;
+@use 'tokens' as t;
 
-.quiz,
-.summary {
-  max-width: 520px;
-  margin: 0 auto;
-  padding: 1rem 1rem 2rem;
-  color: colors.$primary-text-color;
-}
-
-.top-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-}
-
-.progress,
-.score {
-  font-size: 0.75rem;
-  opacity: 0.55;
-  font-weight: 600;
-}
-
-.exit-button {
-  border: none;
-  background: transparent;
-  color: colors.$primary-text-color;
-  opacity: 0.6;
-  font-size: 0.8rem;
-  cursor: pointer;
-
-  &:hover {
-    opacity: 0.9;
-  }
-}
-
-.hint {
-  text-align: center;
-  font-size: 0.85rem;
-  opacity: 0.6;
-  margin: 0 0 1rem;
-}
-
-.board-wrap {
-  max-width: 480px;
-  margin: 0 auto 1.5rem;
-  animation: slideInUp 0.4s ease-out;
-}
-
-@keyframes slideInUp {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
+.quiz { display: flex; flex-direction: column; gap: 12px; }
+.top { display: flex; align-items: center; justify-content: space-between; font-size: 14px; }
+.board-wrap { width: min(100%, 420px, calc(100dvh - 380px)); min-width: 240px; margin: 0 auto; }
 .move-log {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem 0.6rem;
   justify-content: center;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  border: 2px solid rgba(colors.$primary-text-color, 0.1);
+  gap: 4px 10px;
+  min-height: 42px;
+  padding: 10px 12px;
   border-radius: 12px;
-  min-height: 2.4rem;
-}
-
-.move-token {
-  font-size: 0.9rem;
+  background: var(--card);
+  border: 1px solid var(--line);
+  font-size: 15px;
   font-weight: 600;
+  i { font-style: normal; color: var(--muted); margin-right: 2px; }
 }
-
-.move-number {
-  opacity: 0.4;
-  margin-right: 0.15rem;
-}
-
-.reveal-button {
-  display: block;
-  width: 100%;
-  padding: 0.6rem;
-  margin-bottom: 1rem;
-  border: 2px dashed rgba(colors.$color-opening-trainer, 0.4);
-  border-radius: 10px;
-  background: transparent;
-  color: colors.$color-opening-trainer;
-  font-size: 0.82rem;
-  cursor: pointer;
-
-  &:hover {
-    background: rgba(colors.$color-opening-trainer, 0.08);
-  }
-}
-
-.search-input {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border: 2px solid rgba(colors.$primary-text-color, 0.12);
-  border-radius: 10px;
-  background: rgba(colors.$primary-text-color, 0.04);
-  color: colors.$primary-text-color;
-  font-size: 0.9rem;
-  margin-bottom: 0.75rem;
-  box-sizing: border-box;
-
-  &:focus {
-    outline: none;
-    border-color: colors.$color-opening-trainer;
-  }
-}
-
-.candidate-list {
-  list-style: none;
-  margin: 0 0 1rem;
-  padding: 0;
-}
-
-.candidate-button {
+.reveal { align-self: center; }
+.candidate-list { list-style: none; display: flex; flex-direction: column; gap: 6px; max-height: 40dvh; overflow-y: auto; }
+.candidate {
+  appearance: none;
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 12px;
   width: 100%;
-  padding: 0.6rem 0.85rem;
-  margin-bottom: 0.4rem;
-  border: 2px solid rgba(colors.$primary-text-color, 0.1);
+  min-height: 48px;
+  padding: 8px 14px;
   border-radius: 10px;
-  background: rgba(colors.$primary-text-color, 0.03);
-  color: colors.$primary-text-color;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--text);
   text-align: left;
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
-
-  &:hover {
-    border-color: colors.$color-opening-trainer;
-    background: rgba(colors.$color-opening-trainer, 0.08);
-  }
-
-  .eco {
-    font-size: 0.7rem;
-    font-weight: 700;
-    opacity: 0.5;
-  }
-
-  .name-block {
-    display: flex;
-    flex-direction: column;
-    gap: 0.1rem;
-    min-width: 0;
-    text-align: left;
-  }
-
-  .name {
-    font-size: 0.85rem;
-  }
-
-  .variation {
-    font-size: 0.74rem;
-    opacity: 0.72;
-  }
-
-  // Only rendered for entries the dataset names identically to another one.
-  .move-line {
-    font-size: 0.66rem;
-    opacity: 0.45;
-  }
+  &:hover, &:focus-visible { border-color: var(--accent); background: var(--accent-soft); outline: none; }
 }
-
-.skip-button {
-  display: block;
-  width: 100%;
-  padding: 0.7rem;
-  border: none;
-  background: transparent;
-  color: colors.$primary-text-color;
-  opacity: 0.55;
-  font-size: 0.82rem;
-  cursor: pointer;
-
-  &:hover {
-    opacity: 0.85;
-  }
-}
-
+.eco { flex: none; width: 36px; font-size: 12px; font-weight: 700; color: var(--muted); }
+.name-block { display: flex; flex-direction: column; }
+.name { font-weight: 600; }
+.variation { font-size: 13px; color: var(--muted); }
 .feedback {
-  text-align: center;
-  padding: 1rem;
-  border-radius: 12px;
-  background: rgba(#ef4444, 0.1);
-  margin-bottom: 1rem;
-
-  &.correct {
-    background: rgba(colors.$color-opening-trainer, 0.12);
-  }
+  padding: 14px;
+  border-color: rgba(t.$danger, 0.5);
+  &.ok { border-color: rgba(t.$ok, 0.6); }
 }
+.summary { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 28px 20px; }
+.big { font-size: 56px; font-weight: 800; color: var(--accent); line-height: 1; }
 
-.feedback-line {
-  margin: 0;
-  font-size: 0.95rem;
-  font-weight: 600;
-}
-
-.next-button {
-  width: 100%;
-  padding: 0.85rem;
-  border: none;
-  border-radius: 10px;
-  background: colors.$color-opening-trainer;
-  color: #1c0a2e;
-  font-size: 0.9rem;
-  font-weight: 700;
-  cursor: pointer;
-
-  &:hover {
-    opacity: 0.9;
+// Short and wide (phone on its side): board on the left, everything else on the right.
+@media (min-aspect-ratio: 4/3) and (max-height: 560px) {
+  .quiz {
+    display: grid;
+    grid-template-columns: min(46vw, calc(100dvh - 90px)) 1fr;
+    grid-auto-rows: min-content;
+    column-gap: 18px;
+    align-items: start;
   }
-}
-
-.summary {
-  text-align: center;
-  padding-top: 3rem;
-}
-
-.summary-title {
-  font-size: 1.3rem;
-  font-weight: 800;
-  margin: 0 0 0.5rem;
-}
-
-.summary-score {
-  font-size: 1.1rem;
-  opacity: 0.75;
-  margin: 0 0 1.5rem;
-}
-
-// ── Phones ────────────────────────────────────────────────────────────────────
-// 16px input text stops iOS Safari zooming on focus; slimmer side padding
-// gives the board more width; text buttons get a finger-sized hit area.
-@media (max-width: 480px) {
-  .quiz,
-  .summary {
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
-  }
-
-  .top-bar {
-    gap: 0.5rem;
-  }
-
-  .exit-button {
-    min-height: 40px;
-    min-width: 44px;
-    padding: 0 0.5rem;
-  }
-
-  .search-input {
-    font-size: 16px;
-  }
-
-  .reveal-button,
-  .skip-button,
-  .candidate-button,
-  .next-button {
-    min-height: 44px;
-  }
+  .board-wrap { grid-column: 1; grid-row: 1 / span 12; width: 100%; min-width: 0; }
+  .quiz > :not(.board-wrap) { grid-column: 2; }
 }
