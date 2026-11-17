@@ -1,0 +1,72 @@
+:host { display: block; }
+svg { display: block; width: 100%; height: 100%; }
+
+.fill { fill: currentColor; }
+.fill-soft { fill: currentColor; fill-opacity: 0.85; }
+.white { fill: #fff; fill-opacity: 0.9; }
+.red { fill: #ff4d6d; }
+.stroke { stroke: currentColor; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.stroke rect { fill: currentColor; fill-opacity: 0.18; }
+.stroke.thin, .thin { stroke-width: 1.2; stroke-opacity: 0.6; }
+.frame { stroke-width: 2.5; }
+.dash { stroke: #fff; stroke-opacity: 0.2; stroke-dasharray: 4 4; }
+.dash2 { stroke-dasharray: 3 3; }
+.bullet { stroke: #fff; stroke-width: 1.5; stroke-dasharray: 10 6; }
+
+.sq { fill: currentColor; fill-opacity: 0.22; }
+.burn { fill: #ff7a3d; fill-opacity: 0.45; }
+.glyph { fill: #fff; text-anchor: middle; font-family: 'DejaVu Sans', 'Segoe UI Symbol', serif; }
+.big { font-size: 46px; fill: currentColor; }
+.small { font-size: 22px; }
+.tiny { font-size: 13px; }
+.white-t { fill: #fff; fill-opacity: 0.85; }
+.arrow { stroke: currentColor; stroke-width: 4; stroke-linecap: round; fill: none; }
+.faint { stroke-opacity: 0.35; }
+.label { fill: #fff; font-size: 11px; font-weight: 700; font-family: inherit; }
+.faint-t { fill-opacity: 0.4; }
+
+.tile { stroke: rgba(255, 255, 255, 0.15); }
+.t0 { fill: currentColor; }
+.t1 { fill: #6b7280; fill-opacity: 0.6; }
+.t2 { fill: #a3a3a3; fill-opacity: 0.25; }
+
+.grid { stroke: #fff; stroke-opacity: 0.12; stroke-width: 0.6; }
+.heat { fill: currentColor; }
+.ship { fill: #fff; fill-opacity: 0.85; }
+.hit { stroke: #ff4d6d; stroke-width: 2.5; stroke-linecap: round; }
+
+.el { fill: rgba(255, 255, 255, 0.06); stroke: currentColor; stroke-opacity: 0.6; }
+.el.hi { fill: currentColor; fill-opacity: 0.35; stroke-opacity: 1; }
+.num { fill: #fff; fill-opacity: 0.6; font-size: 6px; }
+.sym { fill: #fff; font-size: 14px; font-weight: 700; text-anchor: middle; }
+
+.page { fill: rgba(255, 255, 255, 0.08); stroke: currentColor; stroke-width: 1.5; }
+.q { fill: #fff; font-size: 40px; font-weight: 800; text-anchor: middle; }
+
+.cookie { fill: currentColor; fill-opacity: 0.75; }
+.bg-cut { fill: #0b0c1e; }
+.chip { fill: #1b1240; fill-opacity: 0.8; }
+.pill { fill: #fff; fill-opacity: 0.1; stroke: currentColor; }
+.pill-t { fill: #fff; font-size: 10px; font-weight: 700; text-anchor: middle; }
+.pole { stroke: #fff; stroke-opacity: 0.6; stroke-width: 2; }
+
+.box { fill: rgba(255, 255, 255, 0.06); stroke: currentColor; stroke-width: 2; filter: brightness(2.2); }
+.expr { fill: #fff; font-size: 18px; font-weight: 800; text-anchor: middle; }
+.cmp { fill: currentColor; font-size: 28px; font-weight: 800; text-anchor: middle; filter: brightness(2.2); }
+
+.ring { fill: none; stroke: currentColor; stroke-width: 5; }
+.r1 { stroke-opacity: 0.3; }
+.r2 { stroke-opacity: 0.6; }
+.r3 { stroke-opacity: 1; }
+.cursor { fill: #fff; stroke: #0b0c1e; stroke-width: 1.5; }
+.spark { stroke: #fff; stroke-opacity: 0.6; stroke-width: 2; stroke-linecap: round; }
+
+.m { fill: #fff; fill-opacity: 0.12; }
+.m.used { fill: currentColor; fill-opacity: 0.85; }
+
+.sand { stroke: currentColor; stroke-width: 1.5; stroke-dasharray: 2 3; }
+.digits { fill: #fff; fill-opacity: 0.5; font-size: 16px; font-weight: 800; text-anchor: middle; }
+
+.track { fill: none; stroke: #fff; stroke-opacity: 0.1; stroke-width: 6; }
+.timer { fill: none; stroke: currentColor; stroke-width: 6; stroke-linecap: round; stroke-dasharray: 140 189; transform: rotate(-90deg); transform-origin: 80px 50px; }
+.op { fill: currentColor; fill-opacity: 0.7; font-size: 22px; font-weight: 800; text-anchor: middle; }

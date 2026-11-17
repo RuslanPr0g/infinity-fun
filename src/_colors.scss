@@ -19,6 +19,7 @@ $color-unusual-chess: #14b8a6;
 $color-opening-trainer: #a855f7;
 $color-chessle: #eab308;
 $color-klotski: #84cc16;
+$color-figure-battle: #3ec5ff;
 
 @function lighten-color($color, $amount: 0.15) {
   @return mix($color, white, 100% - ($amount * 100%));

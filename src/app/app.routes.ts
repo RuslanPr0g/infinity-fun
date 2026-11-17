@@ -14,6 +14,7 @@ import { ChessGameComponent } from './chess/chess-game.component';
 import { ChessOpeningsGameComponent } from './chess-openings/chess-openings-game.component';
 import { ChessleGameComponent } from './chessle/chessle-game.component';
 import { KlotskiGameComponent } from './klotski/klotski-game.component';
+import { FigureBattleGameComponent } from './figure-battle/figure-battle-game.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -32,5 +33,6 @@ export const routes: Routes = [
   { path: 'chess-openings', component: ChessOpeningsGameComponent },
   { path: 'chessle', component: ChessleGameComponent },
   { path: 'klotski', component: KlotskiGameComponent },
+  { path: 'figure-battle', component: FigureBattleGameComponent },
   { path: '**', redirectTo: '' },
 ];

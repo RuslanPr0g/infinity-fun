@@ -12,4 +12,6 @@ export class LocalStorageConst {
   public static ChessleRulesSeen: string = 'ChessleRulesSeen';
 
   public static KlotskiBest: string = 'KlotskiBest';
+
+  public static RecentGames: string = 'RecentGames';
 }

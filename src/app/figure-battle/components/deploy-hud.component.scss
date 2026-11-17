@@ -1,0 +1,113 @@
+:host { display: block; padding: 10px clamp(8px, 2vw, 30px); }
+
+// ── top bar ──
+.bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  padding: 8px 14px;
+}
+.title { min-width: 120px; }
+.name { font-size: 20px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.budget {
+  width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  .val { font-size: 14px; font-weight: 600; }
+}
+.actions { display: flex; gap: 8px; }
+.start { min-width: 150px; }
+
+// ── bottom tray ──
+.tray {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+}
+.units {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex: none;
+  max-width: 100%;
+}
+.unit {
+  appearance: none;
+  position: relative;
+  flex: none;
+  width: 84px;
+  height: 96px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  color: #e6ecff;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: background-color 0.12s;
+
+  &:hover { background: rgba(255, 255, 255, 0.07); }
+  &.on { background: rgba(62, 197, 255, 0.13); border-color: #3ec5ff; box-shadow: inset 0 0 0 1px #3ec5ff; }
+  .hk { position: absolute; left: 9px; top: 6px; font-size: 10px; font-weight: 600; color: rgba(138, 150, 184, 0.8); }
+  .nm { font-size: 13px; font-weight: 600; }
+  .cost { font-size: 12px; }
+}
+.sep { align-self: stretch; width: 1px; background: rgba(255, 255, 255, 0.08); flex: none; }
+.brush {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: none;
+  .erase { align-self: flex-start; }
+}
+.info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  flex: 1;
+  .head { gap: 10px; }
+  .nm { font-size: 18px; font-weight: 800; }
+  .desc { font-size: 13px; color: rgba(230, 236, 255, 0.85); margin: 3px 0; }
+}
+
+// ── tablets / small laptops ──
+@media (max-width: 1180px) {
+  .info .desc { display: none; }
+}
+@media (max-width: 980px) {
+  .tray { flex-wrap: wrap; }
+  .sep.wide, .info { display: none; }
+}
+
+// ── phones ──
+@media (max-width: 640px), (max-height: 520px) {
+  :host { padding: 6px 8px; }
+  .bar { padding: 6px 8px; gap: 6px 8px; }
+  .lbl { display: none; }
+  .fb-kicker { font-size: 10px; }
+  .name { font-size: 15px; }
+  .back { padding: 6px 10px; }
+  .budget { width: auto; flex: 1 1 140px; order: 5; }
+  .actions .fb-btn { min-height: 34px; padding: 6px 10px; font-size: 13px; }
+  .start { min-width: 0; }
+  .tray { padding: 6px 8px; gap: 8px; flex-wrap: wrap; }
+  .units { width: 100%; }
+  .unit { width: 64px; height: 70px; border-radius: 12px; .nm { font-size: 11px; } .cost { font-size: 10px; } }
+  .sep { display: none; }
+  .brush { flex-direction: row; align-items: center; flex-wrap: wrap; .fb-kicker { display: none; } }
+}
+
+// landscape phones: put the tray beside nothing, keep it to one row
+@media (max-height: 520px) {
+  .units { width: auto; flex: 1 1 0; min-width: 0; }
+  .unit { width: 56px; height: 56px; .hk, .cost { display: none; } }
+  .brush .fb-btn.seg { min-height: 30px; padding: 4px 8px; font-size: 12px; }
+}

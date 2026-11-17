@@ -1,0 +1,50 @@
+:host { display: block; padding: 10px clamp(8px, 2vw, 30px); }
+
+.bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  padding: 8px 14px;
+}
+.title { width: 220px; min-width: 0; }
+.name { font-size: 20px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.tug {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-width: 200px;
+}
+.cnt { font-size: 18px; font-weight: 800; min-width: 2ch; text-align: center; }
+.a { color: #3ec5ff; }
+.b { color: #ff4d6d; }
+.strength {
+  position: relative;
+  flex: 0 1 440px;
+  height: 12px;
+  border-radius: 7px;
+  background: #d94160;
+}
+.left { height: 100%; width: 50%; background: #3ec5ff; border-radius: 7px 0 0 7px; }
+.mark { position: absolute; top: -3px; bottom: -3px; width: 3px; margin-left: -1.5px; left: 50%; background: #fff; border-radius: 2px; }
+
+.ctrl { display: flex; align-items: center; gap: 8px; }
+.timer { font-size: 18px; font-weight: 600; min-width: 48px; font-variant-numeric: tabular-nums; }
+.pause { min-width: 84px; }
+
+@media (max-width: 760px), (max-height: 520px) {
+  :host { padding: 6px 8px; }
+  .bar { padding: 6px 8px; gap: 6px 8px; }
+  .title { display: none; }
+  .tug { flex-basis: 100%; order: -1; gap: 10px; }
+  .ctrl { flex: 1; justify-content: space-between; }
+  .ctrl .fb-btn { min-height: 34px; font-size: 13px; padding: 6px 10px; }
+  .pause { min-width: 70px; }
+}
+@media (max-height: 520px) and (min-width: 600px) {
+  .tug { flex-basis: auto; order: 0; }
+  .ctrl { flex: none; }
+}

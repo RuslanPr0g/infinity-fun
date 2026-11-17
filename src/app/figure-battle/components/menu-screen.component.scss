@@ -1,0 +1,77 @@
+.menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+}
+
+.icons {
+  display: flex;
+  gap: clamp(8px, 2.5vw, 22px);
+  margin-bottom: 6px;
+}
+
+h1 {
+  font-size: clamp(38px, 9vw, 76px);
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  line-height: 1;
+}
+
+.sub {
+  color: #3ec5ff;
+  font-weight: 600;
+  font-size: clamp(13px, 2.6vw, 22px);
+}
+
+.tag {
+  margin: 4px 0 clamp(14px, 4vh, 34px);
+  font-size: 15px;
+}
+
+.buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: min(320px, 80vw);
+
+  .fb-btn {
+    min-height: 52px;
+    font-size: 19px;
+    text-decoration: none;
+  }
+}
+
+.money {
+  margin-top: 8px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.extras {
+  display: flex;
+  gap: 4px;
+}
+
+.foot {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  text-align: center;
+  font-size: 13px;
+  opacity: 0.7;
+}
+
+.touch { display: none; }
+
+@media (pointer: coarse) {
+  .desk { display: none; }
+  .touch { display: inline; }
+}
+
+@media (max-height: 520px) {
+  .foot { display: none; }
+  .buttons .fb-btn { min-height: 42px; font-size: 16px; }
+}

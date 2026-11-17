@@ -1,0 +1,182 @@
+// Shared look for every Figure Battle screen. Unencapsulated, so everything is scoped under .fb.
+$text: #e6ecff;
+$muted: #8a96b8;
+$accent: #3ec5ff;
+$danger: #ff4d6d;
+$gold: #ffc857;
+$heal: #7dffb0;
+
+.fb {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  overflow: hidden;
+  background: #070a14;
+  color: $text;
+  font-size: 16px;
+  line-height: 1.25;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+
+  &, & * {
+    font-family: Inter, 'Segoe UI', Roboto, Cantarell, Ubuntu, 'Noto Sans', system-ui, sans-serif;
+  }
+
+  .fb-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+
+  .fb-layout {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    pointer-events: none;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  .fb-top, .fb-bottom { flex: none; pointer-events: auto; }
+  .fb-top:empty, .fb-bottom:empty { pointer-events: none; }
+  .fb-stage { flex: 1; min-height: 0; }
+  .fb-hidden { visibility: hidden; }
+
+  // full-screen overlays
+  .fb-screen {
+    position: absolute;
+    inset: 0;
+    animation: fb-fade 0.22s ease-out;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  .fb-dim { position: absolute; inset: 0; background: rgba(4, 5, 13, var(--a, 0.6)); }
+  .fb-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    overflow-y: auto;
+  }
+
+  .fb-panel {
+    background: rgba(14, 19, 33, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 16px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+  }
+  .fb-modal {
+    position: relative;
+    background: #0d1324;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 22px;
+    box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+    padding: clamp(18px, 4vw, 30px) clamp(16px, 4vw, 36px);
+    width: 100%;
+    margin: auto;
+    animation: fb-pop 0.25s ease-out;
+  }
+  .fb-card {
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 14px;
+    padding: 12px 16px;
+  }
+
+  .fb-kicker { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: $accent; }
+  .fb-muted { color: $muted; }
+  .fb-gold { color: $gold; }
+  .fb-ok { color: $heal; }
+  .fb-danger { color: $danger; }
+  .fb-title { font-weight: 800; font-size: clamp(22px, 4vw, 34px); }
+  .fb-stats { font-size: 11px; font-weight: 600; color: $muted; white-space: pre-wrap; }
+  .fb-grow { flex: 1; min-width: 0; }
+  .fb-row { display: flex; align-items: center; gap: 12px; }
+
+  // buttons
+  .fb-btn {
+    appearance: none;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 40px;
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: #172036;
+    color: $text;
+    font-size: 15px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.12s, border-color 0.12s, transform 0.08s;
+
+    &:hover { background: #212e4e; border-color: rgba(255, 255, 255, 0.14); }
+    &:active { background: #2a3b63; transform: scale(0.98); }
+    &:disabled { opacity: 0.4; cursor: default; transform: none; }
+    &:focus-visible { outline: 2px solid $accent; outline-offset: 2px; }
+
+    &.primary {
+      background: $accent;
+      color: #04121c;
+      border-color: transparent;
+      &:hover { background: #6fd4ff; }
+      &:active { background: #35a8d9; }
+    }
+    &.ghost {
+      background: transparent;
+      border-color: transparent;
+      &:hover { background: rgba(255, 255, 255, 0.07); }
+      &:active { background: rgba(255, 255, 255, 0.12); }
+    }
+    &.danger {
+      background: rgba($danger, 0.14);
+      border-color: rgba($danger, 0.35);
+      color: #ff8399;
+      &:hover { background: rgba($danger, 0.24); }
+    }
+    &.seg {
+      min-height: 34px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.03);
+      border-color: rgba(255, 255, 255, 0.06);
+      font-size: 13px;
+      &:hover { background: rgba(255, 255, 255, 0.08); }
+      &.on { background: rgba($accent, 0.2); border-color: $accent; box-shadow: inset 0 0 0 1px $accent; }
+    }
+    &.small { min-height: 30px; font-size: 13px; padding: 4px 10px; }
+  }
+  .fb-seg { display: flex; gap: 6px; }
+
+  .fb-bar {
+    height: 8px;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.07);
+    overflow: hidden;
+    > div { height: 100%; background: $accent; border-radius: 5px; transition: width 0.15s; }
+  }
+
+  .fb-toast {
+    position: absolute;
+    left: 50%;
+    bottom: max(150px, 22vh);
+    transform: translateX(-50%);
+    max-width: calc(100% - 32px);
+    padding: 10px 18px;
+    font-size: 15px;
+    font-weight: 600;
+    text-align: center;
+    pointer-events: none;
+    opacity: 0;
+    animation: fb-toast 2.15s ease forwards;
+  }
+}
+
+@keyframes fb-fade { from { opacity: 0; } }
+@keyframes fb-pop { from { opacity: 0; transform: scale(0.96) translateY(6px); } }
+@keyframes fb-toast {
+  0% { opacity: 0; }
+  7%, 81% { opacity: 1; }
+  100% { opacity: 0; }
+}
