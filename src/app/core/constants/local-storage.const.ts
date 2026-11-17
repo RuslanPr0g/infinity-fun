@@ -9,6 +9,8 @@ export class LocalStorageConst {
 
   public static GuessDayBest: string = 'GuessDayBest';
 
+  public static PeriodicBest: string = 'PeriodicBest';
+
   public static OpeningTrainerPracticeSet: string = 'OpeningTrainerPracticeSet';
 
   public static ChessleDailyState: string = 'ChessleDailyState';

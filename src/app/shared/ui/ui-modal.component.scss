@@ -32,6 +32,7 @@
   box-shadow: t.$shadow-modal;
   padding: clamp(18px, 4vw, 30px) clamp(16px, 4vw, 32px);
   color: var(--text);
+  text-align: left;
   outline: none;
   animation: ui-pop 0.25s ease-out;
 

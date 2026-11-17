@@ -55,7 +55,7 @@ export class GameRouteService {
       route: '/periodic',
       color: '#3B82F6',
       category: 'brain',
-      description: 'Name the elements and learn the periodic table.',
+      description: 'See a symbol, name the element.',
     },
     {
       name: 'Guess Day of Week',
