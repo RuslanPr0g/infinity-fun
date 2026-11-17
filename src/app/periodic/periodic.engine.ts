@@ -38,7 +38,8 @@ export function buildOptions(answer: PeriodicElement, all: PeriodicElement[], rn
   const others = all.filter((e) => e.number !== answer.number);
   const family = shuffle(others.filter((e) => e.category === answer.category), rng);
   const rest = shuffle(others.filter((e) => e.category !== answer.category), rng);
-  const decoys = [...family.slice(0, 2), ...rest].slice(0, count - 1);
+  // Up to two from the same family, then anything else (including more of the family if needed).
+  const decoys = [...family.slice(0, 2), ...shuffle([...family.slice(2), ...rest], rng)].slice(0, count - 1);
   return shuffle([answer, ...decoys], rng);
 }
 
