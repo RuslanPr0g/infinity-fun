@@ -1,215 +1,156 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { worldCountries } from './data/worldCountries';
-import { similarCountryFlags } from './data/similarCountryFlags';
-import { Country } from './models/country.model';
-import { CountryCode } from './models/country-code.model';
-import { SoundService } from '../shared/services/sound/sound.service';
-import { LocalStorageService } from '../shared/services/local-storage/local-storage.service';
+import { Component, HostListener, OnDestroy, computed, inject, signal } from '@angular/core';
 import { LocalStorageConst } from '../core/constants/local-storage.const';
+import { LocalStorageService } from '../shared/services/local-storage/local-storage.service';
+import { SoundService } from '../shared/services/sound/sound.service';
+import { GameShellComponent, SegmentOption, SegmentedComponent, StatBarComponent } from '../shared/ui';
+import { COUNTRIES, buildOptions, flagUrl, isCorrectGuess, randomCountry } from './country-guesser.engine';
+import { Country } from './models/country.model';
+
+type Mode = 'pick' | 'type';
+type Result = { ok: boolean; picked?: Country } | null;
+
+const NEXT_DELAY_OK = 700;
+const NEXT_DELAY_BAD = 1600;
 
 @Component({
   selector: 'app-country-guesser',
   standalone: true,
-  imports: [CommonModule, FormsModule],
-  templateUrl: './country-guesser.component.html',
-  styleUrls: ['./country-guesser.component.scss'],
+  imports: [GameShellComponent, StatBarComponent, SegmentedComponent],
+  template: `
+    <app-game-shell [sound]="true" [help]="help" maxWidth="560px">
+      <ui-stat-bar [stats]="[{ label: 'Streak', value: streak(), hot: streak() > 0 && streak() >= best() }, { label: 'Best', value: best() }]" />
+
+      <div class="play">
+      <figure class="flag ui-panel" [class.ok]="result()?.ok === true" [class.bad]="result()?.ok === false">
+        <img [src]="flag()" [class.mono]="mono()" alt="Flag to guess" draggable="false" />
+      </figure>
+
+      <div class="answers">
+      @if (mode() === 'pick') {
+        <div class="options">
+          @for (c of options(); track c.code; let i = $index) {
+            <button type="button" class="ui-btn option" [class.right]="result() && c.code === country().code"
+              [class.wrong]="result()?.picked?.code === c.code && !result()?.ok" [disabled]="!!result()" (click)="answer(c)">
+              <kbd>{{ i + 1 }}</kbd><span>{{ c.name }}</span>
+            </button>
+          }
+        </div>
+      } @else {
+        <form class="typed" (submit)="$event.preventDefault(); answerTyped()">
+          <input #guess class="ui-input" [class.good]="result()?.ok === true" [class.bad]="result()?.ok === false" [value]="typed()"
+            (input)="typed.set(guess.value)" placeholder="Country name" autocomplete="off" autocapitalize="words" spellcheck="false"
+            enterkeyhint="done" aria-label="Country name" [readOnly]="!!result()" />
+          <button type="submit" class="ui-btn primary" [disabled]="!typed().trim() || !!result()">Check</button>
+        </form>
+        <p class="reveal" [class.show]="result()?.ok === false">It was <b>{{ country().name }}</b></p>
+      }
+      </div>
+      </div>
+
+      <div class="settings">
+        <ui-segmented label="Answer mode" [options]="modes" [value]="mode()" (valueChange)="setMode($event)" />
+        <button type="button" class="ui-btn seg" [class.on]="mono()" [attr.aria-pressed]="mono()" (click)="mono.set(!mono())">Black &amp; white</button>
+      </div>
+    </app-game-shell>
+  `,
+  styleUrl: './country-guesser.component.scss',
 })
-export class CountryGuesserGameComponent implements OnInit {
-  countries: Country[] = [
-    ...new Map(worldCountries.map((item) => [item.code, item])).values(),
+export class CountryGuesserGameComponent implements OnDestroy {
+  private readonly sound = inject(SoundService);
+  private readonly storage = inject(LocalStorageService);
+
+  readonly help = [
+    'Look at the flag and name the country.',
+    'Choose: pick one of five answers (keys 1 to 5 work too).',
+    'Type: write the name yourself. Case and accents don’t matter.',
+    'Black & white hides the colors, for a real challenge.',
+    'A wrong answer ends your streak and shows the right one.',
   ];
-  currentCountry?: Country;
-  userGuess: string = '';
-  guessStatus: 'success' | 'fail' | 'no guess' | null = null;
-  isMultipleChoiceMode: boolean = true;
-  isInsaneMode: boolean = false;
-  countryOptions: Country[] = [];
+  readonly modes: SegmentOption<Mode>[] = [
+    { value: 'pick', label: 'Choose' },
+    { value: 'type', label: 'Type' },
+  ];
 
-  streak: number = 0;
-  maxStreak: number = 0;
-  private readonly streakKey = LocalStorageConst.CountryGuesserStreak;
-  private readonly maxStreakKey = LocalStorageConst.CountryGuesserMaxStreak;
-  private readonly countryKey = LocalStorageConst.CountryGuesserCountry;
+  readonly mode = signal<Mode>('pick');
+  readonly mono = signal(false);
+  readonly country = signal<Country>(this.restoreCountry());
+  readonly options = signal<Country[]>(buildOptions(this.country()));
+  readonly typed = signal('');
+  readonly result = signal<Result>(null);
+  readonly streak = signal(this.storage.getItem<number>(LocalStorageConst.CountryGuesserStreak) ?? 0);
+  readonly best = signal(Math.max(this.storage.getItem<number>(LocalStorageConst.CountryGuesserMaxStreak) ?? 0, this.streak()));
 
-  constructor(
-    private soundService: SoundService,
-    private localStorageService: LocalStorageService
-  ) {}
+  readonly flag = computed(() => flagUrl(this.country()));
 
-  ngOnInit(): void {
-    const storedStreak = this.localStorageService.getItem<number>(
-      this.streakKey
-    );
-    this.streak = storedStreak !== null ? storedStreak : 0;
+  private timer?: ReturnType<typeof setTimeout>;
 
-    const storedMaxStreak = this.localStorageService.getItem<number>(
-      this.maxStreakKey
-    );
-    this.maxStreak = storedMaxStreak !== null ? storedMaxStreak : this.streak;
-
-    const storedCountry = this.localStorageService.getItem<string>(
-      this.countryKey
-    );
-    this.loadCountry(storedCountry);
+  setMode(m: Mode): void {
+    this.mode.set(m);
+    this.next();
   }
 
-  onModeChange(): void {
-    this.loadCountry();
+  answer(c: Country): void {
+    if (!this.result()) {
+      this.finish(c.code === this.country().code, c);
+    }
   }
 
-  onEnterKey(): void {
-    this.checkAnswer();
+  answerTyped(): void {
+    if (!this.result() && this.typed().trim()) {
+      this.finish(isCorrectGuess(this.typed(), this.country()));
+    }
   }
 
-  checkAnswer(): void {
-    if (!this.userGuess.trim() || !!this.guessStatus) {
+  @HostListener('document:keydown', ['$event'])
+  onKey(e: KeyboardEvent): void {
+    if (this.mode() !== 'pick' || (e.target as HTMLElement | null)?.tagName === 'INPUT') {
       return;
     }
-
-    const isCorrect = this.isGuessCorrect();
-    this.guessStatus = isCorrect ? 'success' : 'fail';
-
-    if (isCorrect) {
-      this.resetCountryToGuess();
-      return;
+    const n = Number(e.key);
+    const c = this.options()[n - 1];
+    if (c) {
+      this.answer(c);
     }
-
-    this.fail();
   }
 
-  isGuessCorrect(): boolean {
-    return (
-      this.userGuess.trim().toLowerCase() ===
-      this.currentCountry?.name?.toLowerCase()
-    );
+  ngOnDestroy(): void {
+    clearTimeout(this.timer);
   }
 
-  loadCountry(countryCode?: string | null): void {
-    const defaultCountry = this.countries.find((c) => c.code === countryCode);
-
-    if (defaultCountry) {
-      this.currentCountry = defaultCountry;
+  private finish(ok: boolean, picked?: Country): void {
+    this.result.set({ ok, picked });
+    if (ok) {
+      this.sound.playCorrect();
+      this.setStreak(this.streak() + 1);
     } else {
-      const randomIndex = Math.floor(Math.random() * this.countries.length);
-      this.currentCountry = this.countries[randomIndex];
+      this.sound.playWrong();
+      this.setStreak(0);
     }
-
-    if (this.isMultipleChoiceMode) {
-      this.loadMultipleChoiceOptions();
-    }
-
-    this.localStorageService.setItem(this.countryKey, this.currentCountry.code);
+    clearTimeout(this.timer);
+    this.timer = setTimeout(() => this.next(), ok ? NEXT_DELAY_OK : NEXT_DELAY_BAD);
   }
 
-  loadMultipleChoiceOptions(): void {
-    const shuffledCountries = [...this.countries];
-    this.countryOptions = [this.currentCountry!];
-
-    const similarCountries = this.getSimilarCountries(
-      this.currentCountry!.code
-    );
-
-    if (similarCountries) {
-      this.countryOptions = [
-        ...this.countryOptions,
-        ...this.countries.filter((x) => similarCountries.includes(x.code)),
-      ];
-    }
-
-    if (
-      this.currentCountry?.name.includes(' ') ||
-      this.currentCountry?.name.includes('-')
-    ) {
-      const countriesWithSpaceOrDash = this.countries.filter(
-        (country) => country.name.includes(' ') || country.name.includes('-')
-      );
-      this.countryOptions = [
-        ...this.countryOptions,
-        ...countriesWithSpaceOrDash
-          .filter((country) => country.name !== this.currentCountry?.name)
-          .slice(0, 2),
-      ];
-    }
-
-    const availableCountries = shuffledCountries.filter(
-      (country) => !this.countryOptions.includes(country)
-    );
-
-    while (this.countryOptions.length < 5 && availableCountries.length > 0) {
-      const randomIndex = Math.floor(Math.random() * availableCountries.length);
-      const country = availableCountries[randomIndex];
-
-      this.countryOptions.push(country);
-      availableCountries.splice(randomIndex, 1);
-    }
-
-    this.countryOptions = this.shuffleArray(this.countryOptions.slice(0, 5));
+  private next(): void {
+    clearTimeout(this.timer);
+    const c = randomCountry(Math.random, this.country());
+    this.country.set(c);
+    this.options.set(buildOptions(c));
+    this.typed.set('');
+    this.result.set(null);
+    this.storage.setItem(LocalStorageConst.CountryGuesserCountry, c.code);
   }
 
-  getSimilarCountries(countryCode: CountryCode): CountryCode[] {
-    const similarCountries = similarCountryFlags.find((group) =>
-      group.includes(countryCode)
-    );
-    return similarCountries
-      ? similarCountries.filter((code) => code !== countryCode)
-      : [];
-  }
-
-  shuffleArray(arr: Country[]): Country[] {
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
+  private setStreak(n: number): void {
+    this.streak.set(n);
+    this.storage.setItem(LocalStorageConst.CountryGuesserStreak, n);
+    if (n > this.best()) {
+      this.best.set(n);
+      this.storage.setItem(LocalStorageConst.CountryGuesserMaxStreak, n);
     }
-    return arr;
   }
 
-  checkMultipleChoiceAnswer(country: Country): void {
-    if (!!this.guessStatus) {
-      return;
-    }
-
-    const isCorrect = country.name === this.currentCountry?.name;
-    this.guessStatus = isCorrect ? 'success' : 'fail';
-
-    if (isCorrect) {
-      this.resetCountryToGuess();
-      return;
-    }
-
-    this.fail();
-  }
-
-  private resetCountryToGuess(): void {
-    this.soundService.playCorrect();
-    this.updateStreak(this.streak + 1);
-    setTimeout(() => {
-      this.loadCountry();
-      this.userGuess = '';
-      this.resetStatus();
-    }, 1000);
-  }
-
-  private resetStatus(): void {
-    this.guessStatus = null;
-  }
-
-  private fail(): void {
-    this.soundService.playWrong();
-    this.updateStreak(0);
-    setTimeout(() => {
-      this.resetStatus();
-    }, 1000);
-  }
-
-  private updateStreak(newValue: number): void {
-    if (newValue > this.maxStreak) {
-      this.maxStreak = newValue;
-      this.localStorageService.setItem(this.maxStreakKey, this.maxStreak);
-    }
-
-    this.streak = newValue;
-    this.localStorageService.setItem(this.streakKey, this.streak);
+  private restoreCountry(): Country {
+    const code = this.storage.getItem<string>(LocalStorageConst.CountryGuesserCountry);
+    return COUNTRIES.find((c) => c.code === code) ?? randomCountry();
   }
 }

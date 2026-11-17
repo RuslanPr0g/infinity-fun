@@ -1,270 +1,93 @@
-@import "../../colors";
+@use 'tokens' as t;
+@use 'breakpoints' as bp;
 
-.container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
+.play { display: flex; flex-direction: column; gap: 16px; }
+.answers { display: flex; flex-direction: column; gap: 8px; }
 
-.img {
-  display: flex;
-  justify-content: center;
+.flag {
+  position: relative;
   margin: 0 auto;
-  position: relative;
-}
+  aspect-ratio: 3 / 2;
+  // As wide as possible while staying under a third of the screen height.
+  width: min(100%, 51dvh);
+  transition: border-color 0.15s, box-shadow 0.15s;
 
-.flag-image {
-  max-width: 480px;
-  height: auto;
-  margin: 20px 0;
-  justify-self: center;
-  border: 2px solid $primary-text-color;
-  max-width: 360px;
-  min-width: 360px;
-  width: 480px;
-  max-height: 240px;
-}
-
-.green-background {
-  background: radial-gradient(
-    circle closest-side,
-    $color-country-guesser,
-    transparent
-  );
-}
-
-.red-background {
-  background: radial-gradient(
-    circle closest-side,
-    $color-months-left,
-    transparent
-  );
-}
-
-.bandw {
-  filter: grayscale(100%);
-}
-
-.guess-input {
-  padding: 10px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  max-width: 480px;
-  min-width: 480px;
-  align-self: center;
-}
-
-.check-button {
-  background-color: $color-country-guesser;
-  color: $button-text-color;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-  margin: 15px 2px;
-  max-width: 480px;
-  min-width: 480px;
-  align-self: center;
-  transition: all 0.3s ease;
-}
-
-.check-button:hover {
-  background-color: darken-color($color-country-guesser, 0.1);
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba($color-country-guesser, 0.4);
-}
-
-.mode-selector {
-  display: flex;
-  gap: 20px;
-  align-items: center;
-  flex-direction: column;
-  margin-top: 40px;
-}
-
-.mode-selector label {
-  display: flex;
-  align-items: center;
-  font-size: 16px;
-  cursor: pointer;
-  position: relative;
-}
-
-.mode-selector input[type="radio"] {
-  appearance: none;
-  -webkit-appearance: none;
-  border-radius: 50%;
-  border: 2px solid #bbb;
-  width: 18px;
-  height: 18px;
-  margin-right: 8px;
-  transition:
-    background-color 0.3s,
-    border-color 0.3s;
-}
-
-.mode-selector input[type="radio"]:checked {
-  background-color: $color-country-guesser;
-  border-color: $color-country-guesser;
-}
-
-.mode-selector input[type="radio"]:checked::before {
-  content: "";
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: white;
-  transition: background-color 0.3s;
-}
-
-.mode-selector label:hover input[type="radio"] {
-  border-color: #888;
-}
-
-label {
-  display: flex;
-  align-items: center;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-input[type="checkbox"] {
-  appearance: none;
-  -webkit-appearance: none;
-  border-radius: 4px;
-  border: 2px solid #bbb;
-  width: 20px;
-  height: 20px;
-  margin-right: 10px;
-  position: relative;
-  transition:
-    background-color 0.3s,
-    border-color 0.3s;
-}
-
-input[type="checkbox"]:checked {
-  background-color: $color-country-guesser;
-  border-color: $color-country-guesser;
-}
-
-input[type="checkbox"]:checked::before {
-  content: "";
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  width: 12px;
-  height: 12px;
-  background-color: white;
-  transition: background-color 0.3s;
-}
-
-label:hover input[type="checkbox"] {
-  border-color: #888;
-}
-
-.guess-button {
-  background: linear-gradient(
-    135deg,
-    $color-country-guesser,
-    darken-color($color-country-guesser, 0.1)
-  );
-  color: $button-text-color;
-  font-size: 16px;
-  padding: 12px 24px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition:
-    background 0.3s ease,
-    transform 0.3s ease;
-  width: 480px;
-  margin: 4px 2px;
-
-  &:hover {
-    background: linear-gradient(
-      100deg,
-      lighten-color($color-country-guesser, 0.1),
-      $color-country-guesser
-    );
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba($color-country-guesser, 0.4);
-  }
-
-  &:disabled {
-    background: #b0bec5;
-    cursor: not-allowed;
-  }
-
-  &:focus {
-    outline: none;
-    box-shadow: 0 0 5px rgba($color-country-guesser, 0.5);
-  }
-}
-
-.score {
-  margin-bottom: 15px;
-}
-
-@media (max-width: 550px) {
-  .flag-image {
-    max-width: 200px;
-  }
-
-  h1 {
-    display: none;
-  }
-
-  .guess-input,
-  .check-button,
-  .guess-button {
-    width: 237px;
-    min-width: 100px;
-    font-size: 10px;
-    line-height: 15px;
-  }
-
-  .mode-selector label {
-    font-size: 10px;
-  }
-}
-
-@media (max-width: 480px) {
-  .img {
-    max-width: 100%;
-  }
-
-  .flag-image {
-    width: 100%;
-    min-width: 0;
-    max-width: 100%;
+  img {
+    position: absolute;
+    inset: clamp(10px, 3%, 20px);
+    width: calc(100% - 2 * clamp(10px, 3%, 20px));
+    height: calc(100% - 2 * clamp(10px, 3%, 20px));
     object-fit: contain;
+    border-radius: 6px;
+    filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.5));
+    user-select: none;
+    &.mono { filter: grayscale(1) contrast(1.15) drop-shadow(0 6px 18px rgba(0, 0, 0, 0.5)); }
   }
 
-  .guess-input,
-  .check-button,
-  .guess-button {
-    width: 100%;
-    max-width: 320px;
-    min-height: 44px;
-    font-size: 14px;
-    touch-action: manipulation;
-  }
+  &.ok { border-color: t.$ok; box-shadow: 0 0 0 1px t.$ok, 0 0 40px -10px t.$ok; }
+  &.bad { border-color: t.$danger; box-shadow: 0 0 0 1px t.$danger; animation: ui-shake 0.35s; }
+}
 
-  .guess-input {
-    font-size: 16px;
+.options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+}
+.option {
+  min-height: 52px;
+  justify-content: flex-start;
+  white-space: normal;
+  text-align: left;
+  gap: 10px;
+  kbd {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    border: 1px solid var(--line-strong);
+    font: inherit;
+    font-size: 12px;
+    color: var(--muted);
   }
+  &.right { background: rgba(t.$ok, 0.16); border-color: t.$ok; color: t.$ok; opacity: 1; }
+  &.wrong { background: rgba(t.$danger, 0.16); border-color: t.$danger; color: #ff8399; opacity: 1; }
+}
 
-  .mode-selector label {
-    min-height: 40px;
-    font-size: 14px;
-  }
+.typed {
+  display: flex;
+  gap: 8px;
+  .ui-btn { min-height: t.$tap; }
+}
+.reveal {
+  min-height: 1.5em;
+  color: var(--muted);
+  visibility: hidden;
+  &.show { visibility: visible; }
+  b { color: var(--text); }
+}
 
-  .mode-selector input[type='radio'] {
-    position: relative;
-  }
+.settings {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+@include bp.phone {
+  .options { grid-template-columns: 1fr; > :last-child:nth-child(odd) { grid-column: auto; } }
+  .option { min-height: 46px; }
+}
+@include bp.touch {
+  .option kbd { display: none; }
+}
+
+// Short and wide (phone on its side): flag on the left, answers on the right.
+@media (min-aspect-ratio: 4/3) and (max-height: 560px) {
+  .play { display: grid; grid-template-columns: 1fr 1fr; align-items: center; }
+  .flag { width: 100%; }
+  .options { grid-template-columns: 1fr; > :last-child:nth-child(odd) { grid-column: auto; } }
+  .option { min-height: 44px; }
 }

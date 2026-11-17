@@ -76,7 +76,7 @@ export class GameRouteService {
       route: '/country-guesser',
       color: '#10B981',
       category: 'brain',
-      description: 'Spot the country from its flag. How long can your streak go?',
+      description: 'Guess the country from its flag. Keep your streak going.',
     },
     {
       name: 'Math Comparer',
