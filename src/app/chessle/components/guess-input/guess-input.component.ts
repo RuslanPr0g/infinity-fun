@@ -32,9 +32,9 @@ interface CandidateRow {
   template: `
     <div class="guess-input">
       <input
-        class="search-input"
+        class="ui-input"
         type="text"
-        placeholder="Type an opening name…"
+        placeholder="Type an opening, e.g. Sicilian"
         aria-label="Guess the opening"
         [ngModel]="searchTerm()"
         (ngModelChange)="searchTerm.set($event)"

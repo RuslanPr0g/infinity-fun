@@ -16,29 +16,23 @@ type Mode = 'daily' | 'free';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="result" [class.won]="status === 'won'">
-      <p class="result-line">
-        @if (status === 'won') {
-          ✅ Correct — {{ targetName }}
-        } @else {
-          ❌ Out of guesses — it was {{ targetName }}
-        }
-      </p>
+    <div class="result ui-panel" [class.won]="status === 'won'">
+      <p class="ui-kicker">{{ status === 'won' ? 'You got it' : 'Out of guesses' }}</p>
+      <p class="name">{{ targetName }}</p>
 
       @if (blurb(); as text) {
         <p class="blurb">{{ text }}</p>
       }
 
       @if (mode === 'daily') {
-        <p class="streak-line">
-          🔥 {{ stats.currentStreak }} day streak · {{ stats.wins }}/{{ stats.played }} won
-        </p>
-        <p class="countdown-line">Next puzzle in {{ countdownText }}</p>
-        <button type="button" class="again-button" (click)="playFreeMode.emit()">
-          Play Free Mode
-        </button>
+        <div class="ui-stats">
+          <div class="ui-stat"><b>{{ stats.currentStreak }}</b><span>Day streak</span></div>
+          <div class="ui-stat"><b>{{ stats.wins }}/{{ stats.played }}</b><span>Won</span></div>
+        </div>
+        <p class="ui-muted next">Next puzzle in {{ countdownText }}</p>
+        <button type="button" class="ui-btn primary block" (click)="playFreeMode.emit()">Keep playing (free play)</button>
       } @else {
-        <button type="button" class="again-button" (click)="playAgain.emit()">Play again</button>
+        <button type="button" class="ui-btn primary block" (click)="playAgain.emit()">Play again</button>
       }
     </div>
   `,

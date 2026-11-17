@@ -41,7 +41,7 @@ export class GameRouteService {
       route: '/chessle',
       color: '#EAB308',
       category: 'strategy',
-      description: 'Wordle, but you guess a chess opening. New puzzle every day.',
+      description: 'Like Wordle, but you guess a chess opening. New one daily.',
     },
     {
       name: 'Sea Battle Matrix',

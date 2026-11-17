@@ -1,34 +1,12 @@
-@use '../../../../colors' as colors;
-
-.pips {
-  display: flex;
-  justify-content: center;
-  gap: 0.35rem;
-  margin-bottom: 1rem;
-}
-
+@use 'tokens' as t;
+.pips { display: flex; justify-content: center; gap: 6px; }
 .pip {
-  width: 0.8rem;
-  height: 0.8rem;
-  border-radius: 3px;
-  border: 2px solid rgba(colors.$primary-text-color, 0.2);
-  transition:
-    background 0.15s,
-    border-color 0.15s;
-
-  &.wrong {
-    border-color: transparent;
-    background: rgba(#ef4444, 0.7);
-  }
-
-  // Right family, wrong variation.
-  &.family {
-    border-color: transparent;
-    background: #f59e0b;
-  }
-
-  &.correct {
-    border-color: transparent;
-    background: colors.$color-chessle;
-  }
+  width: 28px;
+  height: 10px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.08);
+  transition: background-color 0.15s;
+  &.wrong { background: t.$danger; }
+  &.family { background: t.$gold; }   // right family, wrong variation
+  &.correct { background: t.$ok; }
 }

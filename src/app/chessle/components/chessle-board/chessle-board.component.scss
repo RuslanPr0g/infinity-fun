@@ -1,28 +1,20 @@
-@use '../../../../colors' as colors;
-
-.board-wrap {
-  max-width: 420px;
-  margin: 0 auto 1rem;
-}
-
+:host { display: block; }
+.board-wrap { width: min(100%, 420px, 52dvh); margin: 0 auto; }
 .move-log {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem 0.6rem;
+  gap: 6px 10px;
   justify-content: center;
-  padding: 0.85rem;
-  margin-bottom: 1rem;
-  border: 2px solid rgba(colors.$primary-text-color, 0.1);
+  min-height: 44px;
+  margin-top: 12px;
+  padding: 12px;
   border-radius: 12px;
-  min-height: 2.2rem;
+  background: var(--card);
+  border: 1px solid var(--line);
 }
+.move-token { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.move-number { color: var(--muted); margin-right: 2px; }
 
-.move-token {
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-
-.move-number {
-  opacity: 0.4;
-  margin-right: 0.15rem;
+@media (min-aspect-ratio: 4/3) and (max-height: 560px) {
+  .board-wrap { width: 100%; }
 }

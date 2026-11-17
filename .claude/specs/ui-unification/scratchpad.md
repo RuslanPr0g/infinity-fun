@@ -26,7 +26,7 @@ Plan: `~/.claude/plans/pasted-content-id-4447-create-scratchpa-swift-rain.md`. R
 | 9 | Date Countdown | emoji edit span | scroll shell, real buttons | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | 10 | Reject Cookies | hover-only flee, 39 hex | touch flee, clean frame | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | 11 | Sea Battle | 50px cells, reversed breakpoints | fluid grid | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| 12 | Chessle | own palette | tokens, modal | | | | | | |
+| 12 | Chessle | own palette | tokens, modal | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | 13 | Opening Trainer | hover-only preview | tap preview | | | | | | |
 | 14 | Unusual Chess | 5 copied overlays | UiModal, fluid board | | | | | | |
 | 15 | Klotski | own canvas loop, 24 hex | CanvasStage, tokens | | | | | | |

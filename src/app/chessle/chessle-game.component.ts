@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { Opening } from '../chess-openings/models/opening.model';
 import { OpeningDisplayService } from '../chess-openings/services/opening-display.service';
@@ -6,11 +5,11 @@ import { OpeningLibraryService } from '../chess-openings/services/opening-librar
 import { LocalStorageConst } from '../core/constants/local-storage.const';
 import { LocalStorageService } from '../shared/services/local-storage/local-storage.service';
 import { SoundService } from '../shared/services/sound/sound.service';
+import { GameShellComponent, SegmentOption, SegmentedComponent, UiModalComponent } from '../shared/ui';
 import { ChessleBoardComponent } from './components/chessle-board/chessle-board.component';
 import { GuessGridComponent } from './components/guess-grid/guess-grid.component';
 import { GuessInputComponent } from './components/guess-input/guess-input.component';
 import { ResultSummaryComponent } from './components/result-summary/result-summary.component';
-import { RulesOverlayComponent } from './components/rules-overlay/rules-overlay.component';
 import { ChessleStats, INITIAL_CHESSLE_STATS } from './models/chessle.models';
 import { ChessleEngineService } from './services/chessle-engine.service';
 import { ChessleStatsService } from './services/chessle-stats.service';
@@ -29,62 +28,34 @@ type Mode = 'daily' | 'free';
   selector: 'app-chessle-game',
   standalone: true,
   imports: [
-    CommonModule,
+    GameShellComponent,
+    SegmentedComponent,
+    UiModalComponent,
     ChessleBoardComponent,
     GuessInputComponent,
     GuessGridComponent,
     ResultSummaryComponent,
-    RulesOverlayComponent,
   ],
   template: `
-    <div class="chessle-container">
+    <app-game-shell [help]="help" maxWidth="520px">
       <div class="sr-only" aria-live="polite">{{ announcement() }}</div>
 
-      @if (showRules()) {
-        <app-rules-overlay (dismiss)="dismissRules()" />
-      }
-
       @if (!loaded()) {
-        <p class="loading">Loading openings…</p>
+        <p class="ui-muted">Loading openings…</p>
       } @else {
-        <h1 class="title">Chessle</h1>
-        <p class="subtitle">Guess the chess opening from its opening moves.</p>
+        <ui-segmented label="Puzzle" [options]="modes" [value]="mode()" (valueChange)="$event === 'daily' ? enterDaily() : enterFree()" />
 
-        <div class="mode-tabs" role="tablist">
-          <button
-            type="button"
-            role="tab"
-            class="tab"
-            [class.active]="mode() === 'daily'"
-            (click)="enterDaily()"
-          >
-            Daily Puzzle
-          </button>
-          <button
-            type="button"
-            role="tab"
-            class="tab"
-            [class.active]="mode() === 'free'"
-            (click)="enterFree()"
-          >
-            Free Play
-          </button>
-        </div>
+        <div class="play">
+        <app-chessle-board class="board" [revealedMoves]="engine.revealedMoves()" />
 
+        <div class="side">
         <app-guess-grid [guesses]="engine.guesses()" />
-
-        <app-chessle-board [revealedMoves]="engine.revealedMoves()" />
-
         @if (engine.status() === 'in-progress') {
-          <app-guess-input
-            [pool]="pool()"
-            [guessedNames]="guessedNames()"
-            (guess)="onGuess($event)"
-          />
+          <app-guess-input [pool]="pool()" [guessedNames]="guessedNames()" (guess)="onGuess($event)" />
           @if (lastGuessFamily(); as family) {
-            <p class="family-hint">Right family — try another {{ family }} variation</p>
+            <p class="family-hint">Right family. Try another {{ family }} line.</p>
           }
-          <p class="remaining">{{ engine.guessesRemaining() }} guesses left</p>
+          <p class="ui-muted remaining">{{ engine.guessesRemaining() }} {{ engine.guessesRemaining() === 1 ? 'guess' : 'guesses' }} left</p>
         } @else {
           @if (engine.target(); as target) {
             <app-result-summary
@@ -99,8 +70,19 @@ type Mode = 'daily' | 'free';
             />
           }
         }
+        </div>
+        </div>
       }
-    </div>
+
+      @if (showRules()) {
+        <ui-modal heading="How to play Chessle" size="sm" (closed)="dismissRules()">
+          <ul class="rules">
+            @for (line of help; track $index) { <li>{{ line }}</li> }
+          </ul>
+          <button type="button" class="ui-btn primary block" (click)="dismissRules()">Got it</button>
+        </ui-modal>
+      }
+    </app-game-shell>
   `,
   styleUrl: './chessle-game.component.scss',
 })
@@ -118,6 +100,16 @@ export class ChessleGameComponent implements OnInit, OnDestroy {
   readonly mode = signal<Mode>('daily');
   readonly stats = signal<ChessleStats>(INITIAL_CHESSLE_STATS);
   readonly countdownMs = signal(0);
+  readonly help = [
+    'Guess the chess opening from its first moves.',
+    'Each wrong guess shows one more move. You get 6 guesses.',
+    'Yellow means right family, wrong line (e.g. the right gambit, wrong variation).',
+    'Daily: one puzzle a day for everyone. Free play: as many as you like.',
+  ];
+  readonly modes: SegmentOption<'daily' | 'free'>[] = [
+    { value: 'daily', label: 'Daily puzzle' },
+    { value: 'free', label: 'Free play' },
+  ];
   readonly showRules = signal(false);
   readonly announcement = signal('');
 
