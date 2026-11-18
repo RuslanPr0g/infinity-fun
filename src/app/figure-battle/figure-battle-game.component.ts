@@ -55,6 +55,20 @@ import { FigureBattleGameService } from './services/figure-battle-game.service';
       @if (game.screen() === 'deploy' && game.briefOpen()) {
         <fb-brief />
       }
+      @if (game.planning() !== null) {
+        <div class="fb-screen">
+          <div class="fb-dim" style="--a: 0.45"></div>
+          <div class="fb-center">
+            <div class="fb-modal fb-planning">
+              <div class="fb-kicker">Vs Computer</div>
+              <div class="name">The computer is building its army</div>
+              <div class="fb-muted">Up to the same money as yours: ◆{{ game.bf.armyValue(0) }}</div>
+              <div class="fb-bar"><div [style.width.%]="(game.planning() ?? 0) * 100"></div></div>
+              <button class="fb-btn ghost" (click)="game.cancelPlanning()">Cancel</button>
+            </div>
+          </div>
+        </div>
+      }
       @if (game.toast(); as t) {
         @for (x of [t]; track x.id) {
           <div class="fb-toast fb-panel">{{ x.text }}</div>

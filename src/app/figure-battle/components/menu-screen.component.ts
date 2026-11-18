@@ -25,6 +25,7 @@ import { FigureIconComponent } from './figure-icon.component';
           <div class="buttons">
             <button class="fb-btn primary" (click)="game.showLevels()">Campaign</button>
             <button class="fb-btn" (click)="game.showArmory('menu')">Armory</button>
+            <button class="fb-btn" (click)="game.enterVsAi()">Vs Computer</button>
             <button class="fb-btn" (click)="game.enterSandbox()">Sandbox</button>
             <a class="fb-btn ghost" routerLink="/">Back to all games</a>
           </div>

@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, ElementRef, NgZone, OnDestroy, computed, inject, viewChild } from '@angular/core';
 import { PowerId } from '../engine/battlefield';
 import { POWER_IDS, commandNode } from '../engine/progression';
-import { FigureBattleGameService, formatTime } from '../services/figure-battle-game.service';
+import { AI_LEVELS, FigureBattleGameService, formatTime } from '../services/figure-battle-game.service';
 
 /** Battle top bar. Live numbers are written straight to the DOM from a rAF loop (no change detection). */
 @Component({
@@ -37,8 +37,8 @@ export class BattleHudComponent implements AfterViewInit, OnDestroy {
   private readonly zone = inject(NgZone);
   readonly speeds = ['1×', '2×', '4×'];
 
-  readonly kicker = computed(() => (this.game.sandbox() ? 'SANDBOX' : `MISSION ${String(this.game.levelIdx() + 1).padStart(2, '0')}`));
-  readonly title = computed(() => (this.game.sandbox() ? 'Free battle' : this.game.level().name));
+  readonly kicker = computed(() => (this.game.vsAi() ? 'VS COMPUTER' : this.game.sandbox() ? 'SANDBOX' : `MISSION ${String(this.game.levelIdx() + 1).padStart(2, '0')}`));
+  readonly title = computed(() => (this.game.vsAi() ? AI_LEVELS[this.game.aiLevel()] : this.game.sandbox() ? 'Free battle' : this.game.level().name));
 
   private readonly ca = viewChild.required<ElementRef<HTMLElement>>('ca');
   private readonly cb = viewChild.required<ElementRef<HTMLElement>>('cb');

@@ -25,8 +25,11 @@ export const ARCHETYPES: Record<string, Mix> = {
 const FRONT: UnitKind[] = ['star', 'octagon', 'square', 'circle', 'cross'];
 const RAIDERS: UnitKind[] = ['diamond', 'cross'];
 
-/** Fills the zones front to back. Raiders go to the side zones when there are any. */
-export function buildArmy(bf: Battlefield, level: Level, mix: Mix): void {
+/**
+ * Fills the zones front to back. Raiders go to the side zones when there are any.
+ * Team 0 faces right, team 1 faces left. `level` is only used to spot enemies on both sides.
+ */
+export function buildArmy(bf: Battlefield, level: Level | null, mix: Mix, team = 0): void {
   const budget = bf.budget;
   const total = Object.values(mix).reduce((a, b) => a + (b ?? 0), 0);
   const want: UnitKind[] = [];
@@ -43,10 +46,11 @@ export function buildArmy(bf: Battlefield, level: Level, mix: Mix): void {
     want.push('circle');
     spent += 10;
   }
-  const zones = bf.zones[0];
+  const zones = bf.zones[team];
   const main = zones.reduce((a, z) => (z.w * z.h > a.w * a.h ? z : a), zones[0]);
   const side = zones.filter((z) => z !== main);
-  const twoSided = level.enemies.some(([, x]) => ARENA.x + x < main.x);
+  const twoSided = team === 0 && !!level && level.enemies.some(([, x]) => ARENA.x + x < main.x);
+  const ahead = team === 0;
   const front = want.filter((k) => FRONT.includes(k) && !(side.length > 0 && RAIDERS.includes(k)));
   const raid = side.length > 0 ? want.filter((k) => RAIDERS.includes(k)) : [];
   const back = want.filter((k) => !front.includes(k) && !raid.includes(k));
@@ -59,19 +63,18 @@ export function buildArmy(bf: Battlefield, level: Level, mix: Mix): void {
       const sp = UNIT_TYPES[k].r * 2 + 8;
       const x = fromRight ? z.x + z.w - 14 - col * 30 : z.x + 14 + col * 30;
       const rows = Math.max(1, Math.floor((z.h - 20) / sp));
-      let placed = 0;
       for (let r = 0; r < rows && i < list.length; r++) {
         const kk = list[i];
         const y = z.y + 10 + (r + 0.5) * ((z.h - 20) / rows);
-        if (bf.canPlace(kk, 0, x, y) === '') {
-          bf.spawn(kk, 0, x, y);
+        const why = bf.canPlace(kk, team, x, y);
+        if (why === '') {
+          bf.spawn(kk, team, x, y);
           i++;
-          placed++;
-        } else if (bf.canPlace(kk, 0, x, y) === 'budget') {
+        } else if (why === 'budget') {
           i++;
         }
       }
-      col += placed > 0 || rows > 0 ? 1 : 1;
+      col++;
     }
     return col;
   };
@@ -83,14 +86,14 @@ export function buildArmy(bf: Battlefield, level: Level, mix: Mix): void {
     const mid: Rect = { x: main.x + 60, y: main.y, w: main.w - 120, h: main.h };
     fill(back, mid, true, 0);
   } else {
-    const used = fill(front, main, true, 0);
-    fill(back, main, true, used);
+    const used = fill(front, main, ahead, 0);
+    fill(back, main, ahead, used);
   }
   if (raid.length > 0) {
     let i = 0;
     for (const z of side) {
       const share = Math.ceil(raid.length / side.length);
-      fill(raid.slice(i, i + share), z, z.x > main.x + main.w / 2, 0);
+      fill(raid.slice(i, i + share), z, ahead ? z.x > main.x + main.w / 2 : z.x < main.x + main.w / 2, 0);
       i += share;
     }
   }

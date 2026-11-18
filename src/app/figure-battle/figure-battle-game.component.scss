@@ -152,6 +152,16 @@ $heal: t.$ok;
   }
   .fb-seg { display: flex; gap: 6px; }
 
+  .fb-planning {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: min(380px, 100%);
+    text-align: center;
+    .name { font-size: 19px; font-weight: 800; }
+    .fb-btn { align-self: center; }
+  }
+
   .fb-bar {
     height: 8px;
     border-radius: 5px;

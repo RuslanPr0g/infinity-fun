@@ -1,5 +1,7 @@
 import { Injectable, NgZone, computed, inject, signal } from '@angular/core';
 import { LocalStorageService } from '../../shared/services/local-storage/local-storage.service';
+import { ArmyPlanner, redArmy } from '../engine/ai-army';
+import { ARCHETYPES } from '../engine/autoplay';
 import { Battlefield, PowerId, Snapshot } from '../engine/battlefield';
 import { ENEMY_HEX, PLAYER_HEX } from '../engine/figures';
 import { CHAPTERS, LEVELS, chapterOf } from '../engine/levels';
@@ -14,6 +16,11 @@ import { UNIT_TYPES, UnitKind, isUnitKind } from '../engine/unit-data';
 export type Screen = 'menu' | 'levels' | 'deploy' | 'battle' | 'result' | 'armory';
 export type ArmorySel = UnitKind | CommandId;
 export type ArmoryTab = 'troops' | 'command';
+/** Vs Computer difficulty: 0 easy, 1 normal, 2 hard. */
+export type AiLevel = 0 | 1 | 2;
+export const AI_LEVELS = ['Easy', 'Normal', 'Hard'];
+/** Test battles the computer plays before picking its army, per difficulty. */
+const AI_RUNS = [0, 10, 36];
 type ArmoryFrom = 'menu' | 'levels' | 'result' | 'brief';
 
 export interface SaveData {
@@ -24,6 +31,7 @@ export interface SaveData {
   ups: UpgradeMap;
   command: Partial<Record<CommandId, number>>;
   muted: boolean;
+  aiLevel: AiLevel;
 }
 
 export interface ResultView {
@@ -73,6 +81,11 @@ export class FigureBattleGameService {
   readonly briefOpen = signal(false);
   readonly levelIdx = signal(0);
   readonly sandbox = signal(false);
+  /** Sandbox where the computer builds the red army. */
+  readonly vsAi = signal(false);
+  /** Progress (0..1) while the computer builds its army, or null. */
+  readonly planning = signal<number | null>(null);
+  readonly aiLevel = computed(() => this.save().aiLevel);
   /** Bumped whenever the deployed armies change. */
   readonly armyVersion = signal(0);
   readonly selectedKind = signal<UnitKind>('circle');
@@ -99,6 +112,7 @@ export class FigureBattleGameService {
   private readonly deploySnaps = new Map<number, Snapshot>();
   private battleSnap: Snapshot = [];
   private seq = 0;
+  private planToken = 0;
 
   constructor() {
     this.sfx.muted = this.save().muted;
@@ -116,7 +130,7 @@ export class FigureBattleGameService {
   // ───────────────────────────── save ─────────────────────────────
 
   private load(): SaveData {
-    const data: SaveData = { unlocked: 1, stars: {}, money: 0, owned: ['circle'], ups: {}, command: {}, muted: false };
+    const data: SaveData = { unlocked: 1, stars: {}, money: 0, owned: ['circle'], ups: {}, command: {}, muted: false, aiLevel: 1 };
     const raw = this.storage.getItem<Partial<SaveData>>(SAVE_KEY);
     if (!raw || typeof raw !== 'object') {
       return data;
@@ -125,6 +139,9 @@ export class FigureBattleGameService {
     data.unlocked = Math.max(1, num(raw.unlocked, 1));
     data.money = Math.max(0, num(raw.money, 0));
     data.muted = raw.muted === true;
+    if (raw.aiLevel === 0 || raw.aiLevel === 1 || raw.aiLevel === 2) {
+      data.aiLevel = raw.aiLevel;
+    }
     if (raw.stars && typeof raw.stars === 'object') {
       data.stars = { ...raw.stars };
     }
@@ -246,7 +263,9 @@ export class FigureBattleGameService {
   // ───────────────────────────── menu / levels ─────────────────────────────
 
   showMenu(): void {
+    this.cancelPlan();
     this.sandbox.set(false);
+    this.vsAi.set(false);
     this.ensureDemo();
     this.go('menu');
   }
@@ -256,6 +275,7 @@ export class FigureBattleGameService {
       this.chapterSel.set(this.screen() === 'menu' ? this.currentChapter() : chapterOf(this.levelIdx()));
     }
     this.sandbox.set(false);
+    this.vsAi.set(false);
     this.ensureDemo();
     this.go('levels');
   }
@@ -272,6 +292,7 @@ export class FigureBattleGameService {
     }
     const s = this.save();
     this.sandbox.set(false);
+    this.vsAi.set(false);
     this.levelIdx.set(i);
     const powers: Partial<Record<PowerId, number>> = {};
     for (const id of POWER_IDS) {
@@ -285,12 +306,82 @@ export class FigureBattleGameService {
   }
 
   enterSandbox(snap: Snapshot = []): void {
+    this.cancelPlan();
     this.sandbox.set(true);
+    this.vsAi.set(false);
     this.bf.setupSandbox();
     this.bf.speed = 1;
     this.bf.restore(snap);
     this.syncDeploy();
     this.go('deploy');
+  }
+
+  /** Vs Computer: the player builds blue, the computer answers with red for the same money. */
+  enterVsAi(snap: Snapshot = []): void {
+    this.cancelPlan();
+    this.sandbox.set(true);
+    this.vsAi.set(true);
+    this.bf.setupSandbox();
+    this.bf.speed = 1;
+    this.bf.restore(snap.filter(([, t]) => t === 0));
+    this.syncDeploy();
+    this.go('deploy');
+  }
+
+  setAiLevel(level: AiLevel): void {
+    this.mutate((s) => (s.aiLevel = level));
+  }
+
+  private cancelPlan(): void {
+    this.planToken++;
+    this.planning.set(null);
+  }
+
+  cancelPlanning(): void {
+    this.cancelPlan();
+    this.bf.clearTeam(1);
+  }
+
+  /**
+   * Builds the red army in small slices so the page stays responsive, then starts the battle.
+   * Easy picks a random plan; Normal and Hard test armies against yours first.
+   */
+  private planRed(): void {
+    const blue = this.bf.snapshot(0);
+    const token = ++this.planToken;
+    const runs = AI_RUNS[this.aiLevel()];
+    const finish = (red: Snapshot): void => {
+      if (token !== this.planToken || this.screen() !== 'deploy') {
+        return;
+      }
+      this.planning.set(null);
+      this.bf.clearTeam(1);
+      this.bf.restore(red);
+      this.launch();
+    };
+    if (runs === 0) {
+      const mixes = Object.values(ARCHETYPES);
+      finish(redArmy(blue, mixes[Math.floor(Math.random() * mixes.length)]));
+      return;
+    }
+    const planner = new ArmyPlanner(blue, runs);
+    this.planning.set(0);
+    const slice = (): void => {
+      if (token !== this.planToken) {
+        return;
+      }
+      const until = performance.now() + 40;
+      while (planner.step() && performance.now() < until) {
+        // keep going until this slice of time is used up
+      }
+      if (planner.done) {
+        this.zone.run(() => finish(planner.best().snap));
+      } else {
+        this.zone.run(() => this.planning.set(planner.runs / runs));
+        setTimeout(slice, 0);
+      }
+    };
+    this.zone.runOutsideAngular(() => setTimeout(slice, 30));
   }
 
   private syncDeploy(): void {
@@ -335,7 +426,7 @@ export class FigureBattleGameService {
   }
 
   deployClear(): void {
-    this.bf.clearTeam(this.sandbox() ? this.bf.placeTeam : 0);
+    this.bf.clearTeam(this.sandbox() && !this.vsAi() ? this.bf.placeTeam : 0);
   }
 
   openBrief(): void {
@@ -350,12 +441,17 @@ export class FigureBattleGameService {
   }
 
   startBattle(): void {
-    if (this.screen() !== 'deploy') {
+    if (this.screen() !== 'deploy' || this.planning() !== null) {
       return;
     }
     const bf = this.bf;
     if (bf.armyCount(0) === 0) {
       this.toastError('Place some units first');
+      return;
+    }
+    if (this.vsAi()) {
+      this.battleSnap = bf.snapshot(0);
+      this.planRed();
       return;
     }
     if (this.sandbox() && bf.armyCount(1) === 0) {
@@ -368,6 +464,11 @@ export class FigureBattleGameService {
       this.battleSnap = bf.snapshot(0);
       this.deploySnaps.set(this.levelIdx(), this.battleSnap);
     }
+    this.launch();
+  }
+
+  private launch(): void {
+    const bf = this.bf;
     this.setSpeed(0);
     this.paused.set(false);
     bf.startBattle();
@@ -410,7 +511,9 @@ export class FigureBattleGameService {
   }
 
   backToDeploy(): void {
-    if (this.sandbox()) {
+    if (this.vsAi()) {
+      this.enterVsAi(this.battleSnap);
+    } else if (this.sandbox()) {
       this.enterSandbox(this.battleSnap);
     } else {
       this.enterLevel(this.levelIdx(), this.battleSnap);
@@ -422,7 +525,7 @@ export class FigureBattleGameService {
   private onFinished(winner: number): void {
     const bf = this.bf;
     const sandbox = this.sandbox();
-    this.sfx.play(winner === 0 || (sandbox && winner === 1) ? 'victory' : 'defeat', null, -3);
+    this.sfx.play(winner === 0 || (sandbox && !this.vsAi() && winner === 1) ? 'victory' : 'defeat', null, -3);
     const time = formatTime(bf.battleTime);
     const base: ResultView = {
       id: ++this.seq, sandbox, sub: '', title: '', titleColor: PLAYER_HEX, stars: 0, showStars: false,
@@ -430,6 +533,16 @@ export class FigureBattleGameService {
       nextLabel: 'Next Mission ▶', nextVisible: true, nextDisabled: false, armoryVisible: true,
     };
 
+    if (this.vsAi()) {
+      const [title, color] = winner === 0 ? ['YOU WIN', PLAYER_HEX] : winner === 1 ? ['COMPUTER WINS', ENEMY_HEX] : ['DRAW', MUTED_HEX];
+      this.result.set({
+        ...base, sub: `VS COMPUTER  ·  ${AI_LEVELS[this.aiLevel()].toUpperCase()}`, title, titleColor: color, armoryVisible: false,
+        stats: `You ◆${bf.startValue[0]}  ·  Computer ◆${bf.startValue[1]}  ·  You lost ◆${bf.lostValue[0]}  ·  Computer lost ◆${bf.lostValue[1]}  ·  Time ${time}`,
+        levelsLabel: 'Menu', retryLabel: 'Edit Army', nextLabel: 'Rematch ▶',
+      });
+      this.go('result');
+      return;
+    }
     if (sandbox) {
       const [title, color] = winner === 0 ? ['BLUE WINS', PLAYER_HEX] : winner === 1 ? ['RED WINS', ENEMY_HEX] : ['STALEMATE', MUTED_HEX];
       this.result.set({
@@ -512,7 +625,10 @@ export class FigureBattleGameService {
   }
 
   resultNext(): void {
-    if (this.sandbox()) {
+    if (this.vsAi()) {
+      this.enterVsAi(this.battleSnap);
+      this.startBattle();
+    } else if (this.sandbox()) {
       this.enterSandbox(this.battleSnap);
       this.startBattle();
     } else if (this.levelIdx() + 1 < this.levels.length) {
@@ -663,7 +779,7 @@ export class FigureBattleGameService {
           this.setBrush('qwe'.indexOf(k));
         } else if (k === 'x') {
           this.setEraseTool(!this.eraseTool());
-        } else if (k === 'Tab' && this.sandbox()) {
+        } else if (k === 'Tab' && this.sandbox() && !this.vsAi()) {
           this.setTeam(1 - this.bf.placeTeam);
         } else if (confirm) {
           this.startBattle();
